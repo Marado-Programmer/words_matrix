@@ -139,9 +139,10 @@ public class WSModel {
     }
 
     private void populateGrid() {
-        Set<String> words_in_game = this.words_in_use;
+        this.words_to_find = new TreeSet<>();
         for (String w :
                 this.words_in_use) {
+            this.words_to_find.add(w);
             /* orientation: true for horizontal and false for vertical */
             boolean orientation = this.random.nextBoolean();
 
@@ -165,17 +166,13 @@ public class WSModel {
                     } else if (!orientation && this.wordFitsHorizontally(w)) {
                         this.addWordHorizontally(w);
                     } else {
-                        words_in_game.remove(w);
+                        this.words_to_find.remove(w);
                     }
                 } catch (Exception e) {
-                    words_in_game.remove(w);
+                    this.words_to_find.remove(w);
                 }
             }
-
-            this.printGrid();
         }
-
-        this.words_to_find = words_in_game;
     }
 
     private void fillGrid() {
@@ -193,12 +190,14 @@ public class WSModel {
     private void initGrid() {
         this.initClearGrid();
         this.populateGrid();
+        this.printGrid();
         this.fillGrid();
     }
 
     private void printGrid() {
         System.out.println("GRID:");
         for (List<Cell> i : this.lettersGrid) {
+            System.out.print("\t");
             for (Cell j : i) {
                 if (j == null) {
                     System.out.print(".");
@@ -258,8 +257,6 @@ public class WSModel {
 
             if (!invalid_pos) {
                 this.lettersGrid.set(pos, line);
-                System.out.println("pos");
-                printGrid();
                 break;
             } else {
                 invalids.add(start + ";" + pos);
@@ -336,18 +333,10 @@ public class WSModel {
         Position start_pos = this.start_selected;
         this.start_selected = null;
 
-        StringBuilder possible = getPossibleWord(start_pos, pos);
-
-        if (this.words_to_find.contains(possible.toString())) {
-            this.words_to_find.remove(possible.toString());
-            this.words_found.add(possible.toString());
-            return true;
-        } else {
-            return false;
-        }
+        return this.wordFound(getPossibleWord(start_pos, pos));
     }
 
-    private @NotNull StringBuilder getPossibleWord(@NotNull Position start_pos, @NotNull Position end_pos) {
+    private @NotNull String getPossibleWord(@NotNull Position start_pos, @NotNull Position end_pos) {
         StringBuilder possible = new StringBuilder();
         if (start_pos.line() == end_pos.line()) {
             List<Cell> line = this.lettersGrid.get(end_pos.line());
@@ -365,7 +354,7 @@ public class WSModel {
             }
 
         }
-        return possible;
+        return possible.toString();
     }
 
     public @Nullable Position getStartSelected() {
@@ -374,12 +363,25 @@ public class WSModel {
 
     public @NotNull GameResults endGame() {
         this.in_game = false;
-        return new GameResults(words_in_use, words_found);
+        return this.curGameResults();
+    }
+
+    public @NotNull GameResults curGameResults() {
+        return new GameResults(this.words_in_use, this.words_found);
+    }
+
+    public boolean gameEnded() {
+        return this.words_in_use.size() == this.words_found.size();
     }
 
     public void startGame() {
+        if (in_game) {
+            throw new RuntimeException();
+        }
+
         this.initGrid();
         this.in_game = true;
+        this.words_found = new TreeSet<>();
     }
 
     public int getLines() {
@@ -467,7 +469,16 @@ public class WSModel {
         if (!this.in_game) {
             throw new RuntimeException();
         }
-        return this.words_to_find.contains(word);
+
+        word = word.toUpperCase();
+
+        if (this.words_to_find.contains(word)) {
+            this.words_to_find.remove(word);
+            this.words_found.add(word);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -480,6 +491,15 @@ public class WSModel {
         if (!this.in_game) {
             throw new RuntimeException();
         }
-        return this.words_to_find.contains(word);
+
+        word = word.toUpperCase();
+
+        if (this.words_to_find.contains(word)) {
+            this.words_to_find.remove(word);
+            this.words_found.add(word);
+            return true;
+        } else {
+            return false;
+        }
     }
 }

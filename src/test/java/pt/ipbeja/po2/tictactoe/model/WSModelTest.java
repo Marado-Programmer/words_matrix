@@ -9,10 +9,17 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class WSModelTest {
+    static final String contents = """
+            test
+            words
+            matrix
+            list
+            database""";
     @TempDir
     static Path tmp;
     static Path tmp_db;
@@ -21,12 +28,7 @@ class WSModelTest {
     static void beforeAll() throws IOException {
         tmp_db = Files.createFile(tmp.resolve("db.txt"));
         try (BufferedWriter writer = Files.newBufferedWriter(tmp_db)) {
-            writer.write("""
-                    test
-                    words
-                    matrix
-                    list
-                    database""");
+            writer.write(contents);
         } catch (IOException ignored) {
         }
     }
@@ -36,31 +38,45 @@ class WSModelTest {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         this.registerEmptyView(model);
 
-        assertEquals("CASA", model.wordFound("CASA"));
+        assertTrue(model.wordFound(Arrays.stream(contents.split("\n")).findFirst().orElse("")));
     }
 
     @Test
     void testWordWithWildcardFound() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         this.registerEmptyView(model);
-        assertEquals("MALA", model.wordWithWildcardFound("MALA"));
+        assertTrue(model.wordFound(Arrays.stream(contents.split("\n")).findFirst().orElse("")));
     }
 
     @Test
-    void testallWordsWereFound() {
+    void testAllWordsWereFound() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         this.registerEmptyView(model);
-        assertEquals("MALA", model.wordFound("MALA"));
-        assertEquals("CA", model.wordFound("CA"));
+
+        for (String w :
+                contents.split("\n")) {
+            assertTrue(model.wordFound(w));
+        }
         assertTrue(model.allWordsWereFound());
     }
 
+    @Test
+    void game() {
+        WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
+        this.registerEmptyView(model);
 
-
+        for (String w :
+                contents.split("\n")) {
+            assertFalse(model.gameEnded());
+            assertTrue(model.wordFound(w));
+        }
+        assertTrue(model.gameEnded());
+        GameResults res = model.endGame();
+        assertEquals(res.words().size(), res.words_found().size());
+    }
 
     private void registerEmptyView(@NotNull WSModel model) {
         model.registerView(message -> {
-            // do nothing
         });
     }
 }

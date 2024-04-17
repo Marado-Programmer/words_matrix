@@ -19,11 +19,18 @@ import static pt.ipbeja.po2.tictactoe.model.WSModel.MAX_SIDE_LEN;
  */
 public class StartWordSearch extends Application {
 
+    /**
+     * @param args  not used
+     */
+    public static void main(String[] args) {
+        Application.launch(args);
+    }
+
     @Override
     public void start(@NotNull Stage stage) {
 
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Qual o ficheiro base de dados que quer utilizar?");
+        fileChooser.setTitle("Which DB file would you like to use?");
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
         File file = fileChooser.showOpenDialog(stage);
         WSModel model = null;
@@ -41,12 +48,5 @@ public class StartWordSearch extends Application {
         }
         WSBoard.requestFocus(); // to remove focus from first button
         stage.show();
-    }
-
-    /**
-     * @param args  not used
-     */
-    public static void main(String[] args) {
-        Application.launch(args);
     }
 }
