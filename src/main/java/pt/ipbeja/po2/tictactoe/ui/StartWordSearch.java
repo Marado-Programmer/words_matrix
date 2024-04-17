@@ -1,9 +1,16 @@
 package pt.ipbeja.po2.tictactoe.ui;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.po2.tictactoe.model.WSModel;
+
+import java.io.File;
+
+import static pt.ipbeja.po2.tictactoe.model.WSModel.MAX_SIDE_LEN;
 
 /**
  * Start a game with a hardcoded board
@@ -13,24 +20,27 @@ import pt.ipbeja.po2.tictactoe.model.WSModel;
 public class StartWordSearch extends Application {
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(@NotNull Stage stage) {
 
-        final String boardContent =
-                """
-                CASAIAED
-                FFWFMERW
-                WIQFELAA
-                OFLFESFI
-                EFFAFFPP""";
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Qual o ficheiro base de dados que quer utilizar?");
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+        File file = fileChooser.showOpenDialog(stage);
+        WSModel model = null;
+        if (file != null) {
+            model = new WSModel(MAX_SIDE_LEN, MAX_SIDE_LEN, file.toPath());
+        } else {
+            Platform.exit();
+        }
 
-        WSModel WSModel = new WSModel(boardContent);
+        WSBoard WSBoard = new WSBoard(model);
+        stage.setScene(new Scene(WSBoard));
 
-        WSBoard WSBoard = new WSBoard(WSModel);
-        primaryStage.setScene(new Scene(WSBoard));
-
-        WSModel.registerView(WSBoard);
+        if (model != null) {
+            model.registerView(WSBoard);
+        }
         WSBoard.requestFocus(); // to remove focus from first button
-        primaryStage.show();
+        stage.show();
     }
 
     /**

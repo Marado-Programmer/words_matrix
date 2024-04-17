@@ -1,4 +1,7 @@
 package pt.ipbeja.po2.tictactoe.model;
+
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Position in the board
  *
@@ -8,8 +11,17 @@ package pt.ipbeja.po2.tictactoe.model;
 public record Position(int line, int col) {
 
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         return line + ", " + col;
     }
 
+    @Override
+    public int line() {
+        return line;
+    }
+
+    @Override
+    public int col() {
+        return col;
+    }
 }

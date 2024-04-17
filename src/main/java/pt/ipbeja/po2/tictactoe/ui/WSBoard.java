@@ -6,10 +6,8 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
-import pt.ipbeja.po2.tictactoe.model.MessageToUI;
-import pt.ipbeja.po2.tictactoe.model.Position;
-import pt.ipbeja.po2.tictactoe.model.WSModel;
-import pt.ipbeja.po2.tictactoe.model.WSView;
+import org.jetbrains.annotations.NotNull;
+import pt.ipbeja.po2.tictactoe.model.*;
 
 /**
  * Game interface. Just a GridPane of buttons. No images. No menu.
@@ -35,10 +33,10 @@ public class WSBoard extends GridPane implements WSView {
         assert (this.wsModel != null);
 
         // create one label for each position
-        for (int line = 0; line < this.wsModel.nLines(); line++) {
-            for (int col = 0; col < this.wsModel.nCols(); col++) {
-                String textForButton = this.wsModel.textInPosition(new Position(line, col));
-                Button button = new Button(textForButton);
+        for (int line = 0; line < this.wsModel.getLines(); line++) {
+            for (int col = 0; col < this.wsModel.getCols(); col++) {
+                Cell textForButton = this.wsModel.textInPosition(new Position(line, col));
+                Button button = new Button(String.valueOf(textForButton.letter()));
                 button.setMinWidth(SQUARE_SIZE);
                 button.setMinHeight(SQUARE_SIZE);
                 this.add(button, col, line); // add button to GridPane
@@ -53,7 +51,7 @@ public class WSBoard extends GridPane implements WSView {
      * @param col column of label in board
      * @return the button at line, col
      */
-    public Button getButton(int line, int col) {
+    public @NotNull Button getButton(int line, int col) {
         ObservableList<Node> children = this.getChildren();
         for (Node node : children) {
             if(GridPane.getRowIndex(node) == line && GridPane.getColumnIndex(node) == col) {
@@ -71,10 +69,10 @@ public class WSBoard extends GridPane implements WSView {
      * @param messageToUI the WS model
      */
     @Override
-    public void update(MessageToUI messageToUI) {
+    public void update(@NotNull MessageToUI messageToUI) {
         for (Position p : messageToUI.positions()) {
-            String s = this.wsModel.textInPosition(p);
-            this.getButton(p.line(), p.col()).setText(s);
+            Cell s = this.wsModel.textInPosition(p);
+            this.getButton(p.line(), p.col()).setText(String.valueOf(s.letter()));
         }
         if (this.wsModel.allWordsWereFound()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
