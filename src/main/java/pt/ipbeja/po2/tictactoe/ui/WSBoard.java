@@ -5,7 +5,9 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.po2.tictactoe.model.*;
 
@@ -36,13 +38,28 @@ public class WSBoard extends GridPane implements WSView {
         for (int line = 0; line < this.wsModel.getLines(); line++) {
             for (int col = 0; col < this.wsModel.getCols(); col++) {
                 Cell textForButton = this.wsModel.textInPosition(new Position(line, col));
-                Button button = new Button(String.valueOf(textForButton.letter()));
-                button.setMinWidth(SQUARE_SIZE);
-                button.setMinHeight(SQUARE_SIZE);
+                Button button = createBtn(textForButton, line, col);
                 this.add(button, col, line); // add button to GridPane
             }
         }
         this.requestFocus();
+    }
+
+    @NotNull
+    private Button createBtn(@NotNull Cell textForButton, int line, int col) {
+        Button button = new Button(String.valueOf(textForButton.letter()));
+        button.setMinWidth(SQUARE_SIZE);
+        button.setMinHeight(SQUARE_SIZE);
+        button.setOnAction(event -> {
+            if (this.wsModel.findWord(new Position(line, col))) {
+                if (button.getBackground().getFills().stream().noneMatch(backgroundFill -> backgroundFill.getFill() == Color.GREEN)) {
+                    button.setBackground(Background.fill(Color.YELLOW));
+                }
+            } else {
+                this.unselectAll();
+            }
+        });
+        return button;
     }
 
     /**
@@ -81,6 +98,36 @@ public class WSBoard extends GridPane implements WSView {
             alert.setContentText("Level completed!");
             alert.showAndWait();
             System.exit(0);
+        }
+    }
+
+    @Override
+    public void wordFound(@NotNull Position start, @NotNull Position end) {
+        if (start.line() == end.line()) {
+            int start_pos = Math.min(start.col(), end.col());
+            int end_pos = Math.max(start.col(), end.col());
+            for (int i = start_pos; i <= end_pos; i++) {
+                Button btn = this.getButton(end.line(), i);
+                btn.setBackground(Background.fill(Color.GREEN));
+                btn.setDisable(true);
+            }
+        } else if (start.col() == end.col()) {
+            int start_pos = Math.min(start.line(), end.line());
+            int end_pos = Math.max(start.line(), end.line());
+            for (int i = start_pos; i <= end_pos; i++) {
+                Button btn = this.getButton(i, end.col());
+                btn.setBackground(Background.fill(Color.GREEN));
+                btn.setDisable(true);
+            }
+        }
+    }
+
+    private void unselectAll() {
+        for (Node child : this.getChildren()) {
+            Button btn = (Button) child;
+            if (btn.getBackground().getFills().stream().anyMatch(backgroundFill -> backgroundFill.getFill() == Color.YELLOW)) {
+                btn.setBackground(Background.fill(Color.TRANSPARENT));
+            }
         }
     }
 }

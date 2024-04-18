@@ -9,4 +9,6 @@ public interface WSView {
 
     void update(MessageToUI messageToUI);
 
+    void wordFound(Position start, Position end);
+
 }

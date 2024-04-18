@@ -327,13 +327,18 @@ public class WSModel {
 
         if (this.start_selected == null) {
             this.start_selected = pos;
-            return false;
+            return true;
         }
 
         Position start_pos = this.start_selected;
         this.start_selected = null;
 
-        return this.wordFound(getPossibleWord(start_pos, pos));
+        if (this.wordFound(getPossibleWord(start_pos, pos))) {
+            this.wsView.wordFound(start_pos, pos);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private @NotNull String getPossibleWord(@NotNull Position start_pos, @NotNull Position end_pos) {
@@ -342,13 +347,13 @@ public class WSModel {
             List<Cell> line = this.lettersGrid.get(end_pos.line());
             int start = Math.min(start_pos.col(), end_pos.col());
             int end = Math.max(start_pos.col(), end_pos.col());
-            for (int i = start; i < end; i++) {
+            for (int i = start; i <= end; i++) {
                 possible.append(line.get(i).letter());
             }
         } else if (start_pos.col() == end_pos.col()) {
             int start = Math.min(start_pos.line(), end_pos.line());
             int end = Math.max(start_pos.line(), end_pos.line());
-            for (int i = start; i < end; i++) {
+            for (int i = start; i <= end; i++) {
                 List<Cell> line = this.lettersGrid.get(i);
                 possible.append(line.get(end_pos.col()).letter());
             }
@@ -471,6 +476,8 @@ public class WSModel {
         }
 
         word = word.toUpperCase();
+
+        System.out.println(word);
 
         if (this.words_to_find.contains(word)) {
             this.words_to_find.remove(word);
