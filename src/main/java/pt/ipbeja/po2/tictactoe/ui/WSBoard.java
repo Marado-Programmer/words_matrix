@@ -109,7 +109,6 @@ public class WSBoard extends GridPane implements WSView {
             for (int i = start_pos; i <= end_pos; i++) {
                 Button btn = this.getButton(end.line(), i);
                 btn.setBackground(Background.fill(Color.GREEN));
-                btn.setDisable(true);
             }
         } else if (start.col() == end.col()) {
             int start_pos = Math.min(start.line(), end.line());
@@ -117,9 +116,17 @@ public class WSBoard extends GridPane implements WSView {
             for (int i = start_pos; i <= end_pos; i++) {
                 Button btn = this.getButton(i, end.col());
                 btn.setBackground(Background.fill(Color.GREEN));
-                btn.setDisable(true);
             }
         }
+
+        this.wsModel.gameEnded();
+    }
+
+    @Override
+    public void gameEnded(@NotNull GameResults res) {
+        System.out.println(res.words_found().size());
+        System.out.println(res.words().size());
+        System.out.printf("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size());
     }
 
     private void unselectAll() {

@@ -335,6 +335,9 @@ public class WSModel {
 
         if (this.wordFound(getPossibleWord(start_pos, pos))) {
             this.wsView.wordFound(start_pos, pos);
+            if (this.allWordsWereFound()) {
+                this.endGame();
+            }
             return true;
         } else {
             return false;
@@ -368,7 +371,9 @@ public class WSModel {
 
     public @NotNull GameResults endGame() {
         this.in_game = false;
-        return this.curGameResults();
+        GameResults res = this.curGameResults();
+        this.wsView.gameEnded(res);
+        return res;
     }
 
     public @NotNull GameResults curGameResults() {
