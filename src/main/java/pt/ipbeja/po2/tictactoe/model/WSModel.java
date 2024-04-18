@@ -42,6 +42,8 @@ public class WSModel {
     private boolean in_game;
     private @Nullable Position start_selected;
 
+    private ResultsSaver saver;
+
     public WSModel(int lines, int cols, @NotNull String file) {
         this(lines, cols, Paths.get(file));
     }
@@ -373,6 +375,9 @@ public class WSModel {
         this.in_game = false;
         GameResults res = this.curGameResults();
         this.wsView.gameEnded(res);
+        if (saver != null) {
+            this.saver.save(res);
+        }
         return res;
     }
 
@@ -513,5 +518,9 @@ public class WSModel {
         } else {
             return false;
         }
+    }
+
+    public void setSaver(ResultsSaver saver) {
+        this.saver = saver;
     }
 }

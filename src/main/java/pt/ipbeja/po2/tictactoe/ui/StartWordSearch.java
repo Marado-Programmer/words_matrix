@@ -10,7 +10,10 @@ import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.po2.tictactoe.model.WSModel;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 import static pt.ipbeja.po2.tictactoe.model.WSModel.MAX_SIDE_LEN;
 
@@ -55,5 +58,14 @@ public class StartWordSearch extends Application {
         model.registerView(WSBoard);
         WSBoard.requestFocus(); // to remove focus from first button
         stage.show();
+
+        model.setSaver(res -> {
+            try (BufferedWriter writer = Files.newBufferedWriter(
+                    file.getParentFile().toPath().resolve("scores.txt")
+            )) {
+                writer.write(String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()));
+            } catch (IOException ignored) {
+            }
+        });
     }
 }
