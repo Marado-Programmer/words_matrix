@@ -76,8 +76,34 @@ class WSModelTest {
     }
 
     private void registerEmptyView(@NotNull WSModel model) {
-        model.registerView(message -> {
+        model.registerView(new WSView() {
+            @Override
+            public void update(MessageToUI messageToUI) {
+
+            }
+
+            @Override
+            public void wordFound(Position start, Position end) {
+
+            }
+
+            @Override
+            public void gameEnded(GameResults res) {
+
+            }
         });
     }
-}
 
+    @Test
+    void test() {
+        // create game model
+        // set database
+        // set dimensions
+        // start game
+        // play
+        // end game
+        // start game
+        // play
+        // ...
+    }
+}

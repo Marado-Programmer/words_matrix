@@ -1,6 +1,5 @@
 package pt.ipbeja.po2.tictactoe.model;
 
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,13 +12,17 @@ import java.util.*;
 /**
  * Game model
  *
- * @author anonymized
- * @version 2024/04/14
+ * @author João Augusto Costa Branco Marado Torres
+ * @version 0.6, 2024/04/21
  */
 public class WSModel {
-
-
+    /**
+     * A natural number representing the minimum acceptable length for a matrix side.
+     */
     public static final int MIN_SIDE_LEN = 5;
+    /**
+     * A natural number representing the maximum acceptable length for a matrix side.
+     */
     public static final int MAX_SIDE_LEN = 8;
     private static final String INVALID_SIDE_LEN_MSG_FORMAT = String.format(
             "the %s provided is invalid! it needs to be a number between %d and %d",
@@ -27,35 +30,91 @@ public class WSModel {
             MIN_SIDE_LEN,
             MAX_SIDE_LEN
     );
+
     private final @NotNull Random random;
-    // The following matrix could also be List<List<Character>>
-    // for a more complex game, it should be a List<List<Cell>>
-    // where Letter is a class with the letter and other attributes
-    private List<List<Cell>> lettersGrid;
-    private WSView wsView;
+
+    /**
+     * The number of lines in the matrix.
+     */
     private int lines;
+    /**
+     * The number of columns in the matrix.
+     */
     private int cols;
+    /**
+     * The matrix of {@link Cell}s.
+     * <p>Can be a simple <code>Cell[lines*cols]</code> and to access a <code>Cell</code> in line <code>a</code> and
+     * column <code>b</code> you just <code>this.matrix[a * this.cols + b]</code>.</p>
+     *
+     * @see Cell
+     */
+    private List<List<Cell>> matrix;
+
+    private WSView view;
+
+    /**
+     * Set of valid words that came from the last database provided using {@link #parseWords(Path)}.
+     *
+     * @see #parseWords(Path)
+     */
     private Set<String> words;
+    /**
+     * Subset of {@link #words} with words that can fit in the matrix.
+     */
     private Set<String> words_in_use;
+    /**
+     * Subset of {@link #words_in_use} of the works that are currently on the matrix to be found.
+     *
+     * @see #words_found
+     */
     private Set<String> words_to_find;
+    /**
+     * Subset of {@link #words_in_use} of the works that are currently on the matrix, that were already found.
+     *
+     * @see #words_to_find
+     */
     private Set<String> words_found;
+
+    /**
+     * Represents if a game it's currently happening.
+     */
     private boolean in_game;
+
     private @Nullable Position start_selected;
 
     private ResultsSaver saver;
 
+    /**
+     * Creates the model for a words matrix game.
+     *
+     * @param lines initial number of lines for the game to have.
+     * @param cols initial number of columns for the game to have.
+     * @param file the database with the words to put in the game.
+     */
     public WSModel(int lines, int cols, @NotNull String file) {
         this(lines, cols, Paths.get(file));
     }
-
+    /**
+     * Creates the model for a words matrix game.
+     *
+     * @param lines initial number of lines for the game to have.
+     * @param cols initial number of columns for the game to have.
+     * @param file the database with the words to put in the game.
+     */
     public WSModel(int lines, int cols, @NotNull URI file) {
         this(lines, cols, Paths.get(file));
     }
-
-    public WSModel(int lines, int cols, @NotNull Path words) {
+    /**
+     * Creates the model for a words matrix game.
+     *
+     * @param lines initial number of lines for the game to have.
+     * @param cols initial number of columns for the game to have.
+     * @param file the database with the words to put in the game.
+     */
+    public WSModel(int lines, int cols, @NotNull Path file) {
         this.random = new Random();
         this.setDimensions(lines, cols);
-        this.parseWords(words);
+        this.parseWords(file);
         this.startGame();
     }
 
@@ -130,13 +189,13 @@ public class WSModel {
     }
 
     private void initClearGrid() {
-        this.lettersGrid = new ArrayList<>(this.lines);
+        this.matrix = new ArrayList<>(this.lines);
         for (int i = 0; i < this.lines; i++) {
             List<Cell> line = new ArrayList<>(this.cols);
             for (int j = 0; j < this.cols; j++) {
                 line.add(null);
             }
-            this.lettersGrid.add(line);
+            this.matrix.add(line);
         }
     }
 
@@ -179,13 +238,13 @@ public class WSModel {
 
     private void fillGrid() {
         for (int i = 0; i < this.lines; i++) {
-            List<Cell> l = this.lettersGrid.get(i);
+            List<Cell> l = this.matrix.get(i);
             for (int j = 0; j < this.cols; j++) {
                 if (l.get(j) == null) {
                     l.set(j, new Cell((char) this.random.nextInt('A', 'Z' + 1)));
                 }
             }
-            this.lettersGrid.set(i, l);
+            this.matrix.set(i, l);
         }
     }
 
@@ -198,7 +257,7 @@ public class WSModel {
 
     private void printGrid() {
         System.out.println("GRID:");
-        for (List<Cell> i : this.lettersGrid) {
+        for (List<Cell> i : this.matrix) {
             System.out.print("\t");
             for (Cell j : i) {
                 if (j == null) {
@@ -228,7 +287,7 @@ public class WSModel {
                 continue;
             }
 
-            List<Cell> line = this.lettersGrid.get(pos);
+            List<Cell> line = this.matrix.get(pos);
             Set<Integer> unchanged_pos = new TreeSet<>();
             boolean invalid_pos = false;
             for (int i = 0; i < chars.length; i++) {
@@ -238,7 +297,7 @@ public class WSModel {
                         start--;
                         if (!unchanged_pos.contains(start)) {
                             line.set(start, null);
-                            this.lettersGrid.set(pos, line);
+                            this.matrix.set(pos, line);
                         }
                     }
                     invalid_pos = true;
@@ -258,7 +317,7 @@ public class WSModel {
             }
 
             if (!invalid_pos) {
-                this.lettersGrid.set(pos, line);
+                this.matrix.set(pos, line);
                 break;
             } else {
                 invalids.add(start + ";" + pos);
@@ -287,13 +346,13 @@ public class WSModel {
             boolean invalid_pos = false;
             for (int i = 0; i < chars.length; i++) {
                 char c = chars[i];
-                List<Cell> line = this.lettersGrid.get(start);
+                List<Cell> line = this.matrix.get(start);
                 if (line.get(pos) != null && line.get(pos).letter() != c) {
                     while (i-- > 0) {
-                        line = this.lettersGrid.get(--start);
+                        line = this.matrix.get(--start);
                         if (!unchanged_pos.contains(start)) {
                             line.set(pos, null);
-                            this.lettersGrid.set(start, line);
+                            this.matrix.set(start, line);
                         }
                     }
                     invalid_pos = true;
@@ -309,7 +368,7 @@ public class WSModel {
                     unchanged_pos.add(start);
                 }
 
-                this.lettersGrid.set(start, line);
+                this.matrix.set(start, line);
 
                 start++;
             }
@@ -336,7 +395,7 @@ public class WSModel {
         this.start_selected = null;
 
         if (this.wordFound(getPossibleWord(start_pos, pos))) {
-            this.wsView.wordFound(start_pos, pos);
+            this.view.wordFound(start_pos, pos);
             if (this.allWordsWereFound()) {
                 this.endGame();
             }
@@ -349,7 +408,7 @@ public class WSModel {
     private @NotNull String getPossibleWord(@NotNull Position start_pos, @NotNull Position end_pos) {
         StringBuilder possible = new StringBuilder();
         if (start_pos.line() == end_pos.line()) {
-            List<Cell> line = this.lettersGrid.get(end_pos.line());
+            List<Cell> line = this.matrix.get(end_pos.line());
             int start = Math.min(start_pos.col(), end_pos.col());
             int end = Math.max(start_pos.col(), end_pos.col());
             for (int i = start; i <= end; i++) {
@@ -359,7 +418,7 @@ public class WSModel {
             int start = Math.min(start_pos.line(), end_pos.line());
             int end = Math.max(start_pos.line(), end_pos.line());
             for (int i = start; i <= end; i++) {
-                List<Cell> line = this.lettersGrid.get(i);
+                List<Cell> line = this.matrix.get(i);
                 possible.append(line.get(end_pos.col()).letter());
             }
 
@@ -374,7 +433,7 @@ public class WSModel {
     public @NotNull GameResults endGame() {
         this.in_game = false;
         GameResults res = this.curGameResults();
-        this.wsView.gameEnded(res);
+        this.view.gameEnded(res);
         if (saver != null) {
             this.saver.save(res);
         }
@@ -448,7 +507,7 @@ public class WSModel {
     }
 
     public void registerView(WSView wsView) {
-        this.wsView = wsView;
+        this.view = wsView;
     }
 
     /**
@@ -458,7 +517,7 @@ public class WSModel {
      * @return the text in the position
      */
     public Cell textInPosition(@NotNull Position position) {
-        return this.lettersGrid.get(position.line()).get(position.col());
+        return this.matrix.get(position.line()).get(position.col());
     }
 
 
