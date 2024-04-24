@@ -1,0 +1,33 @@
+# TODO
+## Requisitos Essenciais
+[ ] - RE1 ---
+[ ] - RE2 ---
+[ ] - RE3 ---
+[ ] - RE4 ---
+[ ] - RE5 ---
+[ ] - RE6 ---
+## Requisitos Não Essenciais
+[ ] - RNE1 ---
+[ ] - RNE2 ---
+[ ] - RNE3 ---
+### Apenas para época normal
+[ ] - RNE4 ---
+[ ] - RNE5 ---
+### Apenas para época de recurso
+[ ] - RNE4 ---
+[ ] - RNE5 ---
+[ ] - RNE6 ---
+
+# Auto Avaliação
+0/20
+
+# Tempo de trabalho
+
+O repositório está hospedado em <https://github.com/Marado-Programmer/words_matrix>!
+Pode sempre verificar as datas dos commits:
+``` sh
+git log
+git log --all --graph --abbrev-commit --decorate
+git log --all --graph --oneline --decorate
+```
+

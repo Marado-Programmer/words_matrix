@@ -1,4 +1,8 @@
-package pt.ipbeja.po2.tictactoe.model;
+/**
+ * @author João Augusto Costa Branco Marado Torres
+ * @version 0.6, 2024/04/21
+ */
+package pt.ipbeja.app.model;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,9 +15,6 @@ import java.util.*;
 
 /**
  * Game model
- *
- * @author João Augusto Costa Branco Marado Torres
- * @version 0.6, 2024/04/21
  */
 public class WSModel {
     /**
