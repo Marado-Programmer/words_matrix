@@ -1,4 +1,4 @@
-package pt.ipbeja.po2.tictactoe.ui;
+package pt.ipbeja.app.ui;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -8,14 +8,14 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
-import pt.ipbeja.po2.tictactoe.model.WSModel;
+import pt.ipbeja.app.model.WSModel;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import static pt.ipbeja.po2.tictactoe.model.WSModel.MAX_SIDE_LEN;
+import static pt.ipbeja.app.model.WSModel.MAX_SIDE_LEN;
 
 /**
  * Start a game with a hardcoded board

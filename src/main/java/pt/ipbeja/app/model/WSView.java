@@ -1,4 +1,4 @@
-package pt.ipbeja.po2.tictactoe.model;
+package pt.ipbeja.app.model;
 
 /**
  * View

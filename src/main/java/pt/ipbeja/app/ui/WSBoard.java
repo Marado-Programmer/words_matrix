@@ -1,4 +1,4 @@
-package pt.ipbeja.po2.tictactoe.ui;
+package pt.ipbeja.app.ui;
 
 
 import javafx.collections.ObservableList;
@@ -9,7 +9,7 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import org.jetbrains.annotations.NotNull;
-import pt.ipbeja.po2.tictactoe.model.*;
+import pt.ipbeja.app.model.*;
 
 /**
  * Game interface. Just a GridPane of buttons. No images. No menu.
@@ -38,6 +38,9 @@ public class WSBoard extends GridPane implements WSView {
         for (int line = 0; line < this.wsModel.getLines(); line++) {
             for (int col = 0; col < this.wsModel.getCols(); col++) {
                 Cell textForButton = this.wsModel.textInPosition(new Position(line, col));
+                if (textForButton == null) {
+                    textForButton = new Cell(' ');
+                }
                 Button button = createBtn(textForButton, line, col);
                 this.add(button, col, line); // add button to GridPane
             }
