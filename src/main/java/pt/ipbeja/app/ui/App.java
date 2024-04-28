@@ -19,13 +19,15 @@ public class App extends VBox implements WSView {
     private final @NotNull WSModel model;
 
     private final @NotNull Game game;
+    private final @NotNull Menu menu;
 
     public App(Stage stage) {
         this.model = new WSModel();
         this.model.registerView(this);
 
         this.game = new Game(this.model);
-        Menu menu = new Menu((lines, cols) -> {
+        this.game.setVisible(false);
+        this.menu = new Menu((lines, cols) -> {
             this.model.setLines(lines);
             this.model.setCols(cols);
 
@@ -36,7 +38,7 @@ public class App extends VBox implements WSView {
 
         HBox center = new HBox(
                 this.game,
-                menu
+                this.menu
         );
         this.setAlignment(Pos.CENTER);
         center.setAlignment(Pos.CENTER);
@@ -85,6 +87,8 @@ public class App extends VBox implements WSView {
     @Override
     public void gameStarted() {
         this.game.getBoard().buildGUI();
+        this.game.setVisible(true);
+        this.menu.setVisible(false);
     }
 
     @Override
@@ -110,10 +114,17 @@ public class App extends VBox implements WSView {
 
     @Override
     public void gameEnded(@NotNull GameResults res) {
+        this.game.setVisible(false);
+        this.menu.setVisible(true);
+
         assert res.words_found() != null && res.words() != null;
 
-        System.out.println(res.words_found().size());
-        System.out.println(res.words().size());
-        System.out.printf("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size());
+        this.game.log("\t" +
+                res.words_found().size() +
+                "\n\t" +
+                res.words().size() +
+                "\n\t" +
+                String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()) +
+                "\n");
     }
 }
