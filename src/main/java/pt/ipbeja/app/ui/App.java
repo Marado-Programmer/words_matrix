@@ -10,10 +10,15 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.*;
+import pt.ipbeja.app.model.words_provider.DBWordsProvider;
+import pt.ipbeja.app.model.words_provider.ManualWordsProvider;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Random;
 
 public class App extends VBox implements WSView {
     private final @NotNull WSModel model;
@@ -31,25 +36,27 @@ public class App extends VBox implements WSView {
             this.model.setLines(lines);
             this.model.setCols(cols);
 
-            this.model.setWordsProvider(new DBWordsProvider(new FileChooser(stage).choose()));
+            // TODO: user selects which one we wants
+            if (new Random().nextBoolean()) {
+                this.model.setWordsProvider(new DBWordsProvider(new FileChooser(stage).choose()));
+            } else {
+                ManualWordsProvider provider = new ManualWordsProvider();
+                // TODO: user provides the words
+                provider.provide("LIVRE").provide("PORTUGAL").provide("LIBERDADE").provide(new String[]{"PAZ", "PAO", "HABITACAO", "SAUDE", "EDUCACAO"}).close();
+                this.model.setWordsProvider(provider);
+            }
 
             this.model.startGame();
         });
 
-        HBox center = new HBox(
-                this.game,
-                this.menu
-        );
+        HBox center = new HBox(this.game, this.menu);
         this.setAlignment(Pos.CENTER);
         center.setAlignment(Pos.CENTER);
         this.getChildren().add(center);
 
         System.out.println(Paths.get(".").resolve("scores.txt"));
         model.setSaver(res -> {
-            try (BufferedWriter writer = Files.newBufferedWriter(
-                    Paths.get("").resolve("scores.txt"),
-                    StandardOpenOption.APPEND
-            )) {
+            try (BufferedWriter writer = Files.newBufferedWriter(Paths.get("").resolve("scores.txt"), StandardOpenOption.APPEND)) {
                 writer.write(String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()));
             } catch (IOException ignored) {
             }
@@ -119,12 +126,6 @@ public class App extends VBox implements WSView {
 
         assert res.words_found() != null && res.words() != null;
 
-        this.game.log("\t" +
-                res.words_found().size() +
-                "\n\t" +
-                res.words().size() +
-                "\n\t" +
-                String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()) +
-                "\n");
+        this.game.log("\t" + res.words_found().size() + "\n\t" + res.words().size() + "\n\t" + String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()) + "\n");
     }
 }

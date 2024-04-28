@@ -6,6 +6,7 @@ package pt.ipbeja.app.model;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pt.ipbeja.app.model.words_provider.WordsProvider;
 
 import java.net.URI;
 import java.nio.file.Files;
@@ -25,12 +26,7 @@ public class WSModel {
      * A natural number representing the maximum acceptable length for a matrix side.
      */
     public static final int MAX_SIDE_LEN = 8;
-    private static final String INVALID_SIDE_LEN_MSG_FORMAT = String.format(
-            "the %s provided is invalid! it needs to be a number between %d and %d",
-            "%s",
-            MIN_SIDE_LEN,
-            MAX_SIDE_LEN
-    );
+    private static final String INVALID_SIDE_LEN_MSG_FORMAT = String.format("the %s provided is invalid! it needs to be a number between %d and %d", "%s", MIN_SIDE_LEN, MAX_SIDE_LEN);
 
     private final @NotNull Random random;
 
@@ -93,28 +89,30 @@ public class WSModel {
      * Creates the model for a words matrix game.
      *
      * @param lines initial number of lines for the game to have.
-     * @param cols initial number of columns for the game to have.
-     * @param file the database with the words to put in the game.
+     * @param cols  initial number of columns for the game to have.
+     * @param file  the database with the words to put in the game.
      */
     public WSModel(int lines, int cols, @NotNull String file) {
         this(lines, cols, Paths.get(file));
     }
+
     /**
      * Creates the model for a words matrix game.
      *
      * @param lines initial number of lines for the game to have.
-     * @param cols initial number of columns for the game to have.
-     * @param file the database with the words to put in the game.
+     * @param cols  initial number of columns for the game to have.
+     * @param file  the database with the words to put in the game.
      */
     public WSModel(int lines, int cols, @NotNull URI file) {
         this(lines, cols, Paths.get(file));
     }
+
     /**
      * Creates the model for a words matrix game.
      *
      * @param lines initial number of lines for the game to have.
-     * @param cols initial number of columns for the game to have.
-     * @param file the database with the words to put in the game.
+     * @param cols  initial number of columns for the game to have.
+     * @param file  the database with the words to put in the game.
      */
     public WSModel(int lines, int cols, @NotNull Path file) {
         this();
@@ -134,9 +132,7 @@ public class WSModel {
         boolean valid_cols = cols >= MIN_SIDE_LEN && cols <= MAX_SIDE_LEN;
         if (!valid_lines || !valid_cols) {
             boolean both_invalid = !valid_lines && !valid_cols;
-            String invalid = (valid_lines ? "" : "`lines``") +
-                    (both_invalid ? " and " : "") +
-                    (valid_cols ? "" : "`cols``");
+            String invalid = (valid_lines ? "" : "`lines``") + (both_invalid ? " and " : "") + (valid_cols ? "" : "`cols``");
             String msg = String.format(INVALID_SIDE_LEN_MSG_FORMAT, invalid);
             throw new IllegalArgumentException(msg);
         }
@@ -151,8 +147,7 @@ public class WSModel {
 
     private void calcUsableWords() {
         this.words_in_use = new TreeSet<>();
-        for (String w :
-                words) {
+        for (String w : words) {
             if (this.wordFitsGrid(w)) {
                 this.words_in_use.add(w);
             }
@@ -170,8 +165,7 @@ public class WSModel {
 
         this.words = new TreeSet<>();
         this.words_in_use = new TreeSet<>();
-        for (String w :
-                words_raw) {
+        for (String w : words_raw) {
             w = w.toUpperCase(); // needs to be uppercase
             // TODO: expect a format and rules and not just a valid word per line
             this.words.add(w);
@@ -206,8 +200,7 @@ public class WSModel {
 
     private void populateGrid() {
         this.words_to_find = new TreeSet<>();
-        for (String w :
-                this.words_in_use) {
+        for (String w : this.words_in_use) {
             this.words_to_find.add(w);
             /* orientation: true for horizontal and false for vertical */
             boolean orientation = this.random.nextBoolean();
@@ -590,9 +583,7 @@ public class WSModel {
         this.saver = saver;
     }
 
-    public void setWordsProvider(@NotNull DBWordsProvider provider) {
-        List<String> words_raw;
-
+    public void setWordsProvider(@NotNull WordsProvider provider) {
         this.words = new TreeSet<>();
         this.words_in_use = new TreeSet<>();
 

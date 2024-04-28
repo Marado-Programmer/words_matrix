@@ -9,10 +9,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class NumberInput extends HBox {
+    private final @NotNull Label valLabel;
     private @Nullable OnChangeHandler handler = null;
     private int min, max;
     private int val;
-    private final @NotNull Label valLabel;
 
     public NumberInput(String label, int defaultValue) {
         this.val = defaultValue;
@@ -38,11 +38,7 @@ public class NumberInput extends HBox {
                 this.update();
             }
         });
-        this.getChildren().addAll(
-                new Label(label),
-                this.valLabel,
-                new VBox(inc, dec)
-        );
+        this.getChildren().addAll(new Label(label), this.valLabel, new VBox(inc, dec));
     }
 
     public int getMin() {

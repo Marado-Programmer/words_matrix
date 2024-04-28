@@ -1,4 +1,4 @@
-package pt.ipbeja.app.model;
+package pt.ipbeja.app.model.words_provider;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

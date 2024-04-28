@@ -8,16 +8,19 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import org.jetbrains.annotations.NotNull;
-import pt.ipbeja.app.model.*;
+import pt.ipbeja.app.model.Cell;
+import pt.ipbeja.app.model.Position;
+import pt.ipbeja.app.model.WSModel;
 
 /**
  * Game interface. Just a GridPane of buttons. No images. No menu.
+ *
  * @author anonymized
  * @version 2024/04/14
  */
 public class WSBoard extends GridPane {
-    private final WSModel wsModel;
     private static final int SQUARE_SIZE = 64;
+    private final WSModel wsModel;
 
     /**
      * Create a board with letters
@@ -68,21 +71,23 @@ public class WSBoard extends GridPane {
 
     /**
      * Can be optimized using an additional matrix with all the buttons
+     *
      * @param line line of label in board
-     * @param col column of label in board
+     * @param col  column of label in board
      * @return the button at line, col
      */
     public @NotNull Button getButton(int line, int col) {
         ObservableList<Node> children = this.getChildren();
         for (Node node : children) {
-            if(GridPane.getRowIndex(node) == line && GridPane.getColumnIndex(node) == col) {
-                assert(node.getClass() == Button.class);
-                return (Button)node;
+            if (GridPane.getRowIndex(node) == line && GridPane.getColumnIndex(node) == col) {
+                assert (node.getClass() == Button.class);
+                return (Button) node;
             }
         }
-        assert(false); // must not happen
+        assert (false); // must not happen
         return null;
     }
+
     private void unselectAll() {
         for (Node child : this.getChildren()) {
             Button btn = (Button) child;

@@ -9,12 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.WSModel;
 
 public class Game extends HBox {
-    public @NotNull WSBoard getBoard() {
-        return board;
-    }
-
     private final @NotNull WSBoard board;
-
     private final @NotNull TextArea log;
 
     public Game(@NotNull WSModel model) {
@@ -31,6 +26,10 @@ public class Game extends HBox {
 
         this.getChildren().addAll(board, this.log);
         this.setAlignment(Pos.CENTER);
+    }
+
+    public @NotNull WSBoard getBoard() {
+        return board;
     }
 
     public void log(String msg) {

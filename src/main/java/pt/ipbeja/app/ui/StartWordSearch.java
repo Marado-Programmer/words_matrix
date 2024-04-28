@@ -18,14 +18,14 @@ public class StartWordSearch extends Application {
 
     private static final String TITLE = "TicTacToe";
 
+    public static void main(String[] args) {
+        Application.launch(args);
+    }
+
     @Override
     public void start(@NotNull Stage stage) {
         stage.setTitle(TITLE);
         stage.setScene(new Scene(new App(stage), WIDTH, HEIGHT));
         stage.show();
-    }
-
-    public static void main(String[] args) {
-        Application.launch(args);
     }
 }

@@ -6,6 +6,7 @@ import java.io.File;
 
 public class FileChooser {
     final Stage stage;
+
     public FileChooser(Stage stage) {
         this.stage = stage;
     }
