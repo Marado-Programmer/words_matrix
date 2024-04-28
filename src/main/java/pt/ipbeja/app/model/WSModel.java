@@ -85,6 +85,10 @@ public class WSModel {
 
     private ResultsSaver saver;
 
+    public WSModel() {
+        this.random = new Random();
+    }
+
     /**
      * Creates the model for a words matrix game.
      *
@@ -113,7 +117,7 @@ public class WSModel {
      * @param file the database with the words to put in the game.
      */
     public WSModel(int lines, int cols, @NotNull Path file) {
-        this.random = new Random();
+        this();
         this.setDimensions(lines, cols);
         this.parseWords(file);
         this.startGame();
@@ -457,6 +461,8 @@ public class WSModel {
         this.initGrid();
         this.in_game = true;
         this.words_found = new TreeSet<>();
+
+        this.view.gameStarted();
     }
 
     public int getLines() {
@@ -582,5 +588,22 @@ public class WSModel {
 
     public void setSaver(ResultsSaver saver) {
         this.saver = saver;
+    }
+
+    public void setWordsProvider(@NotNull DBWordsProvider provider) {
+        List<String> words_raw;
+
+        this.words = new TreeSet<>();
+        this.words_in_use = new TreeSet<>();
+
+        String w;
+        while ((w = provider.getWord()) != null) {
+            // TODO: expect a format and rules and not just a valid word per line
+            w = w.toUpperCase(); // needs to be uppercase
+            this.words.add(w);
+            if (this.wordFitsGrid(w)) {
+                this.words_in_use.add(w);
+            }
+        }
     }
 }

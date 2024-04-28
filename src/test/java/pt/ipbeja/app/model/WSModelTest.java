@@ -83,6 +83,11 @@ class WSModelTest {
             }
 
             @Override
+            public void gameStarted() {
+
+            }
+
+            @Override
             public void wordFound(Position start, Position end) {
 
             }
@@ -94,16 +99,4 @@ class WSModelTest {
         });
     }
 
-    @Test
-    void test() {
-        // create game model
-        // set database
-        // set dimensions
-        // start game
-        // play
-        // end game
-        // start game
-        // play
-        // ...
-    }
 }

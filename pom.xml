@@ -36,8 +36,7 @@
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
+            <version>24.0.0</version>
         </dependency>
     </dependencies>
 
@@ -61,9 +60,7 @@
                         <!-- Default configuration for running with: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>
-                                pt.ipbeja.po2.javafxpo2template/pt.ipbeja.po2.tictactoe.ui.HelloApplication
-                            </mainClass>
+                            <mainClass>pt.ipbeja.app.ui.StartWordSearch</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>
