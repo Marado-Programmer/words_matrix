@@ -16,7 +16,7 @@ public class StartWordSearch extends Application {
     private static final double WIDTH = 720;
     private static final double HEIGHT = WIDTH * 3 / 4;
 
-    private static final String TITLE = "TicTacToe";
+    public static final String TITLE = "TicTacToe";
 
     public static void main(String[] args) {
         Application.launch(args);

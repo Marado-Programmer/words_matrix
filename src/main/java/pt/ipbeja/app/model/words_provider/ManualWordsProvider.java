@@ -17,14 +17,16 @@ public class ManualWordsProvider implements WordsProvider, AutoCloseable {
         this.words = new ArrayList<>();
     }
 
-    public @NotNull ManualWordsProvider provide(String word) {
+    public boolean isClosed() {
+        return closed;
+    }
+
+    public void provide(String word) {
         if (closed) {
             throw new RuntimeException();
         }
 
         this.words.add(word);
-
-        return this;
     }
 
     public @NotNull ManualWordsProvider provide(String @NotNull [] words) {

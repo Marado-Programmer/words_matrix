@@ -6,10 +6,10 @@ package pt.ipbeja.app.model;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pt.ipbeja.app.model.words_provider.DBWordsProvider;
 import pt.ipbeja.app.model.words_provider.WordsProvider;
 
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -50,9 +50,9 @@ public class WSModel {
     private WSView view;
 
     /**
-     * Set of valid words that came from the last database provided using {@link #parseWords(Path)}.
+     * Set of valid words that came from the last database provided using {@link #setWordsProvider(WordsProvider)}.
      *
-     * @see #parseWords(Path)
+     * @see #setWordsProvider(WordsProvider)
      */
     private Set<String> words;
     /**
@@ -84,6 +84,15 @@ public class WSModel {
     public WSModel() {
         this.random = new Random();
     }
+    public WSModel(int lines, int cols) {
+        this();
+        this.setDimensions(lines, cols);
+    }
+
+    public WSModel(int lines, int cols, @NotNull WordsProvider provider) {
+        this(lines, cols);
+        this.setWordsProvider(provider);
+    }
 
     /**
      * Creates the model for a words matrix game.
@@ -93,7 +102,7 @@ public class WSModel {
      * @param file  the database with the words to put in the game.
      */
     public WSModel(int lines, int cols, @NotNull String file) {
-        this(lines, cols, Paths.get(file));
+        this(lines, cols, new DBWordsProvider(Paths.get(file).toFile()));
     }
 
     /**
@@ -104,7 +113,7 @@ public class WSModel {
      * @param file  the database with the words to put in the game.
      */
     public WSModel(int lines, int cols, @NotNull URI file) {
-        this(lines, cols, Paths.get(file));
+        this(lines, cols, new DBWordsProvider(Paths.get(file).toFile()));
     }
 
     /**
@@ -115,10 +124,7 @@ public class WSModel {
      * @param file  the database with the words to put in the game.
      */
     public WSModel(int lines, int cols, @NotNull Path file) {
-        this();
-        this.setDimensions(lines, cols);
-        this.parseWords(file);
-        this.startGame();
+        this(lines, cols, new DBWordsProvider(file.toFile()));
     }
 
     public void setDimensions(int lines, int cols) {
@@ -148,27 +154,6 @@ public class WSModel {
     private void calcUsableWords() {
         this.words_in_use = new TreeSet<>();
         for (String w : words) {
-            if (this.wordFitsGrid(w)) {
-                this.words_in_use.add(w);
-            }
-        }
-    }
-
-    private void parseWords(@NotNull Path words) {
-        List<String> words_raw;
-
-        try {
-            words_raw = Files.readAllLines(words);
-        } catch (Exception e) {
-            throw new RuntimeException("TODO", e); // TODO: handle exception
-        }
-
-        this.words = new TreeSet<>();
-        this.words_in_use = new TreeSet<>();
-        for (String w : words_raw) {
-            w = w.toUpperCase(); // needs to be uppercase
-            // TODO: expect a format and rules and not just a valid word per line
-            this.words.add(w);
             if (this.wordFitsGrid(w)) {
                 this.words_in_use.add(w);
             }
@@ -589,12 +574,25 @@ public class WSModel {
 
         String w;
         while ((w = provider.getWord()) != null) {
-            // TODO: expect a format and rules and not just a valid word per line
-            w = w.toUpperCase(); // needs to be uppercase
+            w = this.formatWord(w);
+
+            if (w == null) {
+                continue;
+            }
+
             this.words.add(w);
             if (this.wordFitsGrid(w)) {
                 this.words_in_use.add(w);
             }
         }
+    }
+
+    private @Nullable String formatWord(String word) {
+        // TODO: expect a format and rules and not just a valid word per line
+        if (word.isBlank()) {
+            return null;
+        }
+
+        return word.toUpperCase(); // needs to be uppercase
     }
 }

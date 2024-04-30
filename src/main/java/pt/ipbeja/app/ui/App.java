@@ -3,10 +3,13 @@ package pt.ipbeja.app.ui;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.*;
@@ -18,7 +21,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Random;
+import java.util.Optional;
+
+import static pt.ipbeja.app.ui.StartWordSearch.TITLE;
 
 public class App extends VBox implements WSView {
     private final @NotNull WSModel model;
@@ -31,23 +36,36 @@ public class App extends VBox implements WSView {
         this.model.registerView(this);
 
         this.game = new Game(this.model);
+        // https://stackoverflow.com/questions/28558165/javafx-setvisible-hides-the-element-but-doesnt-rearrange-adjacent-nodes
+        this.game.managedProperty().bind(this.game.visibleProperty());
         this.game.setVisible(false);
-        this.menu = new Menu((lines, cols) -> {
+        this.menu = new Menu((lines, cols, mode) -> {
             this.model.setLines(lines);
             this.model.setCols(cols);
 
-            // TODO: user selects which one we wants
-            if (new Random().nextBoolean()) {
-                this.model.setWordsProvider(new DBWordsProvider(new FileChooser(stage).choose()));
-            } else {
-                ManualWordsProvider provider = new ManualWordsProvider();
-                // TODO: user provides the words
-                provider.provide("LIVRE").provide("PORTUGAL").provide("LIBERDADE").provide(new String[]{"PAZ", "PAO", "HABITACAO", "SAUDE", "EDUCACAO"}).close();
-                this.model.setWordsProvider(provider);
+            switch (mode) {
+                case DB -> this.model.setWordsProvider(new DBWordsProvider(new FileChooser(stage).choose()));
+                case MANUAL -> {
+                    ManualWordsProvider provider = new ManualWordsProvider();
+
+                    while (!provider.isClosed()) {
+                        TextInputDialog dialog = new TextInputDialog("");
+                        dialog.initModality(Modality.WINDOW_MODAL);
+                        dialog.setTitle(TITLE);
+                        dialog.setHeaderText("Manual Words Provider");
+                        dialog.setContentText("Provide a new word for the game to use:");
+                        Optional<String> result = dialog.showAndWait();
+                        result.ifPresentOrElse(provider::provide, provider::close);
+                    }
+
+                    this.model.setWordsProvider(provider);
+                }
+                default -> throw new RuntimeException();
             }
 
             this.model.startGame();
         });
+        this.menu.managedProperty().bind(this.menu.visibleProperty());
 
         HBox center = new HBox(this.game, this.menu);
         this.setAlignment(Pos.CENTER);
@@ -121,11 +139,21 @@ public class App extends VBox implements WSView {
 
     @Override
     public void gameEnded(@NotNull GameResults res) {
-        this.game.setVisible(false);
-        this.menu.setVisible(true);
-
         assert res.words_found() != null && res.words() != null;
 
         this.game.log("\t" + res.words_found().size() + "\n\t" + res.words().size() + "\n\t" + String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()) + "\n");
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(TITLE);
+        alert.setHeaderText("Game ended");
+        alert.setContentText("Do you want to play again (same configurations)?");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            this.model.startGame();
+        } else {
+            this.game.setVisible(false);
+            this.menu.setVisible(true);
+        }
     }
 }
