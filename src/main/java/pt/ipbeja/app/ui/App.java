@@ -9,7 +9,6 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.*;
@@ -50,7 +49,6 @@ public class App extends VBox implements WSView {
 
                     while (!provider.isClosed()) {
                         TextInputDialog dialog = new TextInputDialog("");
-                        dialog.initModality(Modality.WINDOW_MODAL);
                         dialog.setTitle(TITLE);
                         dialog.setHeaderText("Manual Words Provider");
                         dialog.setContentText("Provide a new word for the game to use:");
