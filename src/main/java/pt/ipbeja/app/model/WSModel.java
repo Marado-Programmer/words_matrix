@@ -217,6 +217,10 @@ public class WSModel {
                 }
             }
         }
+
+        if (this.words_to_find.isEmpty()) {
+            throw new RuntimeException("No words could be used in the game");
+        }
     }
 
     private void fillGrid() {
@@ -234,23 +238,7 @@ public class WSModel {
     private void initGrid() {
         this.initClearGrid();
         this.populateGrid();
-        this.printGrid();
         this.fillGrid();
-    }
-
-    private void printGrid() {
-        System.out.println("GRID:");
-        for (List<Cell> i : this.matrix) {
-            System.out.print("\t");
-            for (Cell j : i) {
-                if (j == null) {
-                    System.out.print(".");
-                } else {
-                    System.out.print(j.letter());
-                }
-            }
-            System.out.println();
-        }
     }
 
     private void addWordHorizontally(@NotNull String word) {
@@ -407,10 +395,6 @@ public class WSModel {
 
         }
         return possible.toString();
-    }
-
-    public @Nullable Position getStartSelected() {
-        return this.start_selected;
     }
 
     public @NotNull GameResults endGame() {

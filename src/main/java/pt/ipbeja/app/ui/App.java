@@ -4,7 +4,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -48,10 +47,7 @@ public class App extends VBox implements WSView {
                     ManualWordsProvider provider = new ManualWordsProvider();
 
                     while (!provider.isClosed()) {
-                        TextInputDialog dialog = new TextInputDialog("");
-                        dialog.setTitle(TITLE);
-                        dialog.setHeaderText("Manual Words Provider");
-                        dialog.setContentText("Provide a new word for the game to use:");
+                        ProvideWordDialog dialog = new ProvideWordDialog();
                         Optional<String> result = dialog.showAndWait();
                         result.ifPresentOrElse(provider::provide, provider::close);
                     }
@@ -61,7 +57,16 @@ public class App extends VBox implements WSView {
                 default -> throw new RuntimeException();
             }
 
-            this.model.startGame();
+            try {
+                this.model.startGame();
+            } catch (RuntimeException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle(TITLE);
+                alert.setHeaderText("ERROR");
+                alert.setContentText(e.toString());
+
+                alert.showAndWait();
+            }
         });
         this.menu.managedProperty().bind(this.menu.visibleProperty());
 
