@@ -19,7 +19,7 @@ public class DBWordsProvider implements WordsProvider {
     }
 
     @Override
-    public @Nullable String getWord() {
+    public @Nullable String getLine() {
         try {
             if (scanner.hasNextLine()) {
                 return scanner.nextLine();

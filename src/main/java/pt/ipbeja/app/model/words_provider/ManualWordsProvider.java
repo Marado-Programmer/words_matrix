@@ -38,7 +38,7 @@ public class ManualWordsProvider implements WordsProvider, AutoCloseable {
     }
 
     @Override
-    public @Nullable String getWord() {
+    public @Nullable String getLine() {
         if (closed && this.words.isEmpty()) {
             return null;
         }
@@ -48,7 +48,7 @@ public class ManualWordsProvider implements WordsProvider, AutoCloseable {
         } catch (NoSuchElementException e) {
             // TODO: wait until a new word it's provided or provider it's closed
             this.closed = true;
-            return this.getWord();
+            return this.getLine();
         }
     }
 

@@ -17,6 +17,7 @@ import java.util.*;
 /**
  * Game model
  */
+
 public class WSModel {
     /**
      * A natural number representing the minimum acceptable length for a matrix side.
@@ -84,6 +85,7 @@ public class WSModel {
     public WSModel() {
         this.random = new Random();
     }
+
     public WSModel(int lines, int cols) {
         this();
         this.setDimensions(lines, cols);
@@ -556,27 +558,38 @@ public class WSModel {
         this.words = new TreeSet<>();
         this.words_in_use = new TreeSet<>();
 
-        String w;
-        while ((w = provider.getWord()) != null) {
-            w = this.formatWord(w);
+        String line;
+        while ((line = provider.getLine()) != null) {
+            String[] words = this.parseLine(line);
 
-            if (w == null) {
+            if (words == null) {
                 continue;
             }
 
-            this.words.add(w);
-            if (this.wordFitsGrid(w)) {
-                this.words_in_use.add(w);
+            for (String word : words) {
+                this.words.add(word);
+                if (this.wordFitsGrid(word)) {
+                    this.words_in_use.add(word);
+                }
             }
         }
     }
 
-    private @Nullable String formatWord(String word) {
-        // TODO: expect a format and rules and not just a valid word per line
-        if (word.isBlank()) {
+    private @Nullable String[] parseLine(String line) {
+        line = line.trim();
+
+        if (line.isBlank()) {
             return null;
         }
 
-        return word.toUpperCase(); // needs to be uppercase
+        try {
+            // https://stackoverflow.com/questions/51732439/regex-accented-characters-for-special-field
+            // https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html
+            // http://www.unicode.org/reports/tr24/
+
+            return (String[]) Arrays.stream(line.split("[^\\p{sc=LATN}]")).map(String::toUpperCase).toArray();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return null;
+        }
     }
 }
