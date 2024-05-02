@@ -5,8 +5,7 @@
       escrever as palavras de que ele está a espera que apareça no seu jogo. Não existe um tamanho de palavra mínimo (na
       realidade o minimo é uma letra). O ficheiro de base de dados sao palavras separadas por **white spaces**. No
       futuro quero fazer possível usar palavras com acentos mas partilhando a letra com acento para outras palavras que
-      talvez possam usar essa palavra sem acento. As palavras não existem na diagonal e apenas são escritas em um
-      sentido.
+      talvez possam usar essa palavra sem acento. As palavras não existem na diagonal.
 [ ] - RE3
 [x] - RE4
 [ ] - RE5

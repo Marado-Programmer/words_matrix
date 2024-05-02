@@ -365,7 +365,7 @@ public class WSModel {
     private void initGrid() {
         this.initClearGrid();
         this.populateGrid();
-        this.fillGrid();
+        //this.fillGrid();
     }
 
     private void addWordHorizontally(@NotNull String word) {
@@ -373,12 +373,18 @@ public class WSModel {
 
         Set<String> invalids = new TreeSet<>();
 
+        boolean direction = this.random.nextBoolean();
+        int walk = direction ? 1 : -1;
+
         while (true) {
             if (invalids.size() >= (this.lines * (this.cols - word.length() + 1))) {
                 throw new RuntimeException("no space to add the word");
             }
 
             int start = this.random.nextInt(0, this.cols - word.length() + 1);
+            if (!direction) {
+                start += word.length();
+            }
             int pos = this.random.nextInt(0, this.lines);
 
             if (invalids.contains(start + ";" + pos)) {
@@ -392,7 +398,7 @@ public class WSModel {
                 char c = chars[i];
                 if (line.get(start) != null && line.get(start).letter() != c) {
                     while (i-- > 0) {
-                        start--;
+                        start -= walk;
                         if (!unchanged_pos.contains(start)) {
                             line.set(start, null);
                             this.matrix.set(pos, line);
@@ -411,7 +417,7 @@ public class WSModel {
                     unchanged_pos.add(start);
                 }
 
-                start++;
+                start += walk;
             }
 
             if (!invalid_pos) {
@@ -428,12 +434,18 @@ public class WSModel {
 
         Set<String> invalids = new TreeSet<>();
 
+        boolean direction = this.random.nextBoolean();
+        int walk = direction ? 1 : -1;
+
         while (true) {
             if (invalids.size() == (this.cols * (this.lines - word.length() + 1))) {
                 throw new RuntimeException("no space to add the word");
             }
 
             int start = this.random.nextInt(0, this.lines - word.length() + 1);
+            if (!direction) {
+                start += word.length();
+            }
             int pos = this.random.nextInt(0, this.cols);
 
             if (invalids.contains(start + ";" + pos)) {
@@ -447,7 +459,8 @@ public class WSModel {
                 List<Cell> line = this.matrix.get(start);
                 if (line.get(pos) != null && line.get(pos).letter() != c) {
                     while (i-- > 0) {
-                        line = this.matrix.get(--start);
+                        start -= walk;
+                        line = this.matrix.get(start);
                         if (!unchanged_pos.contains(start)) {
                             line.set(pos, null);
                             this.matrix.set(start, line);
@@ -468,7 +481,7 @@ public class WSModel {
 
                 this.matrix.set(start, line);
 
-                start++;
+                start += walk;
             }
 
             if (!invalid_pos) {
