@@ -103,6 +103,8 @@ public class App extends VBox implements WSView {
      */
     @Override
     public void update(@NotNull MessageToUI messageToUI) {
+        this.game.log(messageToUI.message() + "\n");
+
         for (Position p : messageToUI.positions()) {
             Cell s = this.model.textInPosition(p);
             this.game.getBoard().getButton(p.line(), p.col()).setText(String.valueOf(s.letter()));

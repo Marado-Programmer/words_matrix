@@ -26,7 +26,7 @@ public class WSModel {
     /**
      * A natural number representing the maximum acceptable length for a matrix side.
      */
-    public static final int MAX_SIDE_LEN = 8;
+    public static final int MAX_SIDE_LEN = 12;
     private static final String INVALID_SIDE_LEN_MSG_FORMAT = String.format("the %s provided is invalid! it needs to be a number between %d and %d", "%s", MIN_SIDE_LEN, MAX_SIDE_LEN);
 
     private final @NotNull Random random;
@@ -365,7 +365,7 @@ public class WSModel {
     private void initGrid() {
         this.initClearGrid();
         this.populateGrid();
-        //this.fillGrid();
+        this.fillGrid();
     }
 
     private void addWordHorizontally(@NotNull String word) {
@@ -505,8 +505,10 @@ public class WSModel {
         Position start_pos = this.start_selected;
         this.start_selected = null;
 
-        if (this.wordFound(getPossibleWord(start_pos, pos))) {
+        String word = getPossibleWord(start_pos, pos);
+        if (this.wordFound(word)) {
             this.view.wordFound(start_pos, pos);
+            this.view.update(new MessageToUI(List.of(), word));
             if (this.allWordsWereFound()) {
                 this.endGame();
             }
@@ -607,11 +609,15 @@ public class WSModel {
 
         word = word.toUpperCase();
 
-        System.out.println(word);
-
+        // https://stackoverflow.com/questions/7569335/reverse-a-string-in-java
+        String reversed = new StringBuilder(word).reverse().toString();
         if (this.words_to_find.contains(word)) {
             this.words_to_find.remove(word);
             this.words_found.add(word);
+            return true;
+        } else if (this.words_to_find.contains(reversed)) {
+            this.words_to_find.remove(reversed);
+            this.words_found.add(reversed);
             return true;
         } else {
             return false;
