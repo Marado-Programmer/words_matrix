@@ -306,7 +306,7 @@ public class WSModel {
         Collections.shuffle(words);
 
         int max = this.words_in_use.size();
-        if (this.maxWords != 0) {
+        if (this.maxWords != 0 && this.maxWords < max) {
             max = this.maxWords;
         }
 

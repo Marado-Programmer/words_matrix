@@ -1,11 +1,16 @@
 # TODO
 ## Requisitos Essenciais
-[ ] - RE1 ---
-[ ] - RE2 ---
-[ ] - RE3 ---
-[ ] - RE4 ---
-[ ] - RE5 ---
-[ ] - RE6 ---
+[x] - RE1
+[x] - RE2 --- Feito. Usando polimorfismo é possível, ao invés de usar um ficheiro como base de dados, fazer o utilizador
+      escrever as palavras de que ele está a espera que apareça no seu jogo. Não existe um tamanho de palavra mínimo (na
+      realidade o minimo é uma letra). O ficheiro de base de dados sao palavras separadas por **white spaces**. No
+      futuro quero fazer possível usar palavras com acentos mas partilhando a letra com acento para outras palavras que
+      talvez possam usar essa palavra sem acento. As palavras não existem na diagonal e apenas são escritas em um
+      sentido.
+[ ] - RE3
+[x] - RE4
+[ ] - RE5
+[ ] - RE6
 ## Requisitos Não Essenciais
 [ ] - RNE1 ---
 [ ] - RNE2 ---

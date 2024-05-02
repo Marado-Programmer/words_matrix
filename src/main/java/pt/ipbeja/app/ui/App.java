@@ -4,10 +4,8 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.*;
@@ -133,14 +131,14 @@ public class App extends VBox implements WSView {
             int end_pos = Math.max(start.col(), end.col());
             for (int i = start_pos; i <= end_pos; i++) {
                 Button btn = this.game.getBoard().getButton(end.line(), i);
-                btn.setBackground(Background.fill(Color.GREEN));
+                btn.setStyle("-fx-background-color: green");
             }
         } else if (start.col() == end.col()) {
             int start_pos = Math.min(start.line(), end.line());
             int end_pos = Math.max(start.line(), end.line());
             for (int i = start_pos; i <= end_pos; i++) {
                 Button btn = this.game.getBoard().getButton(i, end.col());
-                btn.setBackground(Background.fill(Color.GREEN));
+                btn.setStyle("-fx-background-color: green");
             }
         }
 

@@ -4,9 +4,7 @@ package pt.ipbeja.app.ui;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
-import javafx.scene.paint.Color;
 import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.Cell;
 import pt.ipbeja.app.model.Position;
@@ -59,8 +57,8 @@ public class WSBoard extends GridPane {
         button.setMinHeight(SQUARE_SIZE);
         button.setOnAction(event -> {
             if (this.wsModel.findWord(new Position(line, col))) {
-                if (button.getBackground().getFills().stream().noneMatch(backgroundFill -> backgroundFill.getFill() == Color.GREEN)) {
-                    button.setBackground(Background.fill(Color.YELLOW));
+                if (!button.getStyle().contains("green")) {
+                    button.setStyle("-fx-background-color: yellow;");
                 }
             } else {
                 this.unselectAll();
@@ -91,8 +89,8 @@ public class WSBoard extends GridPane {
     private void unselectAll() {
         for (Node child : this.getChildren()) {
             Button btn = (Button) child;
-            if (btn.getBackground().getFills().stream().anyMatch(backgroundFill -> backgroundFill.getFill() == Color.YELLOW)) {
-                btn.setBackground(Background.fill(Color.TRANSPARENT));
+            if (btn.getStyle().contains("yellow")) {
+                btn.setStyle("");
             }
         }
     }
