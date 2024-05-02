@@ -11,6 +11,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.*;
+import pt.ipbeja.app.model.throwables.InvalidInGameChangeException;
 import pt.ipbeja.app.model.words_provider.DBWordsProvider;
 import pt.ipbeja.app.model.words_provider.ManualWordsProvider;
 
@@ -37,9 +38,15 @@ public class App extends VBox implements WSView {
         // https://stackoverflow.com/questions/28558165/javafx-setvisible-hides-the-element-but-doesnt-rearrange-adjacent-nodes
         this.game.managedProperty().bind(this.game.visibleProperty());
         this.game.setVisible(false);
-        this.menu = new Menu((lines, cols, mode) -> {
-            this.model.setLines(lines);
-            this.model.setCols(cols);
+        this.menu = new Menu((lines, cols, mode, max) -> {
+            try {
+                this.model.setDimensions(lines, cols);
+            } catch (InvalidInGameChangeException e) {
+                // TODO: handle the error better.
+                return;
+            }
+
+            this.model.setMaxWords(max);
 
             switch (mode) {
                 case DB -> this.model.setWordsProvider(new DBWordsProvider(new FileChooser(stage).choose()));

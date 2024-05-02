@@ -1,6 +1,5 @@
 package pt.ipbeja.app.model;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -36,7 +35,7 @@ class WSModelTest {
     @Test
     void testWordFound() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
-        this.registerEmptyView(model);
+        model.registerView(new EmptyView());
 
         assertTrue(model.wordFound(Arrays.stream(contents.split("\n")).findFirst().orElse("")));
     }
@@ -44,14 +43,14 @@ class WSModelTest {
     @Test
     void testWordWithWildcardFound() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
-        this.registerEmptyView(model);
+        model.registerView(new EmptyView());
         assertTrue(model.wordFound(Arrays.stream(contents.split("\n")).findFirst().orElse("")));
     }
 
     @Test
     void testAllWordsWereFound() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
-        this.registerEmptyView(model);
+        model.registerView(new EmptyView());
 
         for (String w :
                 contents.split("\n")) {
@@ -63,7 +62,7 @@ class WSModelTest {
     @Test
     void game() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
-        this.registerEmptyView(model);
+        model.registerView(new EmptyView());
 
         for (String w :
                 contents.split("\n")) {
@@ -75,28 +74,6 @@ class WSModelTest {
         assertEquals(res.words().size(), res.words_found().size());
     }
 
-    private void registerEmptyView(@NotNull WSModel model) {
-        model.registerView(new WSView() {
-            @Override
-            public void update(MessageToUI messageToUI) {
 
-            }
-
-            @Override
-            public void gameStarted() {
-
-            }
-
-            @Override
-            public void wordFound(Position start, Position end) {
-
-            }
-
-            @Override
-            public void gameEnded(GameResults res) {
-
-            }
-        });
-    }
 
 }

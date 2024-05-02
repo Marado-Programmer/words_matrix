@@ -6,6 +6,7 @@ package pt.ipbeja.app.model;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pt.ipbeja.app.model.throwables.InvalidInGameChangeException;
 import pt.ipbeja.app.model.words_provider.DBWordsProvider;
 import pt.ipbeja.app.model.words_provider.WordsProvider;
 
@@ -17,7 +18,6 @@ import java.util.*;
 /**
  * Game model
  */
-
 public class WSModel {
     /**
      * A natural number representing the minimum acceptable length for a matrix side.
@@ -61,6 +61,10 @@ public class WSModel {
      */
     private Set<String> words_in_use;
     /**
+     * Subset of {@link #words} with words that are in game.
+     */
+    private Set<String> words_in_game;
+    /**
      * Subset of {@link #words_in_use} of the works that are currently on the matrix to be found.
      *
      * @see #words_found
@@ -82,13 +86,20 @@ public class WSModel {
 
     private ResultsSaver saver;
 
+    private int maxWords;
+
     public WSModel() {
         this.random = new Random();
+        this.maxWords = 0;
     }
 
     public WSModel(int lines, int cols) {
         this();
-        this.setDimensions(lines, cols);
+        try {
+            this.setDimensions(lines, cols);
+        } catch (InvalidInGameChangeException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public WSModel(int lines, int cols, @NotNull WordsProvider provider) {
@@ -129,11 +140,26 @@ public class WSModel {
         this(lines, cols, new DBWordsProvider(file.toFile()));
     }
 
-    public void setDimensions(int lines, int cols) {
-        assert lines > 0 && cols > 0 : "`lines` and `cols` are natural numbers";
-
+    /**
+     * Sets the dimensions of the matrix (both lines and columns). To set lines and/or columns separately use
+     * {@link #setLines(int)} and {@link #setCols(int)}.
+     *
+     * @param lines The number of lines for the matrix to have
+     * @param cols The number of columns for the matrix to have
+     *
+     * @throws InvalidInGameChangeException In case of trying to change the dimensions mid-game.
+     * @throws IllegalArgumentException If dimensions provided aren't allowed.
+     *
+     * @see #setLines(int)
+     * @see #setCols(int)
+     */
+    public void setDimensions(int lines, int cols) throws InvalidInGameChangeException {
         if (this.in_game) {
-            throw new RuntimeException();
+            throwInvalidInGameChange();
+        }
+
+        if (lines < 0 || cols < 0) {
+            throw new IllegalArgumentException("`lines` and `cols` are natural numbers");
         }
 
         boolean valid_lines = lines >= MIN_SIDE_LEN && lines <= MAX_SIDE_LEN;
@@ -146,6 +172,94 @@ public class WSModel {
         }
 
         this.lines = lines;
+        this.cols = cols;
+
+        if (this.words != null && !this.words.isEmpty()) {
+            this.calcUsableWords();
+        }
+    }
+
+    /**
+     * @return The number of lines in the matrix
+     *
+     * @see #setLines(int)
+     * @see #setDimensions(int, int)
+     */
+    public int getLines() {
+        return this.lines;
+    }
+
+    /**
+     * Sets the lines of the matrix. To set columns use {@link #setCols(int)} and to set both at the same time
+     * {@link #setDimensions(int, int)}.
+     *
+     * @param lines The number of lines for the matrix to have
+     *
+     * @throws InvalidInGameChangeException In case of trying to change the dimensions mid-game.
+     * @throws IllegalArgumentException If dimensions provided aren't allowed.
+     *
+     * @see #setCols(int)
+     * @see #setDimensions(int, int)
+     */
+    public void setLines(int lines) throws InvalidInGameChangeException {
+        if (this.in_game) {
+            throwInvalidInGameChange();
+        }
+
+        if (lines < 0) {
+            throw new IllegalArgumentException("`lines` are natural numbers");
+        }
+
+        boolean valid_lines = lines >= MIN_SIDE_LEN && lines <= MAX_SIDE_LEN;
+        if (!valid_lines) {
+            String msg = String.format(INVALID_SIDE_LEN_MSG_FORMAT, "`lines`");
+            throw new IllegalArgumentException(msg);
+        }
+
+        this.lines = lines;
+
+        if (this.words != null && !this.words.isEmpty()) {
+            this.calcUsableWords();
+        }
+    }
+
+    /**
+     * @return The number of columns in the matrix
+     *
+     * @see #setCols(int)
+     * @see #setDimensions(int, int)
+     */
+    public int getCols() {
+        return this.cols;
+    }
+
+    /**
+     * Sets the columns of the matrix. To set lines use {@link #setLines(int)} and to set both at the same time
+     * {@link #setDimensions(int, int)}.
+     *
+     * @param cols The number of columns for the matrix to have
+     *
+     * @throws InvalidInGameChangeException In case of trying to change the dimensions mid-game.
+     * @throws IllegalArgumentException If dimensions provided aren't allowed.
+     *
+     * @see #setLines(int)
+     * @see #setDimensions(int, int)
+     */
+    public void setCols(int cols) throws InvalidInGameChangeException {
+        if (this.in_game) {
+            throwInvalidInGameChange();
+        }
+
+        if (cols < 0) {
+            throw new IllegalArgumentException("`cols` are natural numbers");
+        }
+
+        boolean valid_cols = cols >= MIN_SIDE_LEN && cols <= MAX_SIDE_LEN;
+        if (!valid_cols) {
+            String msg = String.format(INVALID_SIDE_LEN_MSG_FORMAT, "`cols`");
+            throw new IllegalArgumentException(msg);
+        }
+
         this.cols = cols;
 
         if (this.words != null && !this.words.isEmpty()) {
@@ -187,7 +301,18 @@ public class WSModel {
 
     private void populateGrid() {
         this.words_to_find = new TreeSet<>();
-        for (String w : this.words_in_use) {
+
+        List<String> words = new ArrayList<>(this.words_in_use);
+        Collections.shuffle(words);
+
+        int max = this.words_in_use.size();
+        if (this.maxWords != 0) {
+            max = this.maxWords;
+        }
+
+        this.words_in_game = new HashSet<>(words.subList(0, max));
+
+        for (String w : this.words_in_game) {
             this.words_to_find.add(w);
             /* orientation: true for horizontal and false for vertical */
             boolean orientation = this.random.nextBoolean();
@@ -410,11 +535,11 @@ public class WSModel {
     }
 
     public @NotNull GameResults curGameResults() {
-        return new GameResults(this.words_in_use, this.words_found);
+        return new GameResults(this.words_in_game, this.words_found);
     }
 
     public boolean gameEnded() {
-        return this.words_in_use.size() == this.words_found.size();
+        return this.words_in_game.size() == this.words_found.size();
     }
 
     public void startGame() {
@@ -427,54 +552,6 @@ public class WSModel {
         this.words_found = new TreeSet<>();
 
         this.view.gameStarted();
-    }
-
-    public int getLines() {
-        return this.lines;
-    }
-
-    public void setLines(int lines) {
-        assert lines > 0 : "`lines` are natural numbers";
-
-        if (this.in_game) {
-            throw new RuntimeException();
-        }
-
-        boolean valid_lines = lines >= MIN_SIDE_LEN && lines <= MAX_SIDE_LEN;
-        if (!valid_lines) {
-            String msg = String.format(INVALID_SIDE_LEN_MSG_FORMAT, "`lines`");
-            throw new IllegalArgumentException(msg);
-        }
-
-        this.lines = lines;
-
-        if (this.words != null && !this.words.isEmpty()) {
-            this.calcUsableWords();
-        }
-    }
-
-    public int getCols() {
-        return this.cols;
-    }
-
-    public void setCols(int cols) {
-        assert cols > 0 : "`cols` are natural numbers";
-
-        if (this.in_game) {
-            throw new RuntimeException();
-        }
-
-        boolean valid_cols = cols >= MIN_SIDE_LEN && cols <= MAX_SIDE_LEN;
-        if (!valid_cols) {
-            String msg = String.format(INVALID_SIDE_LEN_MSG_FORMAT, "`cols`");
-            throw new IllegalArgumentException(msg);
-        }
-
-        this.cols = cols;
-
-        if (this.words != null && !this.words.isEmpty()) {
-            this.calcUsableWords();
-        }
     }
 
     public void registerView(WSView wsView) {
@@ -587,9 +664,30 @@ public class WSModel {
             // https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html
             // http://www.unicode.org/reports/tr24/
 
-            return (String[]) Arrays.stream(line.split("[^\\p{sc=LATN}]")).map(String::toUpperCase).toArray();
+            String[] words = line.split("[^\\p{sc=LATN}]");
+            for (int i = 0; i < words.length; i++) {
+                words[i] = words[i].toUpperCase();
+            }
+            return words;
         } catch (ArrayIndexOutOfBoundsException e) {
             return null;
         }
+    }
+
+    public int wordsInUse() {
+        if (this.words_in_use != null) {
+            return this.words_in_use.size();
+        }
+        return 0;
+    }
+
+    public static final String INVALID_IN_GAME_CHANGE_MSG_ERR = "A game it's currently happening. Cannot perform this action";
+    private static void throwInvalidInGameChange() throws InvalidInGameChangeException {
+        throw new InvalidInGameChangeException(INVALID_IN_GAME_CHANGE_MSG_ERR);
+    }
+
+    public void setMaxWords(int maxWords) {
+        assert maxWords > 0;
+        this.maxWords = maxWords;
     }
 }

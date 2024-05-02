@@ -21,6 +21,9 @@ public class Menu extends VBox {
         columns.setMin(MIN_SIDE_LEN);
         columns.setMax(MAX_SIDE_LEN);
 
+        NumberInput max = new NumberInput("maximum amount of words:\t", 4);
+        max.setMin(1);
+
         // https://docs.oracle.com/javafx/2/ui_controls/radio-button.htm
         final ToggleGroup group = new ToggleGroup();
         RadioButton manual = new RadioButton("Manual");
@@ -31,15 +34,15 @@ public class Menu extends VBox {
         db.setToggleGroup(group);
         db.setSelected(true);
 
-        btn.setOnAction(event -> handler.onStart(lines.getVal(), columns.getVal(), (ProviderMode) group.getSelectedToggle().getUserData()));
+        btn.setOnAction(event -> handler.onStart(lines.getVal(), columns.getVal(), (ProviderMode) group.getSelectedToggle().getUserData(), max.getVal()));
 
-        this.getChildren().addAll(lines, columns, new HBox(manual, db), btn);
+        this.getChildren().addAll(lines, columns, new HBox(manual, db), btn, max);
 
         this.setAlignment(Pos.CENTER);
     }
 
     public interface OnStartHandler {
-        void onStart(int lines, int cols, @NotNull ProviderMode mode);
+        void onStart(int lines, int cols, @NotNull ProviderMode mode, int max);
     }
 
     public enum ProviderMode { MANUAL, DB }
