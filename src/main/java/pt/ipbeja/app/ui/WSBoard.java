@@ -41,7 +41,7 @@ public class WSBoard extends GridPane {
             for (int col = 0; col < this.wsModel.getCols(); col++) {
                 Cell textForButton = this.wsModel.textInPosition(new Position(line, col));
                 if (textForButton == null) {
-                    textForButton = new Cell(' ');
+                    textForButton = Cell.from(' ');
                 }
                 Button button = createBtn(textForButton, line, col);
                 this.add(button, col, line); // add button to GridPane
@@ -52,7 +52,7 @@ public class WSBoard extends GridPane {
 
     @NotNull
     private Button createBtn(@NotNull Cell textForButton, int line, int col) {
-        Button button = new Button(String.valueOf(textForButton.letter()));
+        Button button = new Button(String.valueOf(textForButton.getDisplay()));
         button.setMinWidth(SQUARE_SIZE);
         button.setMinHeight(SQUARE_SIZE);
         button.setOnAction(event -> {

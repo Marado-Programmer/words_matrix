@@ -107,7 +107,7 @@ public class App extends VBox implements WSView {
 
         for (Position p : messageToUI.positions()) {
             Cell s = this.model.textInPosition(p);
-            this.game.getBoard().getButton(p.line(), p.col()).setText(String.valueOf(s.letter()));
+            this.game.getBoard().getButton(p.line(), p.col()).setText(String.valueOf(s.getDisplay()));
         }
         if (this.model.allWordsWereFound()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);

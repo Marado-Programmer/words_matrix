@@ -355,7 +355,7 @@ public class WSModel {
             List<Cell> l = this.matrix.get(i);
             for (int j = 0; j < this.cols; j++) {
                 if (l.get(j) == null) {
-                    l.set(j, new Cell((char) this.random.nextInt('A', 'Z' + 1)));
+                    l.set(j, Cell.from((char) this.random.nextInt('A', 'Z' + 1)));
                 }
             }
             this.matrix.set(i, l);
@@ -385,25 +385,28 @@ public class WSModel {
             if (!direction) {
                 start += word.length();
             }
-            int pos = this.random.nextInt(0, this.lines);
+            final int pos = this.random.nextInt(0, this.lines);
 
             if (invalids.contains(start + ";" + pos)) {
                 continue;
             }
 
             List<Cell> line = this.matrix.get(pos);
-            Set<Integer> unchanged_pos = new TreeSet<>();
+            Set<Integer> same_display_pos = new TreeSet<>();
+            Set<Integer> same_actual_pos = new TreeSet<>();
             boolean invalid_pos = false;
             for (int i = 0; i < chars.length; i++) {
                 char c = chars[i];
-                if (line.get(start) != null && line.get(start).letter() != c) {
+                if (line.get(start) != null && !line.get(start).hasSameDisplayAs(c)) {
                     while (i-- > 0) {
                         start -= walk;
-                        if (!unchanged_pos.contains(start)) {
+                        if (!same_display_pos.contains(start)) {
                             line.set(start, null);
-                            this.matrix.set(pos, line);
+                        } else if (!same_actual_pos.contains(start)) {
+                            line.get(start).removeActual(c);
                         }
                     }
+                    this.matrix.set(pos, line);
                     invalid_pos = true;
                 }
 
@@ -411,10 +414,13 @@ public class WSModel {
                     break;
                 }
 
-                if (line.get(start) == null || line.get(start).letter() != c) {
-                    line.set(start, new Cell(c));
+                if (line.get(start) == null || !line.get(start).hasSameDisplayAs(c)) {
+                    line.set(start, Cell.from(c));
                 } else {
-                    unchanged_pos.add(start);
+                    same_display_pos.add(start);
+                    if (!line.get(start).addActual(c)) {
+                        same_actual_pos.add(start);
+                    }
                 }
 
                 start += walk;
@@ -446,25 +452,28 @@ public class WSModel {
             if (!direction) {
                 start += word.length();
             }
-            int pos = this.random.nextInt(0, this.cols);
+            final int pos = this.random.nextInt(0, this.cols);
 
             if (invalids.contains(start + ";" + pos)) {
                 continue;
             }
 
-            Set<Integer> unchanged_pos = new TreeSet<>();
+            Set<Integer> same_display_pos = new TreeSet<>();
+            Set<Integer> same_actual_pos = new TreeSet<>();
             boolean invalid_pos = false;
             for (int i = 0; i < chars.length; i++) {
                 char c = chars[i];
                 List<Cell> line = this.matrix.get(start);
-                if (line.get(pos) != null && line.get(pos).letter() != c) {
+                if (line.get(pos) != null && !line.get(pos).hasSameDisplayAs(c)) {
                     while (i-- > 0) {
                         start -= walk;
                         line = this.matrix.get(start);
-                        if (!unchanged_pos.contains(start)) {
+                        if (!same_display_pos.contains(start)) {
                             line.set(pos, null);
-                            this.matrix.set(start, line);
+                        } else if (!same_actual_pos.contains(start)) {
+                            line.get(pos).removeActual(c);
                         }
+                        this.matrix.set(start, line);
                     }
                     invalid_pos = true;
                 }
@@ -473,10 +482,13 @@ public class WSModel {
                     break;
                 }
 
-                if (line.get(pos) == null || line.get(pos).letter() != c) {
-                    line.set(pos, new Cell(c));
+                if (line.get(pos) == null || !line.get(pos).hasSameDisplayAs(c)) {
+                    line.set(pos, Cell.from(c));
                 } else {
-                    unchanged_pos.add(start);
+                    same_display_pos.add(start);
+                    if (!line.get(pos).addActual(c)) {
+                        same_actual_pos.add(start);
+                    }
                 }
 
                 this.matrix.set(start, line);
@@ -505,38 +517,53 @@ public class WSModel {
         Position start_pos = this.start_selected;
         this.start_selected = null;
 
-        String word = getPossibleWord(start_pos, pos);
-        if (this.wordFound(word)) {
-            this.view.wordFound(start_pos, pos);
-            this.view.update(new MessageToUI(List.of(), word));
-            if (this.allWordsWereFound()) {
-                this.endGame();
+        for (String possibleWord : getPossibleWords(start_pos, pos)) {
+            if (this.wordFound(possibleWord)) {
+                this.view.wordFound(start_pos, pos);
+                this.view.update(new MessageToUI(List.of(), possibleWord));
+                if (this.allWordsWereFound()) {
+                    this.endGame();
+                }
+                return true;
+            } else {
+                return false;
             }
-            return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
-    private @NotNull String getPossibleWord(@NotNull Position start_pos, @NotNull Position end_pos) {
-        StringBuilder possible = new StringBuilder();
+    private @NotNull String[] getPossibleWords(@NotNull Position start_pos, @NotNull Position end_pos) {
+        List<String> words = new ArrayList<>();
         if (start_pos.line() == end_pos.line()) {
             List<Cell> line = this.matrix.get(end_pos.line());
             int start = Math.min(start_pos.col(), end_pos.col());
             int end = Math.max(start_pos.col(), end_pos.col());
             for (int i = start; i <= end; i++) {
-                possible.append(line.get(i).letter());
+                String[] bases = words.toArray(String[]::new);
+                words.clear();
+                for (char actual : line.get(i).getActuals()) {
+                    for (String base : bases) {
+                        words.add(base + actual);
+                    }
+                }
             }
         } else if (start_pos.col() == end_pos.col()) {
             int start = Math.min(start_pos.line(), end_pos.line());
             int end = Math.max(start_pos.line(), end_pos.line());
             for (int i = start; i <= end; i++) {
                 List<Cell> line = this.matrix.get(i);
-                possible.append(line.get(end_pos.col()).letter());
+                String[] bases = words.toArray(String[]::new);
+                words.clear();
+                for (char actual : line.get(end_pos.col()).getActuals()) {
+                    for (String base : bases) {
+                        words.add(base + actual);
+                    }
+                }
             }
-
         }
-        return possible.toString();
+
+        return words.toArray(String[]::new);
     }
 
     public @NotNull GameResults endGame() {
