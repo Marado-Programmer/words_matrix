@@ -115,7 +115,7 @@ public class App extends VBox implements WSView {
             alert.setHeaderText("");
             alert.setContentText("Level completed!");
             alert.showAndWait();
-            System.exit(0);
+            //System.exit(0);
         }
     }
 

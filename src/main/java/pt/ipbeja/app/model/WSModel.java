@@ -535,6 +535,7 @@ public class WSModel {
 
     private @NotNull String[] getPossibleWords(@NotNull Position start_pos, @NotNull Position end_pos) {
         List<String> words = new ArrayList<>();
+        words.add("");
         if (start_pos.line() == end_pos.line()) {
             List<Cell> line = this.matrix.get(end_pos.line());
             int start = Math.min(start_pos.col(), end_pos.col());
