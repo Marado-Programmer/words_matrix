@@ -23,19 +23,15 @@ public class Cell {
         actual = String.valueOf(actual).toUpperCase().charAt(0);
         return switch (actual) {
             case 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å' -> 'A';
-            case 'Æ' -> ' ';
             case 'Ç' -> 'C';
             case 'È', 'É', 'Ê', 'Ë' -> 'E';
             case 'Ì', 'Í', 'Î', 'Ï' -> 'I';
-            case 'Ð' -> 'D';
+            case 'Ð', 'Þ' -> 'D';
             case 'Ñ' -> 'N';
-            case 'Ò', 'Ó', 'Ô', 'Õ', 'Ö' -> 'O';
-            case '×' -> ' ';
-            case 'Ø' -> ' ';
+            case 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø' -> 'O';
             case 'Ù', 'Ú', 'Û', 'Ü' -> 'U';
             case 'Ý' -> 'Y';
-            case 'Þ' -> ' ';
-            case 'ß' -> ' ';
+            case 'ß' -> 'S';
             default -> actual;
         };
     }
