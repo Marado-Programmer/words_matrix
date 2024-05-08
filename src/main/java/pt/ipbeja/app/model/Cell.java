@@ -42,7 +42,9 @@ public class Cell {
 
     public boolean addActual(char actual) {
         int sz = this.actuals.size();
-        this.actuals.add(Cell.getDisplay(actual));
+        if (this.hasSameDisplayAs(actual)) {
+            this.actuals.add(actual);
+        }
         return this.actuals.size() > sz;
     }
 

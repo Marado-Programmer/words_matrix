@@ -22,7 +22,7 @@ public class WSModel {
     /**
      * A natural number representing the minimum acceptable length for a matrix side.
      */
-    public static final int MIN_SIDE_LEN = 5;
+    public static final int MIN_SIDE_LEN = 3;
     /**
      * A natural number representing the maximum acceptable length for a matrix side.
      */
@@ -517,20 +517,20 @@ public class WSModel {
         Position start_pos = this.start_selected;
         this.start_selected = null;
 
+        boolean found = false;
         for (String possibleWord : getPossibleWords(start_pos, pos)) {
             if (this.wordFound(possibleWord)) {
                 this.view.wordFound(start_pos, pos);
                 this.view.update(new MessageToUI(List.of(), possibleWord));
-                if (this.allWordsWereFound()) {
-                    this.endGame();
-                }
-                return true;
-            } else {
-                return false;
+                found = true;
             }
         }
 
-        return false;
+        if (this.allWordsWereFound()) {
+            this.endGame();
+        }
+
+        return found;
     }
 
     private @NotNull String[] getPossibleWords(@NotNull Position start_pos, @NotNull Position end_pos) {
@@ -564,6 +564,7 @@ public class WSModel {
             }
         }
 
+        System.out.println(Arrays.toString(words.toArray(String[]::new)));
         return words.toArray(String[]::new);
     }
 

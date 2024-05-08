@@ -14,10 +14,10 @@ import static pt.ipbeja.app.model.WSModel.MIN_SIDE_LEN;
 public class Menu extends VBox {
     public Menu(@NotNull OnStartHandler handler) {
         Button btn = new Button("Start");
-        NumberInput lines = new NumberInput("lines:\t", MAX_SIDE_LEN);
+        NumberInput lines = new NumberInput("lines:\t", MIN_SIDE_LEN);
         lines.setMin(MIN_SIDE_LEN);
         lines.setMax(MAX_SIDE_LEN);
-        NumberInput columns = new NumberInput("columns:\t", MAX_SIDE_LEN);
+        NumberInput columns = new NumberInput("columns:\t", MIN_SIDE_LEN);
         columns.setMin(MIN_SIDE_LEN);
         columns.setMax(MAX_SIDE_LEN);
 
