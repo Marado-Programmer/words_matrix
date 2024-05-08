@@ -36,6 +36,7 @@ class WSModelTest {
     void testWordFound() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         model.registerView(new EmptyView());
+        model.startGame();
 
         assertTrue(model.wordFound(Arrays.stream(contents.split("\n")).findFirst().orElse("")));
     }
@@ -44,6 +45,7 @@ class WSModelTest {
     void testWordWithWildcardFound() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         model.registerView(new EmptyView());
+        model.startGame();
         assertTrue(model.wordFound(Arrays.stream(contents.split("\n")).findFirst().orElse("")));
     }
 
@@ -51,6 +53,7 @@ class WSModelTest {
     void testAllWordsWereFound() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         model.registerView(new EmptyView());
+        model.startGame();
 
         for (String w :
                 contents.split("\n")) {
@@ -63,6 +66,7 @@ class WSModelTest {
     void game() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         model.registerView(new EmptyView());
+        model.startGame();
 
         for (String w :
                 contents.split("\n")) {

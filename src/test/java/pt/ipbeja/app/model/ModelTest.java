@@ -17,12 +17,13 @@ public class ModelTest {
         char[] small_word = new char[0];
         char[] large_word = new char[MAX_SIDE_LEN + 1];
         Arrays.fill(large_word, 'a');
-        ManualWordsProvider provider = new ManualWordsProvider().provide(new String[]{
+        ManualWordsProvider provider = new ManualWordsProvider();
+        provider.provide(new String[]{
                 new String(small_word),
                 new String(large_word)
         });
         provider.close();
-        model.setWordsProvider(provider);
+        model.setWords(provider);
 
         int lines = MAX_SIDE_LEN;
         int cols = MIN_SIDE_LEN;
@@ -39,7 +40,8 @@ public class ModelTest {
 
     @Test
     void setDimensionsInGame() {
-        ManualWordsProvider provider = new ManualWordsProvider().provide(new String[]{
+        ManualWordsProvider provider = new ManualWordsProvider();
+        provider.provide(new String[]{
                 "Some",
                 "words"
         });

@@ -47,7 +47,7 @@ public class App extends VBox implements WSView {
             this.model.setMaxWords(max);
 
             switch (mode) {
-                case DB -> this.model.setWordsProvider(new DBWordsProvider(new FileChooser(stage).choose()));
+                case DB -> this.model.setWords(new DBWordsProvider(new FileChooser(stage).choose()));
                 case MANUAL -> {
                     ManualWordsProvider provider = new ManualWordsProvider();
 
@@ -57,7 +57,7 @@ public class App extends VBox implements WSView {
                         result.ifPresentOrElse(provider::provide, provider::close);
                     }
 
-                    this.model.setWordsProvider(provider);
+                    this.model.setWords(provider);
                 }
                 default -> throw new RuntimeException();
             }

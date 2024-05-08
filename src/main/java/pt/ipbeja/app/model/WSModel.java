@@ -51,27 +51,27 @@ public class WSModel {
     private WSView view;
 
     /**
-     * Set of valid words that came from the last database provided using {@link #setWordsProvider(WordsProvider)}.
+     * Set of valid words that came from the last database provided using {@link #setWords(WordsProvider)}.
      *
-     * @see #setWordsProvider(WordsProvider)
+     * @see #setWords(WordsProvider)
      */
     private Set<String> words;
     /**
      * Subset of {@link #words} with words that can fit in the matrix.
      */
-    private Set<String> words_in_use;
+    private Set<String> usableWords;
     /**
      * Subset of {@link #words} with words that are in game.
      */
     private Set<String> words_in_game;
     /**
-     * Subset of {@link #words_in_use} of the works that are currently on the matrix to be found.
+     * Subset of {@link #usableWords} of the works that are currently on the matrix to be found.
      *
      * @see #words_found
      */
     private Set<String> words_to_find;
     /**
-     * Subset of {@link #words_in_use} of the works that are currently on the matrix, that were already found.
+     * Subset of {@link #usableWords} of the works that are currently on the matrix, that were already found.
      *
      * @see #words_to_find
      */
@@ -104,7 +104,7 @@ public class WSModel {
 
     public WSModel(int lines, int cols, @NotNull WordsProvider provider) {
         this(lines, cols);
-        this.setWordsProvider(provider);
+        this.setWords(provider);
     }
 
     /**
@@ -175,7 +175,7 @@ public class WSModel {
         this.cols = cols;
 
         if (this.words != null && !this.words.isEmpty()) {
-            this.calcUsableWords();
+            this.calculateUsableWords();
         }
     }
 
@@ -219,7 +219,7 @@ public class WSModel {
         this.lines = lines;
 
         if (this.words != null && !this.words.isEmpty()) {
-            this.calcUsableWords();
+            this.calculateUsableWords();
         }
     }
 
@@ -263,15 +263,80 @@ public class WSModel {
         this.cols = cols;
 
         if (this.words != null && !this.words.isEmpty()) {
-            this.calcUsableWords();
+            this.calculateUsableWords();
         }
     }
 
-    private void calcUsableWords() {
-        this.words_in_use = new TreeSet<>();
+    /**
+     * Method to define which words to use in the game via a {@link WordsProvider}.
+     * @param provider Any {@link WordsProvider}.
+     * @param keepExistent Choose if you want to keep the existent words provided in the past.
+     * @see WordsProvider
+     */
+    public void setWords(@NotNull WordsProvider provider, boolean keepExistent) {
+        if (!keepExistent || this.words == null) {
+            this.words = new TreeSet<>();
+            this.usableWords = new TreeSet<>();
+        }
+
+        String line;
+        while ((line = provider.getLine()) != null) {
+            String[] words = this.parseLine(line);
+
+            for (String word : words) {
+                this.words.add(word);
+                if (this.wordFitsGrid(word)) {
+                    this.usableWords.add(word);
+                }
+            }
+        }
+    }
+
+    /**
+     * Method to define which words to use in the game via a {@link WordsProvider}.
+     * @param provider Any {@link WordsProvider}.
+     * @see WordsProvider
+     */
+    public void setWords(@NotNull WordsProvider provider) {
+        this.setWords(provider, true);
+    }
+
+    /**
+     * Parses a line with possible (supported) words.
+     * @param line Line to be parsed.
+     * @return An array of words found in the line.
+     */
+    private @NotNull String[] parseLine(String line) {
+        // trim whitespaces
+        line = line.trim();
+
+        // no words obviously
+        if (line.isBlank()) {
+            return new String[0];
+        }
+
+        // separate into latin alphabet sequences of words.
+        // https://stackoverflow.com/questions/51732439/regex-accented-characters-for-special-field
+        // https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html
+        // http://www.unicode.org/reports/tr24/
+        String[] words = line.split("[^\\p{sc=LATN}]");
+
+        // uppercase each word
+        for (int i = 0; i < words.length; i++) {
+            words[i] = words[i].toUpperCase();
+        }
+
+        return words;
+    }
+
+    /**
+     * Recalculates
+     */
+    private void calculateUsableWords() {
+        this.usableWords = new TreeSet<>();
         for (String w : words) {
             if (this.wordFitsGrid(w)) {
-                this.words_in_use.add(w);
+                this.usableWords.add(w);
             }
         }
     }
@@ -302,10 +367,16 @@ public class WSModel {
     private void populateGrid() {
         this.words_to_find = new TreeSet<>();
 
-        List<String> words = new ArrayList<>(this.words_in_use);
+        if (this.words != null && !this.words.isEmpty()) {
+            this.calculateUsableWords();
+        } else {
+            throw new RuntimeException("No words");
+        }
+
+        List<String> words = new ArrayList<>(this.usableWords);
         Collections.shuffle(words);
 
-        int max = this.words_in_use.size();
+        int max = this.usableWords.size();
         if (this.maxWords != 0 && this.maxWords < max) {
             max = this.maxWords;
         }
@@ -679,52 +750,9 @@ public class WSModel {
         this.saver = saver;
     }
 
-    public void setWordsProvider(@NotNull WordsProvider provider) {
-        this.words = new TreeSet<>();
-        this.words_in_use = new TreeSet<>();
-
-        String line;
-        while ((line = provider.getLine()) != null) {
-            String[] words = this.parseLine(line);
-
-            if (words == null) {
-                continue;
-            }
-
-            for (String word : words) {
-                this.words.add(word);
-                if (this.wordFitsGrid(word)) {
-                    this.words_in_use.add(word);
-                }
-            }
-        }
-    }
-
-    private @Nullable String[] parseLine(String line) {
-        line = line.trim();
-
-        if (line.isBlank()) {
-            return null;
-        }
-
-        try {
-            // https://stackoverflow.com/questions/51732439/regex-accented-characters-for-special-field
-            // https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html
-            // http://www.unicode.org/reports/tr24/
-
-            String[] words = line.split("[^\\p{sc=LATN}]");
-            for (int i = 0; i < words.length; i++) {
-                words[i] = words[i].toUpperCase();
-            }
-            return words;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return null;
-        }
-    }
-
     public int wordsInUse() {
-        if (this.words_in_use != null) {
-            return this.words_in_use.size();
+        if (this.usableWords != null) {
+            return this.usableWords.size();
         }
         return 0;
     }

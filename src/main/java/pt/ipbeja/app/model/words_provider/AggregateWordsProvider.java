@@ -7,31 +7,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class ManualWordsProvider implements WordsProvider, AutoCloseable {
+public class AggregateWordsProvider implements WordsProvider, AutoCloseable {
     private final @NotNull List<String> words;
     private boolean closed;
 
-    public ManualWordsProvider() {
+    public AggregateWordsProvider() {
         this.closed = false;
 
         this.words = new ArrayList<>();
     }
 
-    public boolean isClosed() {
-        return closed;
-    }
-
-    public void provide(String word) {
+    public void provide(WordsProvider provider) {
         if (closed) {
             throw new RuntimeException();
         }
 
-        this.words.add(word);
+        String line;
+        while ((line = provider.getLine()) != null) {
+            this.words.add(line);
+        }
     }
 
-    public void provide(String @NotNull [] words) {
-        for (String word : words) {
-            this.provide(word);
+    public void provide(WordsProvider @NotNull [] providers) {
+        for (WordsProvider provider : providers) {
+            this.provide(provider);
         }
     }
 
