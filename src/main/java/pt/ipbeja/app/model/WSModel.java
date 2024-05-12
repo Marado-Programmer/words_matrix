@@ -88,9 +88,12 @@ public class WSModel {
 
     private int maxWords;
 
+    private int minWordSize;
+
     public WSModel() {
         this.random = new Random();
         this.maxWords = 0;
+        this.minWordSize = 1;
     }
 
     public WSModel(int lines, int cols) {
@@ -173,10 +176,6 @@ public class WSModel {
 
         this.lines = lines;
         this.cols = cols;
-
-        if (this.words != null && !this.words.isEmpty()) {
-            this.calculateUsableWords();
-        }
     }
 
     /**
@@ -217,10 +216,6 @@ public class WSModel {
         }
 
         this.lines = lines;
-
-        if (this.words != null && !this.words.isEmpty()) {
-            this.calculateUsableWords();
-        }
     }
 
     /**
@@ -261,10 +256,6 @@ public class WSModel {
         }
 
         this.cols = cols;
-
-        if (this.words != null && !this.words.isEmpty()) {
-            this.calculateUsableWords();
-        }
     }
 
     /**
@@ -335,7 +326,7 @@ public class WSModel {
     private void calculateUsableWords() {
         this.usableWords = new TreeSet<>();
         for (String w : words) {
-            if (this.wordFitsGrid(w)) {
+            if (this.wordFitsGrid(w) && (this.minWordSize <= w.length())) {
                 this.usableWords.add(w);
             }
         }

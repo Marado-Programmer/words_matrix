@@ -36,7 +36,7 @@ public class App extends VBox implements WSView {
         // https://stackoverflow.com/questions/28558165/javafx-setvisible-hides-the-element-but-doesnt-rearrange-adjacent-nodes
         this.game.managedProperty().bind(this.game.visibleProperty());
         this.game.setVisible(false);
-        this.menu = new Menu((lines, cols, mode, max) -> {
+        this.menu = new Menu((lines, cols, mode, max, min) -> {
             try {
                 this.model.setDimensions(lines, cols);
             } catch (InvalidInGameChangeException e) {
@@ -45,6 +45,7 @@ public class App extends VBox implements WSView {
             }
 
             this.model.setMaxWords(max);
+            this.model.setMinWordSize(min);
 
             switch (mode) {
                 case DB -> this.model.setWords(new DBWordsProvider(new FileChooser(stage).choose()));
