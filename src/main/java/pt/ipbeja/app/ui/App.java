@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.Optional;
 
 import static pt.ipbeja.app.ui.StartWordSearch.TITLE;
@@ -94,9 +95,14 @@ public class App extends VBox implements WSView {
             }
             try (BufferedWriter writer = Files.newBufferedWriter(
                     dir.resolve("scores.txt"),
-                    StandardOpenOption.APPEND)
-            ) {
+                    StandardOpenOption.APPEND
+            )) {
                 writer.write(String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()));
+            } catch (NoSuchFileException e) {
+                try (BufferedWriter writer = Files.newBufferedWriter(dir.resolve("scores.txt"))) {
+                    writer.write(String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()));
+                } catch (IOException ignored) {
+                }
             } catch (IOException ignored) {
             }
         });
