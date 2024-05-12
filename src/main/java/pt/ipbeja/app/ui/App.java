@@ -16,6 +16,7 @@ import pt.ipbeja.app.model.words_provider.ManualWordsProvider;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
@@ -25,8 +26,11 @@ import static pt.ipbeja.app.ui.StartWordSearch.TITLE;
 public class App extends VBox implements WSView {
     private final @NotNull WSModel model;
 
+    private final @NotNull MenuBar bar;
     private final @NotNull Game game;
     private final @NotNull Menu menu;
+
+    private @NotNull String scoresDir;
 
     public App(Stage stage) {
         this.model = new WSModel();
@@ -76,20 +80,29 @@ public class App extends VBox implements WSView {
         });
         this.menu.managedProperty().bind(this.menu.visibleProperty());
 
+        this.bar = new MenuBar(stage);
+
         HBox center = new HBox(this.game, this.menu);
         this.setAlignment(Pos.CENTER);
         center.setAlignment(Pos.CENTER);
-        this.getChildren().add(center);
+        this.getChildren().addAll(this.bar, center);
 
-        System.out.println(Paths.get(".").resolve("scores.txt"));
         model.setSaver(res -> {
-            try (BufferedWriter writer = Files.newBufferedWriter(Paths.get("").resolve("scores.txt"), StandardOpenOption.APPEND)) {
+            Path dir = this.bar.getScoreDir();
+            if (dir == null) {
+                dir = Paths.get(this.scoresDir);
+            }
+            try (BufferedWriter writer = Files.newBufferedWriter(
+                    dir.resolve("scores.txt"),
+                    StandardOpenOption.APPEND)
+            ) {
                 writer.write(String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()));
             } catch (IOException ignored) {
             }
         });
-    }
 
+        this.scoresDir = System.getProperty("user.dir");
+    }
 
     //play
     //options
@@ -106,18 +119,10 @@ public class App extends VBox implements WSView {
     public void update(@NotNull MessageToUI messageToUI) {
         this.game.log(messageToUI.message() + "\n");
 
-        for (Position p : messageToUI.positions()) {
+        for (Position p : messageToUI.positions()) { /// Y
             Cell s = this.model.textInPosition(p);
             this.game.getBoard().getButton(p.line(), p.col()).setText(String.valueOf(s.getDisplay()));
-        }
-        if (this.model.allWordsWereFound()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("");
-            alert.setHeaderText("");
-            alert.setContentText("Level completed!");
-            alert.showAndWait();
-            //System.exit(0);
-        }
+        } /// ???
     }
 
     @Override
@@ -152,7 +157,13 @@ public class App extends VBox implements WSView {
     public void gameEnded(@NotNull GameResults res) {
         assert res.words_found() != null && res.words() != null;
 
-        this.game.log("\t" + res.words_found().size() + "\n\t" + res.words().size() + "\n\t" + String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()) + "\n");
+        this.game.log("\twords found:\t" +
+                res.words_found().size() +
+                "\n\ttotal of words:\t" +
+                res.words().size() +
+                "\n\tpercentage of words found:\t" +
+                String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()) +
+                "\n");
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(TITLE);

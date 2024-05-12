@@ -6,6 +6,7 @@ package pt.ipbeja.app.model;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pt.ipbeja.app.model.results_saver.ResultsSaver;
 import pt.ipbeja.app.model.throwables.InvalidInGameChangeException;
 import pt.ipbeja.app.model.words_provider.DBWordsProvider;
 import pt.ipbeja.app.model.words_provider.WordsProvider;
@@ -375,6 +376,7 @@ public class WSModel {
         this.words_in_game = new HashSet<>(words.subList(0, max));
 
         for (String w : this.words_in_game) {
+            System.out.println(w);
             this.words_to_find.add(w);
             /* orientation: true for horizontal and false for vertical */
             boolean orientation = this.random.nextBoolean();
@@ -454,41 +456,26 @@ public class WSModel {
             }
 
             List<Cell> line = this.matrix.get(pos);
-            Set<Integer> same_display_pos = new TreeSet<>();
-            Set<Integer> same_actual_pos = new TreeSet<>();
             boolean invalid_pos = false;
-            for (int i = 0; i < chars.length; i++) {
-                char c = chars[i];
+            int overlapCounter = 0;
+            for (char c : chars) {
                 if (line.get(start) != null && !line.get(start).hasSameDisplayAs(c)) {
-                    while (i-- > 0) {
-                        start -= walk;
-                        if (!same_display_pos.contains(start)) {
-                            line.set(start, null);
-                        } else if (!same_actual_pos.contains(start)) {
-                            line.get(start).removeActual(c);
-                        }
-                    }
-                    this.matrix.set(pos, line);
                     invalid_pos = true;
-                }
-
-                if (invalid_pos) {
                     break;
                 }
 
                 if (line.get(start) == null || !line.get(start).hasSameDisplayAs(c)) {
                     line.set(start, Cell.from(c));
                 } else {
-                    same_display_pos.add(start);
-                    if (!line.get(start).addActual(c)) {
-                        same_actual_pos.add(start);
-                    }
+                    ++overlapCounter;
+                    line.get(start).addActual(c);
                 }
 
                 start += walk;
             }
 
-            if (!invalid_pos) {
+            System.out.println("H" + overlapCounter);
+            if (!invalid_pos && (overlapCounter < chars.length)) {
                 this.matrix.set(pos, line);
                 break;
             } else {
@@ -523,6 +510,7 @@ public class WSModel {
             Set<Integer> same_display_pos = new TreeSet<>();
             Set<Integer> same_actual_pos = new TreeSet<>();
             boolean invalid_pos = false;
+            int overlapCounter = 0;
             for (int i = 0; i < chars.length; i++) {
                 char c = chars[i];
                 List<Cell> line = this.matrix.get(start);
@@ -547,6 +535,7 @@ public class WSModel {
                 if (line.get(pos) == null || !line.get(pos).hasSameDisplayAs(c)) {
                     line.set(pos, Cell.from(c));
                 } else {
+                    ++overlapCounter;
                     same_display_pos.add(start);
                     if (!line.get(pos).addActual(c)) {
                         same_actual_pos.add(start);
@@ -558,7 +547,8 @@ public class WSModel {
                 start += walk;
             }
 
-            if (!invalid_pos) {
+            System.out.println("V" + overlapCounter);
+            if (!invalid_pos && (overlapCounter < chars.length)) {
                 break;
             } else {
                 invalids.add(start + ";" + pos);
@@ -626,7 +616,6 @@ public class WSModel {
             }
         }
 
-        System.out.println(Arrays.toString(words.toArray(String[]::new)));
         return words.toArray(String[]::new);
     }
 
@@ -756,5 +745,10 @@ public class WSModel {
     public void setMaxWords(int maxWords) {
         assert maxWords > 0;
         this.maxWords = maxWords;
+    }
+
+    public void setMinWordSize(int minWordSize) {
+        assert minWordSize > 0;
+        this.minWordSize = minWordSize;
     }
 }
