@@ -7,7 +7,6 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.nio.file.Path;
 
 public class MenuBar extends javafx.scene.control.MenuBar {

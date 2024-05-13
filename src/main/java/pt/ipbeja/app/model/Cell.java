@@ -1,5 +1,7 @@
 package pt.ipbeja.app.model;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 
 /**
@@ -7,7 +9,7 @@ import java.util.*;
  * Contains a letter and a boolean that indicates if the cell is part of a word
  */
 public class Cell {
-    private final Set<Character> actuals;
+    private final @NotNull Set<Character> actuals;
     private final char display;
     private Cell(char actual, char display) {
         this.actuals = new TreeSet<>();
@@ -15,7 +17,7 @@ public class Cell {
         this.display = display;
     }
 
-    public static Cell from(char actual) {
+    public static @NotNull Cell from(char actual) {
         return new Cell(actual, Cell.getDisplay(actual));
     }
 

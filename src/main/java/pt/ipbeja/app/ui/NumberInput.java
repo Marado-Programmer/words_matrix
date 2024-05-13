@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class NumberInput extends HBox {
     private final @NotNull Label valLabel;
     private @Nullable OnChangeHandler handler = null;

@@ -6,6 +6,8 @@ package pt.ipbeja.app.model;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pt.ipbeja.app.model.message_to_ui.ClickMessage;
+import pt.ipbeja.app.model.message_to_ui.WordFoundMessage;
 import pt.ipbeja.app.model.results_saver.ResultsSaver;
 import pt.ipbeja.app.model.throwables.InvalidInGameChangeException;
 import pt.ipbeja.app.model.words_provider.DBWordsProvider;
@@ -298,7 +300,7 @@ public class WSModel {
      * @param line Line to be parsed.
      * @return An array of words found in the line.
      */
-    private @NotNull String[] parseLine(String line) {
+    private @NotNull String @NotNull [] parseLine(String line) {
         // trim whitespaces
         line = line.trim();
 
@@ -561,6 +563,8 @@ public class WSModel {
             throw new RuntimeException();
         }
 
+        this.view.update(new ClickMessage(pos, this.matrix.get(pos.line()).get(pos.col()).getDisplay()));
+
         if (this.start_selected == null) {
             this.start_selected = pos;
             return true;
@@ -573,7 +577,7 @@ public class WSModel {
         for (String possibleWord : getPossibleWords(start_pos, pos)) {
             if (this.wordFound(possibleWord)) {
                 this.view.wordFound(start_pos, pos);
-                this.view.update(new MessageToUI(List.of(), possibleWord));
+                this.view.update(new WordFoundMessage(start_pos, pos, possibleWord));
                 found = true;
             }
         }

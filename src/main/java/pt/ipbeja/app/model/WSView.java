@@ -1,5 +1,7 @@
 package pt.ipbeja.app.model;
 
+import pt.ipbeja.app.model.message_to_ui.MessageToUI;
+
 /**
  * View
  *

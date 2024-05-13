@@ -17,7 +17,7 @@ public class AggregateWordsProvider implements WordsProvider, AutoCloseable {
         this.words = new ArrayList<>();
     }
 
-    public void provide(WordsProvider provider) {
+    public void provide(@NotNull WordsProvider provider) {
         if (closed) {
             throw new RuntimeException();
         }

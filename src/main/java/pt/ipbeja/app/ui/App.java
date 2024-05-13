@@ -9,16 +9,13 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.*;
+import pt.ipbeja.app.model.message_to_ui.MessageToUI;
 import pt.ipbeja.app.model.throwables.InvalidInGameChangeException;
 import pt.ipbeja.app.model.words_provider.DBWordsProvider;
 import pt.ipbeja.app.model.words_provider.ManualWordsProvider;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.nio.file.*;
 import java.util.Optional;
 
@@ -123,12 +120,7 @@ public class App extends VBox implements WSView {
      */
     @Override
     public void update(@NotNull MessageToUI messageToUI) {
-        this.game.log(messageToUI.message() + "\n");
-
-        for (Position p : messageToUI.positions()) { /// Y
-            Cell s = this.model.textInPosition(p);
-            this.game.getBoard().getButton(p.line(), p.col()).setText(String.valueOf(s.getDisplay()));
-        } /// ???
+        this.game.log(messageToUI.getMessage() + "\n");
     }
 
     @Override

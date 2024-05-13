@@ -1,6 +1,6 @@
-package pt.ipbeja.app.model;
+package pt.ipbeja.app.model.message_to_ui;
 
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Message to be sent from the model so that the interface updates the positions in the list
@@ -8,5 +8,6 @@ import java.util.List;
  * @author anonymized
  * @version 2024/04/14
  */
-public record MessageToUI(List<Position> positions, String message) {
+public interface MessageToUI {
+    @NotNull String getMessage();
 }
