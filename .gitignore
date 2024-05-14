@@ -1,4 +1,5 @@
 scores.txt
+log_*.md
 
 target/
 !.mvn/wrapper/maven-wrapper.jar

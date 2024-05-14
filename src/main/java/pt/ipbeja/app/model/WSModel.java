@@ -17,6 +17,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Game model
@@ -754,5 +755,27 @@ public class WSModel {
     public void setMinWordSize(int minWordSize) {
         assert minWordSize > 0;
         this.minWordSize = minWordSize;
+    }
+
+    public String matrixToString() {
+        StringBuilder matrix = new StringBuilder();
+        int size = 0;
+        for (List<Cell> cells : this.matrix) {
+            size = cells.size();
+            matrix.append('+')
+                    .append(Arrays.stream(new String[size]).map(s -> "---").collect(Collectors.joining("+")))
+                    .append("+\n");
+            for (Cell cell : cells) {
+                matrix.append("| ")
+                        .append(cell.getDisplay())
+                        .append(' ');
+            }
+            matrix.append("|\n");
+        }
+        matrix.append('+')
+                .append(Arrays.stream(new String[size]).map(s -> "---").collect(Collectors.joining("+")))
+                .append("+\n");
+
+        return matrix.toString();
     }
 }

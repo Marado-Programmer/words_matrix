@@ -5,6 +5,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
@@ -28,13 +29,11 @@ public class App extends VBox implements WSView {
     private final @NotNull Game game;
     private final @NotNull Menu menu;
 
-    private @NotNull String scoresDir;
-
     public App(Stage stage) {
         this.model = new WSModel();
         this.model.registerView(this);
 
-        this.game = new Game(this.model);
+        this.game = new Game(this, this.model);
         // https://stackoverflow.com/questions/28558165/javafx-setvisible-hides-the-element-but-doesnt-rearrange-adjacent-nodes
         this.game.managedProperty().bind(this.game.visibleProperty());
         this.game.setVisible(false);
@@ -80,16 +79,16 @@ public class App extends VBox implements WSView {
 
         this.bar = new MenuBar(stage);
 
-        HBox center = new HBox(this.game, this.menu);
-        this.setAlignment(Pos.CENTER);
-        center.setAlignment(Pos.CENTER);
-        this.getChildren().addAll(this.bar, center);
+        HBox centerH = new HBox(this.game, this.menu);
+        VBox centerV = new VBox(centerH);
+        centerH.setAlignment(Pos.CENTER);
+        centerV.setAlignment(Pos.CENTER);
+        this.getChildren().addAll(this.bar, centerV);
+        // https://docs.oracle.com/javase/8/javafx/api/javafx/scene/layout/VBox.html
+        VBox.setVgrow(centerV, Priority.ALWAYS);
 
         model.setSaver(res -> {
             Path dir = this.bar.getScoreDir();
-            if (dir == null) {
-                dir = Paths.get(this.scoresDir);
-            }
             try (BufferedWriter writer = Files.newBufferedWriter(
                     dir.resolve("scores.txt"),
                     StandardOpenOption.APPEND
@@ -103,8 +102,6 @@ public class App extends VBox implements WSView {
             } catch (IOException ignored) {
             }
         });
-
-        this.scoresDir = System.getProperty("user.dir");
     }
 
     //play
@@ -128,6 +125,7 @@ public class App extends VBox implements WSView {
         this.game.getBoard().buildGUI();
         this.game.setVisible(true);
         this.menu.setVisible(false);
+        this.game.resetGameLog();
     }
 
     @Override
@@ -175,5 +173,13 @@ public class App extends VBox implements WSView {
             this.game.setVisible(false);
             this.menu.setVisible(true);
         }
+    }
+
+    public Path getLogDir() {
+        return this.bar.getLogDir();
+    }
+
+    public String matrixToString() {
+        return this.model.matrixToString();
     }
 }

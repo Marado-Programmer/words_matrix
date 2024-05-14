@@ -11,9 +11,9 @@
 [x] - RE5
 [x] - RE6
 ## Requisitos Não Essenciais
-[ ] - RNE1 ---
-[ ] - RNE2 ---
-[ ] - RNE3 ---
+[x] - RNE1 ---
+[x] - RNE2 ---
+[x] - RNE3 ---
 ### Apenas para época normal
 [ ] - RNE4 ---
 [ ] - RNE5 ---

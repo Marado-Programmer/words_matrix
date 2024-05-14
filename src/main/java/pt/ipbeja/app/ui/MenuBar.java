@@ -2,32 +2,37 @@ package pt.ipbeja.app.ui;
 
 import javafx.application.Platform;
 import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 
 public class MenuBar extends javafx.scene.control.MenuBar {
-    private @Nullable Path scoreDir;
+    private final @NotNull DirectorySaver scoreDir;
+    private final @NotNull DirectorySaver logDir;
     public MenuBar(Stage stage) {
         Menu opts = new Menu("Options");
-        MenuItem setScoreDir = new MenuItem("Choose the score directory");
-        this.scoreDir = null;
-        setScoreDir.setOnAction(event -> {
-            DirectoryChooser directoryChooser = new DirectoryChooser();
-            directoryChooser.setTitle("Which directory to use to save the scores?");
-            this.scoreDir = directoryChooser.showDialog(stage).toPath();
-        });
+        this.scoreDir = new DirectorySaver(
+                stage,
+                "Choose the score directory",
+                "Which directory to use to save the scores?"
+        );
+        this.logDir = new DirectorySaver(
+                stage,
+                "Choose the log directory",
+                "Which directory to use to save the logs?"
+        );
 
         Menu quit = new Menu("Quit");
         quit.setOnAction(event -> Platform.exit());
 
-        opts.getItems().add(setScoreDir);
+        opts.getItems().addAll(scoreDir, logDir);
         this.getMenus().addAll(opts, quit);
     }
-    public @Nullable Path getScoreDir() {
-        return scoreDir;
+    public @NotNull Path getScoreDir() {
+        return this.scoreDir.getDir();
+    }
+    public @NotNull Path getLogDir() {
+        return this.logDir.getDir();
     }
 }
