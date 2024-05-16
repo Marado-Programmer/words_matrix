@@ -26,7 +26,7 @@ public class WSModel {
     /**
      * A natural number representing the minimum acceptable length for a matrix side.
      */
-    public static final int MIN_SIDE_LEN = 3;
+    public static final int MIN_SIDE_LEN = 5;
     /**
      * A natural number representing the maximum acceptable length for a matrix side.
      */
@@ -379,7 +379,6 @@ public class WSModel {
         this.words_in_game = new HashSet<>(words.subList(0, max));
 
         for (String w : this.words_in_game) {
-            System.out.println(w);
             this.words_to_find.add(w);
             /* orientation: true for horizontal and false for vertical */
             boolean orientation = this.random.nextBoolean();
@@ -669,6 +668,7 @@ public class WSModel {
     private @NotNull String[] getPossibleWords(@NotNull Position start_pos, @NotNull Position end_pos) {
         List<String> words = new ArrayList<>();
         words.add("");
+        double declive = (1.0 * start_pos.line() - end_pos.line()) / (start_pos.col() - end_pos.col());
         if (start_pos.line() == end_pos.line()) {
             List<Cell> line = this.matrix.get(end_pos.line());
             int start = Math.min(start_pos.col(), end_pos.col());
@@ -693,6 +693,35 @@ public class WSModel {
                     for (String base : bases) {
                         words.add(base + actual);
                     }
+                }
+            }
+        } else if (Math.abs(declive) == 1) {
+            int startX = Math.min(start_pos.col(), end_pos.col());
+            int startY = Math.min(start_pos.line(), end_pos.line());
+            int endY = Math.max(start_pos.line(), end_pos.line());
+            if (declive == 1) {
+                for (int i = startY; i <= endY; i++) {
+                    List<Cell> line = this.matrix.get(i);
+                    String[] bases = words.toArray(String[]::new);
+                    words.clear();
+                    for (char actual : line.get(startX).getActuals()) {
+                        for (String base : bases) {
+                            words.add(base + actual);
+                        }
+                    }
+                    startX++;
+                }
+            } else {
+                for (int i = endY; i >= startY; i--) {
+                    List<Cell> line = this.matrix.get(i);
+                    String[] bases = words.toArray(String[]::new);
+                    words.clear();
+                    for (char actual : line.get(startX).getActuals()) {
+                        for (String base : bases) {
+                            words.add(base + actual);
+                        }
+                    }
+                    startX++;
                 }
             }
         }
@@ -726,6 +755,7 @@ public class WSModel {
         this.initGrid();
         this.in_game = true;
         this.words_found = new TreeSet<>();
+        this.start_selected = null;
 
         this.view.gameStarted();
     }

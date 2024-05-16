@@ -146,6 +146,8 @@ public class App extends VBox implements WSView {
             }
         }
 
+        // TODO: highlight diagonal words
+
         this.model.gameEnded();
     }
 
