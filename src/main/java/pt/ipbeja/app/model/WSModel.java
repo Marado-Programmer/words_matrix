@@ -477,7 +477,6 @@ public class WSModel {
                 start += walk;
             }
 
-            System.out.println("H" + overlapCounter);
             if (!invalid_pos && (overlapCounter < chars.length)) {
                 this.matrix.set(pos, line);
                 break;
@@ -550,11 +549,88 @@ public class WSModel {
                 start += walk;
             }
 
-            System.out.println("V" + overlapCounter);
             if (!invalid_pos && (overlapCounter < chars.length)) {
                 break;
             } else {
                 invalids.add(start + ";" + pos);
+            }
+        }
+    }
+
+    private void addWordDiagonally(@NotNull String word) {
+        char[] chars = word.toCharArray();
+
+        Set<String> invalids = new TreeSet<>();
+
+        while (true) {
+            if (invalids.size() == ((this.cols - word.length() + 1) * (this.lines - word.length() + 1) * 4)) {
+                throw new RuntimeException("no space to add the word");
+            }
+
+            boolean direction = this.random.nextBoolean();
+            int startX = this.random.nextInt(0, this.lines - word.length() + 1);
+            if (!direction) {
+                startX += word.length() - 1;
+            }
+            boolean incline = this.random.nextBoolean();
+            int startY = this.random.nextInt(0, this.cols - word.length() + 1);
+            if (!incline) {
+                startY += word.length() - 1;
+            }
+
+            if (invalids.contains(startX + ";" + startY + ";" + direction + ";" + incline)) {
+                continue;
+            }
+
+            int direction_walk = direction ? 1 : -1;
+            int incline_walk = incline ? 1 : -1;
+
+            Set<Integer> same_display_pos = new TreeSet<>();
+            Set<Integer> same_actual_pos = new TreeSet<>();
+            boolean invalid_pos = false;
+            int overlapCounter = 0;
+            for (int i = 0; i < chars.length; i++) {
+                char c = chars[i];
+                List<Cell> line = this.matrix.get(startY);
+                if (line.get(startX) != null && !line.get(startX).hasSameDisplayAs(c)) {
+                    while (i-- > 0) {
+                        startX -= direction_walk;
+                        startY -= incline_walk;
+                        line = this.matrix.get(startY);
+                        if (!same_display_pos.contains(startY)) {
+                            line.set(startX, null);
+                        } else if (!same_actual_pos.contains(startY)) {
+                            line.get(startX).removeActual(c);
+                        }
+                        this.matrix.set(startY, line);
+                    }
+                    invalid_pos = true;
+                }
+
+                if (invalid_pos) {
+                    break;
+                }
+
+                if (line.get(startX) == null || !line.get(startX).hasSameDisplayAs(c)) {
+                    line.set(startX, Cell.from(c));
+                } else {
+                    ++overlapCounter;
+                    same_display_pos.add(startY);
+                    if (!line.get(startX).addActual(c)) {
+                        same_actual_pos.add(startY);
+                    }
+                }
+
+                this.matrix.set(startY, line);
+
+                startX += direction_walk;
+                startY += incline_walk;
+            }
+
+            if (!invalid_pos && (overlapCounter < chars.length)) {
+                break;
+            } else {
+                invalids.add(startX + ";" + startY + ";" + direction + ";" + incline);
             }
         }
     }
