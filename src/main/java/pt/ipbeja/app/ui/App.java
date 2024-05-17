@@ -48,8 +48,8 @@ public class App extends VBox implements WSView {
             this.model.setMaxWords(max);
             this.model.setMinWordSize(min);
 
-            switch (mode) {
-                case DB -> this.model.setWords(new DBWordsProvider(new FileChooser(stage).choose()));
+            this.model.setWords(switch (mode) {
+                case DB -> new DBWordsProvider(new FileChooser(stage).choose());
                 case MANUAL -> {
                     ManualWordsProvider provider = new ManualWordsProvider();
 
@@ -59,10 +59,9 @@ public class App extends VBox implements WSView {
                         result.ifPresentOrElse(provider::provide, provider::close);
                     }
 
-                    this.model.setWords(provider);
+                    yield provider;
                 }
-                default -> throw new RuntimeException();
-            }
+            }, false);
 
             try {
                 this.model.startGame();

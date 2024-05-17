@@ -6,7 +6,8 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import org.jetbrains.annotations.NotNull;
-import pt.ipbeja.app.model.Cell;
+import pt.ipbeja.app.model.cell.BaseCell;
+import pt.ipbeja.app.model.cell.Cell;
 import pt.ipbeja.app.model.Position;
 import pt.ipbeja.app.model.WSModel;
 
@@ -39,9 +40,9 @@ public class WSBoard extends GridPane {
         // create one label for each position
         for (int line = 0; line < this.wsModel.getLines(); line++) {
             for (int col = 0; col < this.wsModel.getCols(); col++) {
-                Cell textForButton = this.wsModel.textInPosition(new Position(line, col));
+                BaseCell textForButton = this.wsModel.textInPosition(new Position(line, col));
                 if (textForButton == null) {
-                    textForButton = Cell.from(' ');
+                    textForButton = new Cell(' ');
                 }
                 Button button = createBtn(textForButton, line, col);
                 this.add(button, col, line); // add button to GridPane
@@ -51,7 +52,7 @@ public class WSBoard extends GridPane {
     }
 
     @NotNull
-    private Button createBtn(@NotNull Cell textForButton, int line, int col) {
+    private Button createBtn(@NotNull BaseCell textForButton, int line, int col) {
         Button button = new Button(String.valueOf(textForButton.getDisplay()));
         button.setMinWidth(SQUARE_SIZE);
         button.setMinHeight(SQUARE_SIZE);

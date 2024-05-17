@@ -1,24 +1,25 @@
-package pt.ipbeja.app.model;
+package pt.ipbeja.app.model.cell;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Cell in the board
  * Contains a letter and a boolean that indicates if the cell is part of a word
  */
-public class Cell {
+public abstract class BaseCell {
     private final @NotNull Set<Character> actuals;
-    private final char display;
-    private Cell(char actual, char display) {
+    protected char display;
+
+    public BaseCell(char actual) {
+        this(actual, BaseCell.getDisplay(actual));
+    }
+    protected BaseCell(char actual, char display) {
         this.actuals = new TreeSet<>();
         this.actuals.add(actual);
         this.display = display;
-    }
-
-    public static @NotNull Cell from(char actual) {
-        return new Cell(actual, Cell.getDisplay(actual));
     }
 
     private static char getDisplay(char actual) {
@@ -60,7 +61,7 @@ public class Cell {
     }
 
     public boolean hasSameDisplayAs(char actual) {
-        return this.display == Cell.getDisplay(actual);
+        return this.display == BaseCell.getDisplay(actual);
     }
 
     public char getDisplay() {

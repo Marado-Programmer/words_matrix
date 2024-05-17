@@ -60,4 +60,64 @@ public class ModelTest {
         Exception err = assertThrows(IllegalArgumentException.class, () -> model.setDimensions(0, -1));
         assertNotNull(err);
     }
+
+    @Test
+    void provideProvider() {
+        WSModel model = new WSModel();
+        ManualWordsProvider provider = new ManualWordsProvider();
+        provider.provide(new String[]{"test", "words"});
+        provider.close();
+        model.setWords(provider);
+        assertEquals(2, model.getWords().size());
+    }
+
+    @Test
+    void provideProviderWithSameWords() {
+        WSModel model = new WSModel();
+        ManualWordsProvider provider = new ManualWordsProvider();
+        provider.provide(new String[]{"test", "words"});
+        provider.close();
+        model.setWords(provider);
+        model.setWords(provider);
+        assertEquals(2, model.getWords().size());
+    }
+
+    @Test
+    void provideProviderWithDifferentWords() {
+        WSModel model = new WSModel();
+        ManualWordsProvider provider = new ManualWordsProvider();
+        provider.provide(new String[]{"test", "words"});
+        provider.close();
+        model.setWords(provider);
+        provider = new ManualWordsProvider();
+        provider.provide(new String[]{"different", "ones"});
+        provider.close();
+        model.setWords(provider);
+        assertEquals(4, model.getWords().size());
+    }
+
+    @Test
+    void provideProviderWithDifferentWordsWithoutKeepingThePrevious() {
+        WSModel model = new WSModel();
+        ManualWordsProvider provider = new ManualWordsProvider();
+        provider.provide(new String[]{"test", "words"});
+        provider.close();
+        model.setWords(provider);
+        provider = new ManualWordsProvider();
+        provider.provide(new String[]{"different", "ones"});
+        provider.close();
+        model.setWords(provider, false);
+        assertEquals(2, model.getWords().size());
+    }
+
+    @Test
+    void provideProviderToTestParsing() {
+        WSModel model = new WSModel();
+        ManualWordsProvider provider = new ManualWordsProvider();
+        provider.provide("  \t\0\0\n   ]]]`````~%^       test_+___-++@#$% words!!!áçêñtòs!!!! \n\t");
+        provider.close();
+        model.setWords(provider);
+        model.getWords().forEach(System.out::println);
+        assertEquals(3, model.getWords().size());
+    }
 }
