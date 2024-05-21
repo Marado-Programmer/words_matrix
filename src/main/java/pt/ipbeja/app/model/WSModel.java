@@ -34,10 +34,9 @@ public class WSModel {
      * A natural number representing the maximum acceptable length for a matrix side.
      */
     public static final int MAX_SIDE_LEN = 12;
+    public static final String INVALID_IN_GAME_CHANGE_MSG_ERR = "A game it's currently happening. Cannot perform this action";
     private static final String INVALID_SIDE_LEN_MSG_FORMAT = String.format("the %s provided is invalid! it needs to be a number between %d and %d", "%s", MIN_SIDE_LEN, MAX_SIDE_LEN);
-
     private final @NotNull Random random;
-
     /**
      * The number of lines in the matrix.
      */
@@ -56,7 +55,6 @@ public class WSModel {
     private List<List<BaseCell>> matrix;
 
     private WSView view;
-
     /**
      * Set of valid words that came from the last database provided using {@link #setWords(WordsProvider)}.
      *
@@ -83,24 +81,22 @@ public class WSModel {
      * @see #words_to_find
      */
     private Set<String> words_found;
-
     /**
      * Represents if a game it's currently happening.
      */
     private boolean in_game;
-
     private @Nullable Position start_selected;
-
     private ResultsSaver saver;
-
     private int maxWords;
-
     private int minWordSize;
+    private final Set<WordOrientations> orientationsAllowed;
 
     public WSModel() {
         this.random = new Random();
         this.maxWords = 0;
         this.minWordSize = 1;
+        this.orientationsAllowed = new TreeSet<>();
+        this.orientationsAllowed.addAll(List.of(WordOrientations.VERTICAL, WordOrientations.HORIZONTAL));
     }
 
     public WSModel(int lines, int cols) {
@@ -383,40 +379,30 @@ public class WSModel {
 
         for (String w : this.words_in_game) {
             this.words_to_find.add(w);
-            /* orientation: true for horizontal and false for vertical */
-            boolean orientation = this.random.nextBoolean();
+            List<WordOrientations> orientations = new ArrayList<>(this.orientationsAllowed);
+            Collections.shuffle(orientations);
 
-            // test if orientation is possible, if not, change it
-            if (orientation) { // horizontal
-                orientation = this.wordFitsHorizontally(w);
-            } else { // vertical
-                orientation = !this.wordFitsVertically(w);
+            boolean added = false;
+            for (WordOrientations orientation : orientations) {
+                try {
+                    switch (orientation) {
+                        case VERTICAL -> this.addWordVertically(w);
+                        case HORIZONTAL -> this.addWordHorizontally(w);
+                        case DIAGONAL -> this.addWordDiagonally(w);
+                    }
+                    added = true;
+                    break;
+                } catch (Exception ignored) {
+                }
             }
 
-            try {
-                if (orientation) { // horizontal
-                    this.addWordHorizontally(w);
-                } else { // vertical
-                    this.addWordVertically(w);
-                }
-            } catch (Exception ignored) {
-                try {
-                    if (orientation && this.wordFitsVertically(w)) {
-                        this.addWordVertically(w);
-                    } else if (!orientation && this.wordFitsHorizontally(w)) {
-                        this.addWordHorizontally(w);
-                    } else {
-                        this.words_to_find.remove(w);
-                    }
-                } catch (Exception e) {
-                    this.words_to_find.remove(w);
-                }
+            if (!added) {
+                this.words_to_find.remove(w);
             }
         }
 
         if (this.words_to_find.isEmpty()) {
-            // throw new RuntimeException("No words could be used in the game");
-            this.startGame();
+            throw new RuntimeException("No words could be used in the game");
         }
     }
 
@@ -453,29 +439,40 @@ public class WSModel {
 
         Set<String> invalids = new TreeSet<>();
 
-        boolean direction = this.random.nextBoolean();
-        int walk = direction ? 1 : -1;
-
         while (true) {
-            if (invalids.size() >= (this.lines * (this.cols - word.length() + 1))) {
+            if (invalids.size() >= (this.lines * (this.cols - word.length() + 1) * 2)) {
                 throw new RuntimeException("no space to add the word");
             }
 
+            boolean direction = this.random.nextBoolean();
+            int walk = direction ? 1 : -1;
             int start = this.random.nextInt(0, this.cols - word.length() + 1);
             if (!direction) {
                 start += word.length();
             }
             final int pos = this.random.nextInt(0, this.lines);
 
-            if (invalids.contains(start + ";" + pos)) {
+            if (invalids.contains(start + ";" + pos + ";" + direction)) {
                 continue;
             }
 
             List<BaseCell> line = this.matrix.get(pos);
+            Set<Integer> same_display_pos = new TreeSet<>();
+            Set<Integer> same_actual_pos = new TreeSet<>();
             boolean invalid_pos = false;
             int overlapCounter = 0;
-            for (char c : chars) {
+            for (int i = 0; i < chars.length; i++) {
+                char c = chars[i];
                 if (line.get(start) != null && !line.get(start).hasSameDisplayAs(c)) {
+                    while (i-- > 0) {
+                        start -= walk;
+                        if (!same_display_pos.contains(start)) {
+                            line.set(start, null);
+                        } else if (!same_actual_pos.contains(start)) {
+                            line.get(start).removeActual(c);
+                        }
+                    }
+                    this.matrix.set(pos, line);
                     invalid_pos = true;
                     break;
                 }
@@ -484,7 +481,10 @@ public class WSModel {
                     line.set(start, new Cell(c));
                 } else {
                     ++overlapCounter;
-                    line.get(start).addActual(c);
+                    same_display_pos.add(start);
+                    if (!line.get(start).addActual(c)) {
+                        same_actual_pos.add(start);
+                    }
                 }
 
                 start += walk;
@@ -494,7 +494,7 @@ public class WSModel {
                 this.matrix.set(pos, line);
                 break;
             } else {
-                invalids.add(start + ";" + pos);
+                invalids.add(start + ";" + pos + ";" + direction);
             }
         }
     }
@@ -504,21 +504,20 @@ public class WSModel {
 
         Set<String> invalids = new TreeSet<>();
 
-        boolean direction = this.random.nextBoolean();
-        int walk = direction ? 1 : -1;
-
         while (true) {
-            if (invalids.size() == (this.cols * (this.lines - word.length() + 1))) {
+            if (invalids.size() == (this.cols * (this.lines - word.length() + 1) * 2)) {
                 throw new RuntimeException("no space to add the word");
             }
 
+            boolean direction = this.random.nextBoolean();
+            int walk = direction ? 1 : -1;
             int start = this.random.nextInt(0, this.lines - word.length() + 1);
             if (!direction) {
                 start += word.length();
             }
             final int pos = this.random.nextInt(0, this.cols);
 
-            if (invalids.contains(start + ";" + pos)) {
+            if (invalids.contains(start + ";" + pos + ";" + direction)) {
                 continue;
             }
 
@@ -541,9 +540,6 @@ public class WSModel {
                         this.matrix.set(start, line);
                     }
                     invalid_pos = true;
-                }
-
-                if (invalid_pos) {
                     break;
                 }
 
@@ -565,7 +561,7 @@ public class WSModel {
             if (!invalid_pos && (overlapCounter < chars.length)) {
                 break;
             } else {
-                invalids.add(start + ";" + pos);
+                invalids.add(start + ";" + pos + ";" + direction);
             }
         }
     }
@@ -618,9 +614,6 @@ public class WSModel {
                         this.matrix.set(startY, line);
                     }
                     invalid_pos = true;
-                }
-
-                if (invalid_pos) {
                     break;
                 }
 
@@ -788,7 +781,6 @@ public class WSModel {
         return this.matrix.get(position.line()).get(position.col());
     }
 
-
     /**
      * Check if all words were found
      *
@@ -850,8 +842,6 @@ public class WSModel {
         return 0;
     }
 
-    public static final String INVALID_IN_GAME_CHANGE_MSG_ERR = "A game it's currently happening. Cannot perform this action";
-
     private static void throwInvalidInGameChange() throws InvalidInGameChangeException {
         throw new InvalidInGameChangeException(INVALID_IN_GAME_CHANGE_MSG_ERR);
     }
@@ -886,6 +876,14 @@ public class WSModel {
                 .append("+\n");
 
         return matrix.toString();
+    }
+
+    public void allowWordOrientation(WordOrientations ...orientations) {
+        this.orientationsAllowed.addAll(List.of(orientations));
+    }
+
+    public void disallowWordOrientation(WordOrientations ...orientations) {
+        List.of(orientations).forEach(this.orientationsAllowed::remove);
     }
 
     public Set<String> getWords() {

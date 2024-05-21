@@ -2,6 +2,7 @@ package pt.ipbeja.app.ui;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
@@ -37,21 +38,24 @@ public class Menu extends VBox {
         db.setToggleGroup(group);
         db.setSelected(true);
 
+        CheckBox diagonalAllowed = new CheckBox("Allow diagonal words?");
+
         btn.setOnAction(event -> handler.onStart(
                 lines.getVal(),
                 columns.getVal(),
                 (ProviderMode) group.getSelectedToggle().getUserData(),
                 max.getVal(),
-                min.getVal()
+                min.getVal(),
+                diagonalAllowed.isSelected()
         ));
 
-        this.getChildren().addAll(lines, columns, new HBox(manual, db), btn, max, min);
+        this.getChildren().addAll(lines, columns, new HBox(manual, db), btn, max, min, diagonalAllowed);
 
         this.setAlignment(Pos.CENTER);
     }
 
     public interface OnStartHandler {
-        void onStart(int lines, int cols, @NotNull ProviderMode mode, int max, int min);
+        void onStart(int lines, int cols, @NotNull ProviderMode mode, int max, int min, boolean diagonal);
     }
 
     public enum ProviderMode { MANUAL, DB }
