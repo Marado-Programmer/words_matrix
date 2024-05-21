@@ -1,4 +1,11 @@
 # TODO
+# Características
+[x] - 1
+[x] - 2
+[x] - 3
+[ ] - 4
+[x] - 5
+[x] - 6
 ## Requisitos Essenciais
 [x] - RE1
 [x] - RE2 --- Feito. Usando polimorfismo é possível, ao invés de usar um ficheiro como base de dados, fazer o utilizador
@@ -35,3 +42,5 @@ git log --all --graph --abbrev-commit --decorate
 git log --all --graph --oneline --decorate
 ```
 
+# Duvidas
+caracteristicas 4

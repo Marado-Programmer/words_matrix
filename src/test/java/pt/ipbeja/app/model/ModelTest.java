@@ -117,7 +117,6 @@ public class ModelTest {
         provider.provide("  \t\0\0\n   ]]]`````~%^       test_+___-++@#$% words!!!áçêñtòs!!!! \n\t");
         provider.close();
         model.setWords(provider);
-        model.getWords().forEach(System.out::println);
         assertEquals(3, model.getWords().size());
     }
 }

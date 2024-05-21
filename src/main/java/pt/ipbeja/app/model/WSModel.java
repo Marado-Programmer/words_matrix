@@ -34,9 +34,12 @@ public class WSModel {
      * A natural number representing the maximum acceptable length for a matrix side.
      */
     public static final int MAX_SIDE_LEN = 12;
+
     public static final String INVALID_IN_GAME_CHANGE_MSG_ERR = "A game it's currently happening. Cannot perform this action";
     private static final String INVALID_SIDE_LEN_MSG_FORMAT = String.format("the %s provided is invalid! it needs to be a number between %d and %d", "%s", MIN_SIDE_LEN, MAX_SIDE_LEN);
+
     private final @NotNull Random random;
+
     /**
      * The number of lines in the matrix.
      */
@@ -45,6 +48,7 @@ public class WSModel {
      * The number of columns in the matrix.
      */
     private int cols;
+
     /**
      * The matrix of {@link BaseCell}s.
      * <p>Can be a simple <code>BaseCell[lines*cols]</code> and to access a <code>BaseCell</code> in line <code>a</code>
@@ -52,44 +56,64 @@ public class WSModel {
      *
      * @see BaseCell
      */
-    private List<List<BaseCell>> matrix;
+    private @Nullable BaseCell @NotNull[] @NotNull[] matrix;
 
-    private WSView view;
+    /**
+     * The user interface. To use when we want to communicate with the player.
+     */
+    private @Nullable WSView view;
+
     /**
      * Set of valid words that came from the last database provided using {@link #setWords(WordsProvider)}.
      *
      * @see #setWords(WordsProvider)
      */
-    private Set<String> words;
+    private @Nullable Set<@NotNull String> words;
+
     /**
-     * Subset of {@link #words} with words that can fit in the matrix.
-     */
-    private Set<String> usableWords;
-    /**
-     * Subset of {@link #words} with words that are in game.
-     */
-    private Set<String> words_in_game;
-    /**
-     * Subset of {@link #usableWords} of the works that are currently on the matrix to be found.
+     * Subset of {@link #words} of the words that are currently on the matrix to be found.
      *
-     * @see #words_found
+     * @see #wordsFound
      */
-    private Set<String> words_to_find;
+    private @Nullable Set<@NotNull String> wordsToFind;
     /**
-     * Subset of {@link #usableWords} of the works that are currently on the matrix, that were already found.
+     * Subset of {@link #words} of the words that are currently on the matrix, that were already found.
      *
-     * @see #words_to_find
+     * @see #wordsToFind
      */
-    private Set<String> words_found;
+    private @Nullable Set<@NotNull String> wordsFound;
+
     /**
      * Represents if a game it's currently happening.
      */
     private boolean in_game;
+
+    /**
+     * Saves the position of the first click on a word selection.
+     */
     private @Nullable Position start_selected;
-    private ResultsSaver saver;
+
+    /**
+     * A {@link ResultsSaver} that saves the game results when it ends the way it wants.
+     *
+     * @see ResultsSaver
+     */
+    private @Nullable ResultsSaver saver;
+
+    /**
+     * Maximum of words that can appear in a game
+     */
     private int maxWords;
+
+    /**
+     * Minimum length in characters that a word needs to be in the game.
+     */
     private int minWordSize;
-    private final Set<WordOrientations> orientationsAllowed;
+
+    /**
+     * The allowed orientations a word can be found in game.
+     */
+    private final @NotNull Set<@NotNull WordOrientations> orientationsAllowed;
 
     public WSModel() {
         this.random = new Random();
@@ -97,6 +121,7 @@ public class WSModel {
         this.minWordSize = 1;
         this.orientationsAllowed = new TreeSet<>();
         this.orientationsAllowed.addAll(List.of(WordOrientations.VERTICAL, WordOrientations.HORIZONTAL));
+        this.matrix = new BaseCell[0][];
     }
 
     public WSModel(int lines, int cols) {
@@ -314,13 +339,19 @@ public class WSModel {
     /**
      * Calculates the usable words in {@link #words} based on the game state.
      */
-    private void calculateUsableWords() {
-        this.usableWords = new TreeSet<>();
+    private Set<String> calculateUsableWords() {
+        if (this.words == null) {
+            return new TreeSet<>();
+        }
+
+        Set<String> usableWords = new TreeSet<>();
         for (String w : words) {
+
             if (this.wordFitsGrid(w) && (this.minWordSize <= w.length())) {
-                this.usableWords.add(w);
+                usableWords.add(w);
             }
         }
+        return usableWords;
     }
 
     /**
@@ -348,37 +379,28 @@ public class WSModel {
     }
 
     private void initClearGrid() {
-        this.matrix = new ArrayList<>(this.lines);
-        for (int i = 0; i < this.lines; i++) {
-            List<BaseCell> line = new ArrayList<>(this.cols);
-            for (int j = 0; j < this.cols; j++) {
-                line.add(null);
-            }
-            this.matrix.add(line);
-        }
+        this.matrix = new BaseCell[this.lines][this.cols];
     }
 
     private void populateGrid() {
-        this.words_to_find = new TreeSet<>();
+        this.wordsToFind = new TreeSet<>();
 
-        if (this.words != null && !this.words.isEmpty()) {
-            this.calculateUsableWords();
-        } else {
+        if (this.words == null || this.words.isEmpty()) {
             throw new RuntimeException("No words");
         }
 
-        List<String> words = new ArrayList<>(this.usableWords);
+        Set<String> usableWords = this.calculateUsableWords();
+
+        List<String> words = new ArrayList<>(usableWords);
         Collections.shuffle(words);
 
-        int max = this.usableWords.size();
+        int max = usableWords.size();
         if (this.maxWords != 0 && this.maxWords < max) {
             max = this.maxWords;
         }
 
-        this.words_in_game = new HashSet<>(words.subList(0, max));
-
-        for (String w : this.words_in_game) {
-            this.words_to_find.add(w);
+        for (String w : new HashSet<>(words.subList(0, max))) {
+            this.wordsToFind.add(w);
             List<WordOrientations> orientations = new ArrayList<>(this.orientationsAllowed);
             Collections.shuffle(orientations);
 
@@ -397,28 +419,28 @@ public class WSModel {
             }
 
             if (!added) {
-                this.words_to_find.remove(w);
+                this.wordsToFind.remove(w);
             }
         }
 
-        if (this.words_to_find.isEmpty()) {
+        if (this.wordsToFind.isEmpty()) {
             throw new RuntimeException("No words could be used in the game");
         }
     }
 
     private void fillGrid() {
+
         for (int i = 0; i < this.lines; i++) {
-            List<BaseCell> l = this.matrix.get(i);
             for (int j = 0; j < this.cols; j++) {
-                if (l.get(j) == null) {
-                    l.set(j, new Cell((char) this.random.nextInt('A', 'Z' + 1)));
+                if (this.matrix[i][j] == null) {
+                    this.matrix[i][j] = new Cell((char) this.random.nextInt('A', 'Z' + 1));
                 }
             }
-            this.matrix.set(i, l);
         }
     }
 
     private void initGrid() {
+
         this.initClearGrid();
         this.populateGrid();
         this.fillGrid();
@@ -427,14 +449,12 @@ public class WSModel {
         for (int i = 0; i < 4; i++) {
             int x = this.random.nextInt(0, this.cols);
             int y = this.random.nextInt(0, this.lines);
-
-            List<BaseCell> line = this.matrix.get(y);
-            line.set(x, WildCell.fromCell(line.get(x)));
-            this.matrix.set(y, line);
+            this.matrix[y][x] = WildCell.fromCell(this.matrix[y][x]);
         }
     }
 
     private void addWordHorizontally(@NotNull String word) {
+
         char[] chars = word.toCharArray();
 
         Set<String> invalids = new TreeSet<>();
@@ -456,33 +476,33 @@ public class WSModel {
                 continue;
             }
 
-            List<BaseCell> line = this.matrix.get(pos);
+            BaseCell[] line = this.matrix[pos];
             Set<Integer> same_display_pos = new TreeSet<>();
             Set<Integer> same_actual_pos = new TreeSet<>();
             boolean invalid_pos = false;
             int overlapCounter = 0;
             for (int i = 0; i < chars.length; i++) {
                 char c = chars[i];
-                if (line.get(start) != null && !line.get(start).hasSameDisplayAs(c)) {
+                if (line[start] != null && !line[start].hasSameDisplayAs(c)) {
                     while (i-- > 0) {
                         start -= walk;
                         if (!same_display_pos.contains(start)) {
-                            line.set(start, null);
+                            line[start] = null;
                         } else if (!same_actual_pos.contains(start)) {
-                            line.get(start).removeActual(c);
+                            line[start].removeActual(c);
                         }
                     }
-                    this.matrix.set(pos, line);
+                    this.matrix[pos] = line;
                     invalid_pos = true;
                     break;
                 }
 
-                if (line.get(start) == null || !line.get(start).hasSameDisplayAs(c)) {
-                    line.set(start, new Cell(c));
+                if (line[start] == null || !line[start].hasSameDisplayAs(c)) {
+                    line[start] = new Cell(c);
                 } else {
                     ++overlapCounter;
                     same_display_pos.add(start);
-                    if (!line.get(start).addActual(c)) {
+                    if (!line[start].addActual(c)) {
                         same_actual_pos.add(start);
                     }
                 }
@@ -491,7 +511,7 @@ public class WSModel {
             }
 
             if (!invalid_pos && (overlapCounter < chars.length)) {
-                this.matrix.set(pos, line);
+                this.matrix[pos] = line;
                 break;
             } else {
                 invalids.add(start + ";" + pos + ";" + direction);
@@ -500,6 +520,7 @@ public class WSModel {
     }
 
     private void addWordVertically(@NotNull String word) {
+
         char[] chars = word.toCharArray();
 
         Set<String> invalids = new TreeSet<>();
@@ -527,33 +548,33 @@ public class WSModel {
             int overlapCounter = 0;
             for (int i = 0; i < chars.length; i++) {
                 char c = chars[i];
-                List<BaseCell> line = this.matrix.get(start);
-                if (line.get(pos) != null && !line.get(pos).hasSameDisplayAs(c)) {
+                BaseCell[] line = this.matrix[start];
+                if (line[pos] != null && !line[pos].hasSameDisplayAs(c)) {
                     while (i-- > 0) {
                         start -= walk;
-                        line = this.matrix.get(start);
+                        line = this.matrix[start];
                         if (!same_display_pos.contains(start)) {
-                            line.set(pos, null);
+                            line[pos] = null;
                         } else if (!same_actual_pos.contains(start)) {
-                            line.get(pos).removeActual(c);
+                            line[pos].removeActual(c);
                         }
-                        this.matrix.set(start, line);
+                        this.matrix[start] = line;
                     }
                     invalid_pos = true;
                     break;
                 }
 
-                if (line.get(pos) == null || !line.get(pos).hasSameDisplayAs(c)) {
-                    line.set(pos, new Cell(c));
+                if (line[pos] == null || !line[pos].hasSameDisplayAs(c)) {
+                    line[pos] = new Cell(c);
                 } else {
                     ++overlapCounter;
                     same_display_pos.add(start);
-                    if (!line.get(pos).addActual(c)) {
+                    if (!line[pos].addActual(c)) {
                         same_actual_pos.add(start);
                     }
                 }
 
-                this.matrix.set(start, line);
+                this.matrix[start] = line;
 
                 start += walk;
             }
@@ -567,6 +588,7 @@ public class WSModel {
     }
 
     private void addWordDiagonally(@NotNull String word) {
+
         char[] chars = word.toCharArray();
 
         Set<String> invalids = new TreeSet<>();
@@ -600,34 +622,29 @@ public class WSModel {
             int overlapCounter = 0;
             for (int i = 0; i < chars.length; i++) {
                 char c = chars[i];
-                List<BaseCell> line = this.matrix.get(startY);
-                if (line.get(startX) != null && !line.get(startX).hasSameDisplayAs(c)) {
+                if (this.matrix[startY][startX] != null && !this.matrix[startY][startX].hasSameDisplayAs(c)) {
                     while (i-- > 0) {
                         startX -= direction_walk;
                         startY -= incline_walk;
-                        line = this.matrix.get(startY);
                         if (!same_display_pos.contains(startY)) {
-                            line.set(startX, null);
+                            this.matrix[startY][startX] = null;
                         } else if (!same_actual_pos.contains(startY)) {
-                            line.get(startX).removeActual(c);
+                            this.matrix[startY][startX].removeActual(c);
                         }
-                        this.matrix.set(startY, line);
                     }
                     invalid_pos = true;
                     break;
                 }
 
-                if (line.get(startX) == null || !line.get(startX).hasSameDisplayAs(c)) {
-                    line.set(startX, new Cell(c));
+                if (this.matrix[startY][startX] == null || !this.matrix[startY][startX].hasSameDisplayAs(c)) {
+                    this.matrix[startY][startX] = new Cell(c);
                 } else {
                     ++overlapCounter;
                     same_display_pos.add(startY);
-                    if (!line.get(startX).addActual(c)) {
+                    if (!this.matrix[startY][startX].addActual(c)) {
                         same_actual_pos.add(startY);
                     }
                 }
-
-                this.matrix.set(startY, line);
 
                 startX += direction_walk;
                 startY += incline_walk;
@@ -642,11 +659,14 @@ public class WSModel {
     }
 
     public boolean findWord(@NotNull Position pos) {
+
         if (!this.in_game) {
             throw new RuntimeException();
         }
 
-        this.view.update(new ClickMessage(pos, this.matrix.get(pos.line()).get(pos.col()).getDisplay()));
+        if (this.view != null) {
+            this.view.update(new ClickMessage(pos, this.matrix[pos.line()][pos.col()].getDisplay()));
+        }
 
         if (this.start_selected == null) {
             this.start_selected = pos;
@@ -673,17 +693,18 @@ public class WSModel {
     }
 
     private @NotNull String[] getPossibleWords(@NotNull Position start_pos, @NotNull Position end_pos) {
+
         List<String> words = new ArrayList<>();
         words.add("");
         double declive = (1.0 * start_pos.line() - end_pos.line()) / (start_pos.col() - end_pos.col());
         if (start_pos.line() == end_pos.line()) {
-            List<BaseCell> line = this.matrix.get(end_pos.line());
+            BaseCell[] line = this.matrix[end_pos.line()];
             int start = Math.min(start_pos.col(), end_pos.col());
             int end = Math.max(start_pos.col(), end_pos.col());
             for (int i = start; i <= end; i++) {
                 String[] bases = words.toArray(String[]::new);
                 words.clear();
-                for (char actual : line.get(i).getActuals()) {
+                for (char actual : line[i].getActuals()) {
                     for (String base : bases) {
                         words.add(base + actual);
                     }
@@ -693,10 +714,10 @@ public class WSModel {
             int start = Math.min(start_pos.line(), end_pos.line());
             int end = Math.max(start_pos.line(), end_pos.line());
             for (int i = start; i <= end; i++) {
-                List<BaseCell> line = this.matrix.get(i);
+                BaseCell[] line = this.matrix[i];
                 String[] bases = words.toArray(String[]::new);
                 words.clear();
-                for (char actual : line.get(end_pos.col()).getActuals()) {
+                for (char actual : line[end_pos.col()].getActuals()) {
                     for (String base : bases) {
                         words.add(base + actual);
                     }
@@ -708,10 +729,10 @@ public class WSModel {
             int endY = Math.max(start_pos.line(), end_pos.line());
             if (declive == 1) {
                 for (int i = startY; i <= endY; i++) {
-                    List<BaseCell> line = this.matrix.get(i);
+                    BaseCell[] line = this.matrix[i];
                     String[] bases = words.toArray(String[]::new);
                     words.clear();
-                    for (char actual : line.get(startX).getActuals()) {
+                    for (char actual : line[startX].getActuals()) {
                         for (String base : bases) {
                             words.add(base + actual);
                         }
@@ -720,10 +741,10 @@ public class WSModel {
                 }
             } else {
                 for (int i = endY; i >= startY; i--) {
-                    List<BaseCell> line = this.matrix.get(i);
+                    BaseCell[] line = this.matrix[i];
                     String[] bases = words.toArray(String[]::new);
                     words.clear();
-                    for (char actual : line.get(startX).getActuals()) {
+                    for (char actual : line[startX].getActuals()) {
                         for (String base : bases) {
                             words.add(base + actual);
                         }
@@ -739,7 +760,9 @@ public class WSModel {
     public @NotNull GameResults endGame() {
         this.in_game = false;
         GameResults res = this.curGameResults();
-        this.view.gameEnded(res);
+        if (this.view != null) {
+            this.view.gameEnded(res);
+        }
         if (saver != null) {
             this.saver.save(res);
         }
@@ -747,11 +770,17 @@ public class WSModel {
     }
 
     public @NotNull GameResults curGameResults() {
-        return new GameResults(this.words_in_game, this.words_found);
+        if (this.wordsToFind == null || this.wordsFound == null) {
+            return new GameResults(new TreeSet<>(), new TreeSet<>());
+        }
+
+        Set<String> union = new TreeSet<>(this.wordsToFind);
+        union.addAll(this.wordsFound);
+        return new GameResults(union, this.wordsFound);
     }
 
     public boolean gameEnded() {
-        return this.words_in_game.size() == this.words_found.size();
+        return this.wordsToFind == null || this.wordsToFind.isEmpty();
     }
 
     public void startGame() {
@@ -761,10 +790,12 @@ public class WSModel {
 
         this.initGrid();
         this.in_game = true;
-        this.words_found = new TreeSet<>();
+        this.wordsFound = new TreeSet<>();
         this.start_selected = null;
 
-        this.view.gameStarted();
+        if (this.view != null) {
+            this.view.gameStarted();
+        }
     }
 
     public void registerView(WSView wsView) {
@@ -778,7 +809,8 @@ public class WSModel {
      * @return the text in the position
      */
     public BaseCell textInPosition(@NotNull Position position) {
-        return this.matrix.get(position.line()).get(position.col());
+
+        return this.matrix[position.line()][position.col()];
     }
 
     /**
@@ -790,7 +822,7 @@ public class WSModel {
         if (!this.in_game) {
             throw new RuntimeException();
         }
-        return this.words_to_find.isEmpty();
+        return this.wordsToFind == null || this.wordsToFind.isEmpty();
     }
 
     /**
@@ -804,17 +836,21 @@ public class WSModel {
             throw new RuntimeException();
         }
 
+        if (this.wordsToFind == null || this.wordsFound == null) {
+            return false;
+        }
+
         word = word.toUpperCase();
 
         // https://stackoverflow.com/questions/7569335/reverse-a-string-in-java
         String reversed = new StringBuilder(word).reverse().toString();
-        if (this.words_to_find.contains(word)) {
-            this.words_to_find.remove(word);
-            this.words_found.add(word);
+        if (this.wordsToFind.contains(word)) {
+            this.wordsToFind.remove(word);
+            this.wordsFound.add(word);
             return true;
-        } else if (this.words_to_find.contains(reversed)) {
-            this.words_to_find.remove(reversed);
-            this.words_found.add(reversed);
+        } else if (this.wordsToFind.contains(reversed)) {
+            this.wordsToFind.remove(reversed);
+            this.wordsFound.add(reversed);
             return true;
         } else {
             return false;
@@ -831,13 +867,13 @@ public class WSModel {
         return this.wordFound(word);
     }
 
-    public void setSaver(ResultsSaver saver) {
+    public void setSaver(@NotNull ResultsSaver saver) {
         this.saver = saver;
     }
 
     public int wordsInUse() {
-        if (this.usableWords != null) {
-            return this.usableWords.size();
+        if (this.wordsToFind != null && this.wordsFound != null) {
+            return this.wordsToFind.size() + this.wordsFound.size();
         }
         return 0;
     }
@@ -859,14 +895,15 @@ public class WSModel {
     public String matrixToString() {
         StringBuilder matrix = new StringBuilder();
         int size = 0;
-        for (List<BaseCell> cells : this.matrix) {
-            size = cells.size();
+
+        for (BaseCell[] cells : this.matrix) {
+            size = cells.length;
             matrix.append('+')
                     .append(Arrays.stream(new String[size]).map(s -> "---").collect(Collectors.joining("+")))
                     .append("+\n");
             for (BaseCell cell : cells) {
                 matrix.append("| ")
-                        .append(cell.getDisplay())
+                        .append(cell != null ? cell.getDisplay() : ' ')
                         .append(' ');
             }
             matrix.append("|\n");
@@ -886,7 +923,7 @@ public class WSModel {
         List.of(orientations).forEach(this.orientationsAllowed::remove);
     }
 
-    public Set<String> getWords() {
+    public @Nullable Set<String> getWords() {
         return this.words;
     }
 }

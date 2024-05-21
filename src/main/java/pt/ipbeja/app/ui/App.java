@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static pt.ipbeja.app.ui.StartWordSearch.TITLE;
@@ -72,15 +73,16 @@ public class App extends VBox implements WSView {
                 this.model.disallowWordOrientation(WordOrientations.DIAGONAL);
             }
 
-//            try {
+            try {
                 this.model.startGame();
-//            } catch (RuntimeException e) {
-//                Alert alert = new Alert(Alert.AlertType.ERROR);
-//                alert.setTitle(TITLE);
-//                alert.setHeaderText("ERROR");
-//                alert.setContentText(e.toString());
-//                alert.showAndWait();
-//            }
+            } catch (RuntimeException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle(TITLE);
+                alert.setHeaderText("ERROR");
+                alert.setContentText(e.toString());
+                alert.showAndWait();
+                System.err.println(Arrays.toString(e.getStackTrace()));
+            }
         });
         this.menu.managedProperty().bind(this.menu.visibleProperty());
 
