@@ -3,6 +3,8 @@ package pt.ipbeja.app.model;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import pt.ipbeja.app.model.throwables.CouldNotPopulateMatrixException;
+import pt.ipbeja.app.model.throwables.NoWordsException;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -36,7 +38,11 @@ class WSModelTest {
     void testWordFound() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         model.registerView(new EmptyView());
-        model.startGame();
+        try {
+            model.startGame();
+        } catch (NoWordsException | CouldNotPopulateMatrixException e) {
+            throw new RuntimeException(e);
+        }
 
         assertTrue(model.wordFound(Arrays.stream(contents.split("\n")).findFirst().orElse("")));
     }
@@ -45,7 +51,11 @@ class WSModelTest {
     void testWordWithWildcardFound() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         model.registerView(new EmptyView());
-        model.startGame();
+        try {
+            model.startGame();
+        } catch (NoWordsException | CouldNotPopulateMatrixException e) {
+            throw new RuntimeException(e);
+        }
         assertTrue(model.wordWithWildcardFound(Arrays.stream(contents.split("\n")).findFirst().orElse("")));
     }
 
@@ -53,7 +63,11 @@ class WSModelTest {
     void testAllWordsWereFound() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         model.registerView(new EmptyView());
-        model.startGame();
+        try {
+            model.startGame();
+        } catch (NoWordsException | CouldNotPopulateMatrixException e) {
+            throw new RuntimeException(e);
+        }
 
         for (String w :
                 contents.split("\n")) {
@@ -66,7 +80,11 @@ class WSModelTest {
     void game() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         model.registerView(new EmptyView());
-        model.startGame();
+        try {
+            model.startGame();
+        } catch (NoWordsException | CouldNotPopulateMatrixException e) {
+            throw new RuntimeException(e);
+        }
 
         for (String w :
                 contents.split("\n")) {
@@ -77,7 +95,4 @@ class WSModelTest {
         GameResults res = model.endGame();
         assertEquals(res.words().size(), res.words_found().size());
     }
-
-
-
 }

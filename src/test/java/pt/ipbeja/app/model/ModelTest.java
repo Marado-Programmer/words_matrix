@@ -1,7 +1,9 @@
 package pt.ipbeja.app.model;
 
 import org.junit.jupiter.api.Test;
+import pt.ipbeja.app.model.throwables.CouldNotPopulateMatrixException;
 import pt.ipbeja.app.model.throwables.InvalidInGameChangeException;
+import pt.ipbeja.app.model.throwables.NoWordsException;
 import pt.ipbeja.app.model.words_provider.ManualWordsProvider;
 
 import java.util.Arrays;
@@ -48,7 +50,11 @@ public class ModelTest {
         provider.close();
         WSModel model = new WSModel(MAX_SIDE_LEN, MAX_SIDE_LEN, provider);
         model.registerView(new EmptyView());
-        model.startGame();
+        try {
+            model.startGame();
+        } catch (NoWordsException | CouldNotPopulateMatrixException e) {
+            throw new RuntimeException(e);
+        }
 
         Exception err = assertThrows(InvalidInGameChangeException.class, () -> model.setDimensions(MIN_SIDE_LEN, MIN_SIDE_LEN));
         assertEquals(INVALID_IN_GAME_CHANGE_MSG_ERR, err.getMessage());
@@ -68,6 +74,7 @@ public class ModelTest {
         provider.provide(new String[]{"test", "words"});
         provider.close();
         model.setWords(provider);
+        assert model.getWords() != null;
         assertEquals(2, model.getWords().size());
     }
 
@@ -79,6 +86,7 @@ public class ModelTest {
         provider.close();
         model.setWords(provider);
         model.setWords(provider);
+        assert model.getWords() != null;
         assertEquals(2, model.getWords().size());
     }
 
@@ -93,6 +101,7 @@ public class ModelTest {
         provider.provide(new String[]{"different", "ones"});
         provider.close();
         model.setWords(provider);
+        assert model.getWords() != null;
         assertEquals(4, model.getWords().size());
     }
 
@@ -107,6 +116,7 @@ public class ModelTest {
         provider.provide(new String[]{"different", "ones"});
         provider.close();
         model.setWords(provider, false);
+        assert model.getWords() != null;
         assertEquals(2, model.getWords().size());
     }
 
@@ -117,6 +127,7 @@ public class ModelTest {
         provider.provide("  \t\0\0\n   ]]]`````~%^       test_+___-++@#$% words!!!áçêñtòs!!!! \n\t");
         provider.close();
         model.setWords(provider);
+        assert model.getWords() != null;
         assertEquals(3, model.getWords().size());
     }
 }

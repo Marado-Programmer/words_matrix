@@ -11,7 +11,9 @@ import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.*;
 import pt.ipbeja.app.model.message_to_ui.MessageToUI;
+import pt.ipbeja.app.model.throwables.CouldNotPopulateMatrixException;
 import pt.ipbeja.app.model.throwables.InvalidInGameChangeException;
+import pt.ipbeja.app.model.throwables.NoWordsException;
 import pt.ipbeja.app.model.words_provider.DBWordsProvider;
 import pt.ipbeja.app.model.words_provider.ManualWordsProvider;
 
@@ -82,6 +84,8 @@ public class App extends VBox implements WSView {
                 alert.setContentText(e.toString());
                 alert.showAndWait();
                 System.err.println(Arrays.toString(e.getStackTrace()));
+            } catch (NoWordsException | CouldNotPopulateMatrixException e) {
+                throw new RuntimeException(e);
             }
         });
         this.menu.managedProperty().bind(this.menu.visibleProperty());
@@ -196,14 +200,18 @@ public class App extends VBox implements WSView {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            this.model.startGame();
+            try {
+                model.startGame();
+            } catch (NoWordsException | CouldNotPopulateMatrixException e) {
+                throw new RuntimeException(e);
+            }
         } else {
             this.game.setVisible(false);
             this.menu.setVisible(true);
         }
     }
 
-    public Path getLogDir() {
+    public @NotNull Path getLogDir() {
         return this.bar.getLogDir();
     }
 

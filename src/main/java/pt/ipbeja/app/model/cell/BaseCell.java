@@ -11,7 +11,7 @@ import java.util.TreeSet;
  */
 public abstract class BaseCell {
     private final @NotNull Set<Character> actuals;
-    protected char display;
+    protected final char display;
 
     public BaseCell(char actual) {
         this(actual, BaseCell.getDisplay(actual));

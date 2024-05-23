@@ -12,7 +12,10 @@ import pt.ipbeja.app.model.cell.WildCell;
 import pt.ipbeja.app.model.message_to_ui.ClickMessage;
 import pt.ipbeja.app.model.message_to_ui.WordFoundMessage;
 import pt.ipbeja.app.model.results_saver.ResultsSaver;
+import pt.ipbeja.app.model.throwables.CouldNotPopulateMatrixException;
 import pt.ipbeja.app.model.throwables.InvalidInGameChangeException;
+import pt.ipbeja.app.model.throwables.NoWordsException;
+import pt.ipbeja.app.model.throwables.WordCanNotFitMatrixException;
 import pt.ipbeja.app.model.words_provider.DBWordsProvider;
 import pt.ipbeja.app.model.words_provider.WordsProvider;
 
@@ -23,7 +26,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Game model
+ * Game model.
  */
 public class WSModel {
     /**
@@ -35,11 +38,15 @@ public class WSModel {
      */
     public static final int MAX_SIDE_LEN = 12;
 
-    public static final String INVALID_IN_GAME_CHANGE_MSG_ERR = "A game it's currently happening. Cannot perform this action";
-    private static final String INVALID_SIDE_LEN_MSG_FORMAT = String.format("the %s provided is invalid! it needs to be a number between %d and %d", "%s", MIN_SIDE_LEN, MAX_SIDE_LEN);
+    public static final @NotNull String INVALID_IN_GAME_CHANGE_MSG_ERR = "a game it's currently happening. Cannot perform this action";
+    public static final @NotNull String NO_WORDS_MSG_ERR = "no words were given for the game to be able to start";
+    private static final @NotNull String INVALID_SIDE_LEN_MSG_FORMAT = String.format("the %s provided is invalid! it needs to be a number between %d and %d", "%s", MIN_SIDE_LEN, MAX_SIDE_LEN);
 
     private final @NotNull Random random;
-
+    /**
+     * The allowed orientations a word can be found in game.
+     */
+    private final @NotNull Set<@NotNull WordOrientations> orientationsAllowed;
     /**
      * The number of lines in the matrix.
      */
@@ -48,7 +55,6 @@ public class WSModel {
      * The number of columns in the matrix.
      */
     private int cols;
-
     /**
      * The matrix of {@link BaseCell}s.
      * <p>Can be a simple <code>BaseCell[lines*cols]</code> and to access a <code>BaseCell</code> in line <code>a</code>
@@ -56,20 +62,17 @@ public class WSModel {
      *
      * @see BaseCell
      */
-    private @Nullable BaseCell @NotNull[] @NotNull[] matrix;
-
+    private @Nullable BaseCell @NotNull [] @NotNull [] matrix;
     /**
      * The user interface. To use when we want to communicate with the player.
      */
     private @Nullable WSView view;
-
     /**
      * Set of valid words that came from the last database provided using {@link #setWords(WordsProvider)}.
      *
      * @see #setWords(WordsProvider)
      */
     private @Nullable Set<@NotNull String> words;
-
     /**
      * Subset of {@link #words} of the words that are currently on the matrix to be found.
      *
@@ -82,39 +85,41 @@ public class WSModel {
      * @see #wordsToFind
      */
     private @Nullable Set<@NotNull String> wordsFound;
-
     /**
      * Represents if a game it's currently happening.
      */
     private boolean in_game;
-
     /**
      * Saves the position of the first click on a word selection.
      */
     private @Nullable Position start_selected;
-
     /**
      * A {@link ResultsSaver} that saves the game results when it ends the way it wants.
      *
      * @see ResultsSaver
      */
     private @Nullable ResultsSaver saver;
-
     /**
-     * Maximum of words that can appear in a game
+     * Maximum of words that can appear in a game.
      */
     private int maxWords;
-
     /**
      * Minimum length in characters that a word needs to be in the game.
      */
     private int minWordSize;
 
     /**
-     * The allowed orientations a word can be found in game.
+     * Creates the model for a words matrix game.
+     *
+     * <p>You will need to configure the model for a game to be able to start by using
+     * {@link #setDimensions(int, int)} and {@link #setWords(WordsProvider)} for example.</p>
+     *
+     * @see #setDimensions(int, int)
+     * @see #setLines(int)
+     * @see #setCols(int)
+     * @see #setWords(WordsProvider)
+     * @see #setWords(WordsProvider, boolean)
      */
-    private final @NotNull Set<@NotNull WordOrientations> orientationsAllowed;
-
     public WSModel() {
         this.random = new Random();
         this.maxWords = 0;
@@ -124,15 +129,48 @@ public class WSModel {
         this.matrix = new BaseCell[0][];
     }
 
+    /**
+     * Creates the model for a words matrix game.
+     *
+     * <p>You will need to set the words for the game to use with {@link #setWords(WordsProvider)} to start a game.</p>
+     *
+     * @param lines initial number of lines for the game to have
+     * @param cols  initial number of columns for the game to have
+     * @see #setWords(WordsProvider)
+     * @see #setWords(WordsProvider, boolean)
+     */
     public WSModel(int lines, int cols) {
         this();
         try {
             this.setDimensions(lines, cols);
         } catch (InvalidInGameChangeException e) {
+            // this will NEVER happen because a game can't be running right when you are creating the model.
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Creates the model for a words matrix game.
+     *
+     * <p>You will need to set the dimensions of the matrix with {@link #setDimensions(int, int)} to start a game.</p>
+     *
+     * @param provider where the words used in game come from
+     * @see #setDimensions(int, int)
+     * @see #setLines(int)
+     * @see #setCols(int)
+     */
+    public WSModel(@NotNull WordsProvider provider) {
+        this();
+        this.setWords(provider);
+    }
+
+    /**
+     * Creates the model for a words matrix game.
+     *
+     * @param lines    initial number of lines for the game to have
+     * @param cols     initial number of columns for the game to have
+     * @param provider where the words used in game come from
+     */
     public WSModel(int lines, int cols, @NotNull WordsProvider provider) {
         this(lines, cols);
         this.setWords(provider);
@@ -141,9 +179,9 @@ public class WSModel {
     /**
      * Creates the model for a words matrix game.
      *
-     * @param lines initial number of lines for the game to have.
-     * @param cols  initial number of columns for the game to have.
-     * @param file  the database with the words to put in the game.
+     * @param lines initial number of lines for the game to have
+     * @param cols  initial number of columns for the game to have
+     * @param file  the database with the words to put in the game
      */
     public WSModel(int lines, int cols, @NotNull String file) {
         this(lines, cols, new DBWordsProvider(Paths.get(file).toFile()));
@@ -152,9 +190,9 @@ public class WSModel {
     /**
      * Creates the model for a words matrix game.
      *
-     * @param lines initial number of lines for the game to have.
-     * @param cols  initial number of columns for the game to have.
-     * @param file  the database with the words to put in the game.
+     * @param lines initial number of lines for the game to have
+     * @param cols  initial number of columns for the game to have
+     * @param file  the database with the words to put in the game
      */
     public WSModel(int lines, int cols, @NotNull URI file) {
         this(lines, cols, new DBWordsProvider(Paths.get(file).toFile()));
@@ -163,12 +201,26 @@ public class WSModel {
     /**
      * Creates the model for a words matrix game.
      *
-     * @param lines initial number of lines for the game to have.
-     * @param cols  initial number of columns for the game to have.
-     * @param file  the database with the words to put in the game.
+     * @param lines initial number of lines for the game to have
+     * @param cols  initial number of columns for the game to have
+     * @param file  the database with the words to put in the game
      */
     public WSModel(int lines, int cols, @NotNull Path file) {
         this(lines, cols, new DBWordsProvider(file.toFile()));
+    }
+
+    /**
+     * Gives a random latin alphabet character.
+     *
+     * @param random To be able to create pseudorandom numbers
+     * @return The random character
+     */
+    public static char randomLatinCharacter(@NotNull Random random) {
+        return (char) random.nextInt('A', 'Z' + 1);
+    }
+
+    private static void throwInvalidInGameChange() throws InvalidInGameChangeException {
+        throw new InvalidInGameChangeException(INVALID_IN_GAME_CHANGE_MSG_ERR);
     }
 
     /**
@@ -177,8 +229,8 @@ public class WSModel {
      *
      * @param lines The number of lines for the matrix to have
      * @param cols  The number of columns for the matrix to have
-     * @throws InvalidInGameChangeException In case of trying to change the dimensions mid-game.
-     * @throws IllegalArgumentException     If dimensions provided aren't allowed.
+     * @throws InvalidInGameChangeException In case of trying to change the dimensions mid-game
+     * @throws IllegalArgumentException     If dimensions provided aren't allowed
      * @see #setLines(int)
      * @see #setCols(int)
      */
@@ -205,7 +257,7 @@ public class WSModel {
     }
 
     /**
-     * @return The number of lines in the matrix
+     * @return The number of lines in the matrix.
      * @see #setLines(int)
      * @see #setDimensions(int, int)
      */
@@ -218,8 +270,8 @@ public class WSModel {
      * {@link #setDimensions(int, int)}.
      *
      * @param lines The number of lines for the matrix to have
-     * @throws InvalidInGameChangeException In case of trying to change the dimensions mid-game.
-     * @throws IllegalArgumentException     If dimensions provided aren't allowed.
+     * @throws InvalidInGameChangeException In case of trying to change the dimensions mid-game
+     * @throws IllegalArgumentException     If dimensions provided aren't allowed
      * @see #setCols(int)
      * @see #setDimensions(int, int)
      */
@@ -255,8 +307,8 @@ public class WSModel {
      * {@link #setDimensions(int, int)}.
      *
      * @param cols The number of columns for the matrix to have
-     * @throws InvalidInGameChangeException In case of trying to change the dimensions mid-game.
-     * @throws IllegalArgumentException     If dimensions provided aren't allowed.
+     * @throws InvalidInGameChangeException In case of trying to change the dimensions mid-game
+     * @throws IllegalArgumentException     If dimensions provided aren't allowed
      * @see #setLines(int)
      * @see #setDimensions(int, int)
      */
@@ -281,8 +333,8 @@ public class WSModel {
     /**
      * Method to define which words to use in the game via a {@link WordsProvider}.
      *
-     * @param provider     Any {@link WordsProvider}.
-     * @param keepExistent Choose if you want to keep the existent words provided in the past.
+     * @param provider     Any {@link WordsProvider}
+     * @param keepExistent Choose if you want to keep the existent words provided in the past
      * @see WordsProvider
      */
     public void setWords(@NotNull WordsProvider provider, boolean keepExistent) {
@@ -298,20 +350,10 @@ public class WSModel {
     }
 
     /**
-     * Method to define which words to use in the game via a {@link WordsProvider}.
-     *
-     * @param provider Any {@link WordsProvider}.
-     * @see WordsProvider
-     */
-    public void setWords(@NotNull WordsProvider provider) {
-        this.setWords(provider, true);
-    }
-
-    /**
      * Parses a line with possible (supported) words.
      *
-     * @param line Line to be parsed.
-     * @return An array of words found in the line.
+     * @param line Line to be parsed
+     * @return An array of words found in the line
      */
     private @NotNull String @NotNull [] parseLine(String line) {
         // trim whitespaces
@@ -337,70 +379,55 @@ public class WSModel {
     }
 
     /**
-     * Calculates the usable words in {@link #words} based on the game state.
+     * Creates the matrix step by step:
+     * <ol>
+     *     <li>Creates an empty matrix;</li>
+     *     <li>Puts a subset of words in {@link #words} into the matrix;</li>
+     *     <li>Fills blank spaces with random characters;</li>
+     *     <li>Adds some wild cards.</li>
+     * </ol>
+     * <p>Some of this steps can be changed in behaviour by configuration.</p>
      */
-    private Set<String> calculateUsableWords() {
-        if (this.words == null) {
-            return new TreeSet<>();
-        }
-
-        Set<String> usableWords = new TreeSet<>();
-        for (String w : words) {
-
-            if (this.wordFitsGrid(w) && (this.minWordSize <= w.length())) {
-                usableWords.add(w);
-            }
-        }
-        return usableWords;
+    private void initMatrix() throws NoWordsException, CouldNotPopulateMatrixException {
+        this.initClearMatrix();
+        this.populateMatrix();
+        this.fillMatrix();
+        this.createWildCards(this.random.nextInt(0, MIN_SIDE_LEN));
     }
 
     /**
-     * Tests if a {@link String} word fits on the board based on the number of columns
+     * Creates an empty matrix with {@link #lines} lines and {@link #cols} columns.
      *
-     * @param word the word to test
-     * @return true if it fits
+     * @see #setDimensions(int, int)
+     * @see #setLines(int)
+     * @see #setCols(int)
      */
-    private boolean wordFitsHorizontally(@NotNull String word) {
-        return word.length() <= this.cols;
-    }
-
-    /**
-     * Tests if a {@link String} word fits on the board based on the number of columns
-     *
-     * @param word the word to test
-     * @return true if it fits
-     */
-    private boolean wordFitsVertically(@NotNull String word) {
-        return word.length() <= this.lines;
-    }
-
-    private boolean wordFitsGrid(@NotNull String word) {
-        return this.wordFitsHorizontally(word) || this.wordFitsVertically(word);
-    }
-
-    private void initClearGrid() {
+    private void initClearMatrix() {
         this.matrix = new BaseCell[this.lines][this.cols];
     }
 
-    private void populateGrid() {
+    /**
+     * Populates the matrix with the words provided by {@link #setWords(WordsProvider, boolean)}.
+     *
+     * @throws NoWordsException                In case no words were provided
+     * @throws CouldNotPopulateMatrixException In case for some reason could not fit ANY of the words (that you can see
+     *                                         using {@link CouldNotPopulateMatrixException#getWords()}) in the matrix.
+     * @see #getGameWords()
+     * @see #addWordVertically(String)
+     * @see #addWordHorizontally(String)
+     * @see #addWordDiagonally(String)
+     * @see #setWords(WordsProvider)
+     * @see #setWords(WordsProvider, boolean)
+     */
+    private void populateMatrix() throws NoWordsException, CouldNotPopulateMatrixException {
         this.wordsToFind = new TreeSet<>();
 
         if (this.words == null || this.words.isEmpty()) {
-            throw new RuntimeException("No words");
+            throw new NoWordsException(NO_WORDS_MSG_ERR);
         }
 
-        Set<String> usableWords = this.calculateUsableWords();
-
-        List<String> words = new ArrayList<>(usableWords);
-        Collections.shuffle(words);
-
-        int max = usableWords.size();
-        if (this.maxWords != 0 && this.maxWords < max) {
-            max = this.maxWords;
-        }
-
-        for (String w : new HashSet<>(words.subList(0, max))) {
-            this.wordsToFind.add(w);
+        Set<String> words = this.getGameWords();
+        for (String w : words) {
             List<WordOrientations> orientations = new ArrayList<>(this.orientationsAllowed);
             Collections.shuffle(orientations);
 
@@ -414,214 +441,280 @@ public class WSModel {
                     }
                     added = true;
                     break;
-                } catch (Exception ignored) {
+                } catch (WordCanNotFitMatrixException ignored) {
                 }
             }
 
-            if (!added) {
-                this.wordsToFind.remove(w);
+            if (added) {
+                this.wordsToFind.add(w);
             }
         }
 
         if (this.wordsToFind.isEmpty()) {
-            throw new RuntimeException("No words could be used in the game");
+            throw new CouldNotPopulateMatrixException(words, this.lines, this.cols);
         }
     }
 
-    private void fillGrid() {
+    /**
+     * Selects a subset of {@link #words} to use in a game.
+     *
+     * @return That subset
+     * @see #calculateUsableWords()
+     * @see #setMaxWords(int)
+     */
+    private @NotNull Set<String> getGameWords() {
+        Set<String> usableWords = this.calculateUsableWords();
 
-        for (int i = 0; i < this.lines; i++) {
-            for (int j = 0; j < this.cols; j++) {
-                if (this.matrix[i][j] == null) {
-                    this.matrix[i][j] = new Cell((char) this.random.nextInt('A', 'Z' + 1));
-                }
+        List<String> words = new ArrayList<>(usableWords);
+        Collections.shuffle(words);
+
+        int max = usableWords.size();
+        if (this.maxWords != 0 && this.maxWords < max) {
+            max = this.maxWords;
+        }
+
+        return new HashSet<>(words.subList(0, max));
+    }
+
+    /**
+     * Calculates the usable words in {@link #words} based on model state.
+     *
+     * @return A set of usable words
+     * @see #setWords(WordsProvider)
+     * @see #setWords(WordsProvider, boolean)
+     * @see #wordFitsGrid(String)
+     * @see #setMinWordSize(int)
+     */
+    private @NotNull Set<String> calculateUsableWords() {
+        if (this.words == null) {
+            return new TreeSet<>();
+        }
+
+        Set<String> usableWords = new TreeSet<>();
+        for (String w : words) {
+            if (this.wordFitsGrid(w) && (this.minWordSize <= w.length())) {
+                usableWords.add(w);
             }
         }
+        return usableWords;
     }
 
-    private void initGrid() {
-
-        this.initClearGrid();
-        this.populateGrid();
-        this.fillGrid();
-
-        // CREATES N WILD
-        for (int i = 0; i < 4; i++) {
-            int x = this.random.nextInt(0, this.cols);
-            int y = this.random.nextInt(0, this.lines);
-            this.matrix[y][x] = WildCell.fromCell(this.matrix[y][x]);
-        }
+    /**
+     * Tests if a {@link String} word fits on the board based on the number of lines and columns.
+     *
+     * @param word The word to test
+     * @return `true` if it fits
+     */
+    private boolean wordFitsGrid(@NotNull String word) {
+        return this.wordFitsHorizontally(word) || this.wordFitsVertically(word);
     }
 
-    private void addWordHorizontally(@NotNull String word) {
+    /**
+     * Tests if a {@link String} word fits on the board based on the number of columns.
+     *
+     * @param word The word to test
+     * @return `true` if it fits
+     */
+    private boolean wordFitsHorizontally(@NotNull String word) {
+        return word.length() <= this.cols;
+    }
 
-        char[] chars = word.toCharArray();
+    /**
+     * Tests if a {@link String} word fits on the board based on the number of lines.
+     *
+     * @param word The word to test
+     * @return `true` if it fits
+     */
+    private boolean wordFitsVertically(@NotNull String word) {
+        return word.length() <= this.lines;
+    }
 
+    /**
+     * Adds a word vertically on the matrix.
+     *
+     * @param word The word that will try to add
+     * @throws WordCanNotFitMatrixException In case the `word` couldn't be put in any way into the matrix like this.
+     */
+    private void addWordVertically(@NotNull String word) throws WordCanNotFitMatrixException {
+        // Saves 'the x-y-direction' "tuple" of invalid combination for the word to be put on.
         Set<String> invalids = new TreeSet<>();
 
-        while (true) {
-            if (invalids.size() >= (this.lines * (this.cols - word.length() + 1) * 2)) {
-                throw new RuntimeException("no space to add the word");
-            }
-
-            boolean direction = this.random.nextBoolean();
-            int walk = direction ? 1 : -1;
-            int start = this.random.nextInt(0, this.cols - word.length() + 1);
-            if (!direction) {
-                start += word.length();
-            }
-            final int pos = this.random.nextInt(0, this.lines);
-
-            if (invalids.contains(start + ";" + pos + ";" + direction)) {
-                continue;
-            }
-
-            BaseCell[] line = this.matrix[pos];
-            Set<Integer> same_display_pos = new TreeSet<>();
-            Set<Integer> same_actual_pos = new TreeSet<>();
-            boolean invalid_pos = false;
-            int overlapCounter = 0;
-            for (int i = 0; i < chars.length; i++) {
-                char c = chars[i];
-                if (line[start] != null && !line[start].hasSameDisplayAs(c)) {
-                    while (i-- > 0) {
-                        start -= walk;
-                        if (!same_display_pos.contains(start)) {
-                            line[start] = null;
-                        } else if (!same_actual_pos.contains(start)) {
-                            line[start].removeActual(c);
-                        }
-                    }
-                    this.matrix[pos] = line;
-                    invalid_pos = true;
-                    break;
-                }
-
-                if (line[start] == null || !line[start].hasSameDisplayAs(c)) {
-                    line[start] = new Cell(c);
-                } else {
-                    ++overlapCounter;
-                    same_display_pos.add(start);
-                    if (!line[start].addActual(c)) {
-                        same_actual_pos.add(start);
-                    }
-                }
-
-                start += walk;
-            }
-
-            if (!invalid_pos && (overlapCounter < chars.length)) {
-                this.matrix[pos] = line;
-                break;
-            } else {
-                invalids.add(start + ";" + pos + ";" + direction);
-            }
-        }
-    }
-
-    private void addWordVertically(@NotNull String word) {
-
-        char[] chars = word.toCharArray();
-
-        Set<String> invalids = new TreeSet<>();
-
-        while (true) {
-            if (invalids.size() == (this.cols * (this.lines - word.length() + 1) * 2)) {
-                throw new RuntimeException("no space to add the word");
-            }
-
-            boolean direction = this.random.nextBoolean();
-            int walk = direction ? 1 : -1;
+        // The number of places for the word to be able to be put on the matrix is:
+        final int placesToTryToFit = this.cols * (this.lines - word.length() + 1) * 2;  // the last multiplication it's
+        // because the word can be
+        // written in both directions.
+        while (invalids.size() < placesToTryToFit) {
+            // FIXME: this combinations can be repeated
+            final boolean direction = this.random.nextBoolean();
+            final int walk = direction ? 1 : -1;
             int start = this.random.nextInt(0, this.lines - word.length() + 1);
             if (!direction) {
                 start += word.length();
             }
-            final int pos = this.random.nextInt(0, this.cols);
+            final int x = this.random.nextInt(0, this.cols);
 
-            if (invalids.contains(start + ";" + pos + ";" + direction)) {
+            if (invalids.contains(x + ";" + start + ";" + direction)) {
                 continue;
             }
 
-            Set<Integer> same_display_pos = new TreeSet<>();
-            Set<Integer> same_actual_pos = new TreeSet<>();
+            Set<Integer> sameDisplayPos = new TreeSet<>();
+            Set<Integer> sameActualPos = new TreeSet<>();
             boolean invalid_pos = false;
             int overlapCounter = 0;
-            for (int i = 0; i < chars.length; i++) {
-                char c = chars[i];
-                BaseCell[] line = this.matrix[start];
-                if (line[pos] != null && !line[pos].hasSameDisplayAs(c)) {
+            for (int i = 0; i < word.length(); i++, start += walk) {
+                char c = word.charAt(i);
+
+                // The cell isn't empty and doesn't share the display with `c`. We need to abort the word insertion.
+                if (this.matrix[start][x] != null && !this.matrix[start][x].hasSameDisplayAs(c)) {
                     while (i-- > 0) {
                         start -= walk;
-                        line = this.matrix[start];
-                        if (!same_display_pos.contains(start)) {
-                            line[pos] = null;
-                        } else if (!same_actual_pos.contains(start)) {
-                            line[pos].removeActual(c);
+                        if (!sameDisplayPos.contains(start)) {
+                            this.matrix[start][x] = null;
+                        } else if (!sameActualPos.contains(start)) {
+                            this.matrix[start][x].removeActual(c);
                         }
-                        this.matrix[start] = line;
                     }
                     invalid_pos = true;
                     break;
                 }
 
-                if (line[pos] == null || !line[pos].hasSameDisplayAs(c)) {
-                    line[pos] = new Cell(c);
+                if (this.matrix[start][x] == null || !this.matrix[start][x].hasSameDisplayAs(c)) {
+                    this.matrix[start][x] = new Cell(c);
                 } else {
                     ++overlapCounter;
-                    same_display_pos.add(start);
-                    if (!line[pos].addActual(c)) {
-                        same_actual_pos.add(start);
+                    sameDisplayPos.add(start);
+                    if (!this.matrix[start][x].addActual(c)) {
+                        sameActualPos.add(start);
                     }
                 }
-
-                this.matrix[start] = line;
-
-                start += walk;
             }
 
-            if (!invalid_pos && (overlapCounter < chars.length)) {
-                break;
-            } else {
-                invalids.add(start + ";" + pos + ";" + direction);
+            // We do not want words on top of others.
+            // TODO: This does not stop bigger words of beign inserted on top of smaller ones.
+            if (!invalid_pos && (overlapCounter < word.length())) {
+                return;
             }
+
+            invalids.add(x + ";" + start + ";" + direction);
         }
+
+        throw new WordCanNotFitMatrixException(word, this.lines, this.cols);
     }
 
-    private void addWordDiagonally(@NotNull String word) {
-
-        char[] chars = word.toCharArray();
-
+    /**
+     * Adds a word horizontally on the matrix.
+     *
+     * @param word The word that will try to add
+     * @throws WordCanNotFitMatrixException In case the `word` couldn't be put in any way into the matrix like this.
+     */
+    private void addWordHorizontally(@NotNull String word) throws WordCanNotFitMatrixException {
+        // Saves 'the x-y-direction' "tuple" of invalid combination for the word to be put on.
         Set<String> invalids = new TreeSet<>();
 
-        while (true) {
-            if (invalids.size() == ((this.cols - word.length() + 1) * (this.lines - word.length() + 1) * 4)) {
-                throw new RuntimeException("no space to add the word");
-            }
-
-            boolean direction = this.random.nextBoolean();
-            int startX = this.random.nextInt(0, this.lines - word.length() + 1);
+        // The number of places for the word to be able to be put on the matrix is:
+        final int placesToTryToFit = this.lines * (this.cols - word.length() + 1) * 2;  // the last multiplication it's
+        // because the word can be
+        // written in both directions.
+        while (invalids.size() < placesToTryToFit) {
+            // FIXME: this combinations can be repeated
+            final boolean direction = this.random.nextBoolean();
+            final int walk = direction ? 1 : -1;
+            int start = this.random.nextInt(0, this.cols - word.length() + 1);
             if (!direction) {
-                startX += word.length() - 1;
+                start += word.length();
             }
-            boolean incline = this.random.nextBoolean();
-            int startY = this.random.nextInt(0, this.cols - word.length() + 1);
-            if (!incline) {
-                startY += word.length() - 1;
-            }
+            final int y = this.random.nextInt(0, this.lines);
 
-            if (invalids.contains(startX + ";" + startY + ";" + direction + ";" + incline)) {
+            if (invalids.contains(start + ";" + y + ";" + direction)) {
                 continue;
             }
-
-            int direction_walk = direction ? 1 : -1;
-            int incline_walk = incline ? 1 : -1;
 
             Set<Integer> same_display_pos = new TreeSet<>();
             Set<Integer> same_actual_pos = new TreeSet<>();
             boolean invalid_pos = false;
             int overlapCounter = 0;
-            for (int i = 0; i < chars.length; i++) {
-                char c = chars[i];
+            for (int i = 0; i < word.length(); i++, start += walk) {
+                char c = word.charAt(i);
+
+                // The cell isn't empty and doesn't share the display with `c`. We need to abort the word insertion.
+                if (this.matrix[y][start] != null && !this.matrix[y][start].hasSameDisplayAs(c)) {
+                    while (i-- > 0) {
+                        start -= walk;
+                        if (!same_display_pos.contains(start)) {
+                            this.matrix[y][start] = null;
+                        } else if (!same_actual_pos.contains(start)) {
+                            this.matrix[y][start].removeActual(c);
+                        }
+                    }
+                    invalid_pos = true;
+                    break;
+                }
+
+                if (this.matrix[y][start] == null || !this.matrix[y][start].hasSameDisplayAs(c)) {
+                    this.matrix[y][start] = new Cell(c);
+                } else {
+                    ++overlapCounter;
+                    same_display_pos.add(start);
+                    if (!this.matrix[y][start].addActual(c)) {
+                        same_actual_pos.add(start);
+                    }
+                }
+            }
+
+            // We do not want words on top of others.
+            // TODO: This does not stop bigger words of beign inserted on top of smaller ones.
+            if (!invalid_pos && (overlapCounter < word.length())) {
+                return;
+            }
+
+            invalids.add(start + ";" + y + ";" + direction);
+        }
+
+        throw new WordCanNotFitMatrixException(word, this.lines, this.cols);
+    }
+
+    /**
+     * Adds a word diagonally on the matrix.
+     *
+     * @param word The word that will try to add
+     * @throws WordCanNotFitMatrixException In case the `word` couldn't be put in any way into the matrix like this.
+     */
+    private void addWordDiagonally(@NotNull String word) throws WordCanNotFitMatrixException {
+        // Saves 'the x-y-directionX-directionY' "tuple" of invalid combination for the word to be put on.
+        Set<String> invalids = new TreeSet<>();
+
+        // The number of places for the word to be able to be put on the matrix is:
+        final int placesToTryToFit = (this.cols - word.length() + 1) * (this.lines - word.length() + 1) * 4;
+        // the last multiplication it's because the word can be written in many directions.
+
+        while (invalids.size() < placesToTryToFit) {
+            // FIXME: this combinations can be repeated
+            final boolean directionX = this.random.nextBoolean();
+            int startX = this.random.nextInt(0, this.lines - word.length() + 1);
+            if (!directionX) {
+                startX += word.length() - 1;
+            }
+            boolean directionY = this.random.nextBoolean();
+            int startY = this.random.nextInt(0, this.cols - word.length() + 1);
+            if (!directionY) {
+                startY += word.length() - 1;
+            }
+
+            if (invalids.contains(startX + ";" + startY + ";" + directionX + ";" + directionY)) {
+                continue;
+            }
+
+            final int direction_walk = directionX ? 1 : -1;
+            final int incline_walk = directionY ? 1 : -1;
+
+            Set<Integer> same_display_pos = new TreeSet<>();
+            Set<Integer> same_actual_pos = new TreeSet<>();
+            boolean invalid_pos = false;
+            int overlapCounter = 0;
+            for (int i = 0; i < word.length(); i++, startX += direction_walk, startY += incline_walk) {
+                char c = word.charAt(i);
+
+                // The cell isn't empty and doesn't share the display with `c`. We need to abort the word insertion.
                 if (this.matrix[startY][startX] != null && !this.matrix[startY][startX].hasSameDisplayAs(c)) {
                     while (i-- > 0) {
                         startX -= direction_walk;
@@ -645,18 +738,49 @@ public class WSModel {
                         same_actual_pos.add(startY);
                     }
                 }
-
-                startX += direction_walk;
-                startY += incline_walk;
             }
 
-            if (!invalid_pos && (overlapCounter < chars.length)) {
-                break;
-            } else {
-                invalids.add(startX + ";" + startY + ";" + direction + ";" + incline);
+            // We do not want words on top of others.
+            // TODO: This does not stop bigger words of beign inserted on top of smaller ones.
+            if (!invalid_pos && (overlapCounter < word.length())) {
+                return;
+            }
+
+            invalids.add(startX + ";" + startY + ";" + directionX + ";" + directionY);
+        }
+
+        throw new WordCanNotFitMatrixException(word, this.lines, this.cols);
+    }
+
+    /**
+     * Fills the empty spaces in the matrix with random latin alphabet characters.
+     *
+     * @see #randomLatinCharacter(Random)
+     */
+    private void fillMatrix() {
+        for (int i = 0; i < this.lines; i++) {
+            for (int j = 0; j < this.cols; j++) {
+                if (this.matrix[i][j] == null) {
+                    this.matrix[i][j] = new Cell(randomLatinCharacter(this.random));
+                }
             }
         }
     }
+
+    /**
+     * Create wild cards in random cells of the matrix.
+     *
+     * @param n The number of wild cards to create
+     */
+    private void createWildCards(int n) {
+        for (int i = 0; i < n; i++) {
+            int x = this.random.nextInt(0, this.cols);
+            int y = this.random.nextInt(0, this.lines);
+            this.matrix[y][x] = WildCell.fromCell(this.matrix[y][x]);
+        }
+    }
+
+    // TODO: DOCUMENT ALL BELOW THIS AND TEST TOO
 
     public boolean findWord(@NotNull Position pos) {
 
@@ -783,12 +907,12 @@ public class WSModel {
         return this.wordsToFind == null || this.wordsToFind.isEmpty();
     }
 
-    public void startGame() {
+    public void startGame() throws NoWordsException, CouldNotPopulateMatrixException {
         if (in_game) {
             throw new RuntimeException();
         }
 
-        this.initGrid();
+        this.initMatrix();
         this.in_game = true;
         this.wordsFound = new TreeSet<>();
         this.start_selected = null;
@@ -878,10 +1002,6 @@ public class WSModel {
         return 0;
     }
 
-    private static void throwInvalidInGameChange() throws InvalidInGameChangeException {
-        throw new InvalidInGameChangeException(INVALID_IN_GAME_CHANGE_MSG_ERR);
-    }
-
     public void setMaxWords(int maxWords) {
         assert maxWords > 0;
         this.maxWords = maxWords;
@@ -892,38 +1012,42 @@ public class WSModel {
         this.minWordSize = minWordSize;
     }
 
-    public String matrixToString() {
+    public @NotNull String matrixToString() {
         StringBuilder matrix = new StringBuilder();
         int size = 0;
 
         for (BaseCell[] cells : this.matrix) {
             size = cells.length;
-            matrix.append('+')
-                    .append(Arrays.stream(new String[size]).map(s -> "---").collect(Collectors.joining("+")))
-                    .append("+\n");
+            matrix.append('+').append(Arrays.stream(new String[size]).map(s -> "---").collect(Collectors.joining("+"))).append("+\n");
             for (BaseCell cell : cells) {
-                matrix.append("| ")
-                        .append(cell != null ? cell.getDisplay() : ' ')
-                        .append(' ');
+                matrix.append("| ").append(cell != null ? cell.getDisplay() : ' ').append(' ');
             }
             matrix.append("|\n");
         }
-        matrix.append('+')
-                .append(Arrays.stream(new String[size]).map(s -> "---").collect(Collectors.joining("+")))
-                .append("+\n");
+        matrix.append('+').append(Arrays.stream(new String[size]).map(s -> "---").collect(Collectors.joining("+"))).append("+\n");
 
         return matrix.toString();
     }
 
-    public void allowWordOrientation(WordOrientations ...orientations) {
+    public void allowWordOrientation(WordOrientations... orientations) {
         this.orientationsAllowed.addAll(List.of(orientations));
     }
 
-    public void disallowWordOrientation(WordOrientations ...orientations) {
+    public void disallowWordOrientation(WordOrientations... orientations) {
         List.of(orientations).forEach(this.orientationsAllowed::remove);
     }
 
     public @Nullable Set<String> getWords() {
         return this.words;
+    }
+
+    /**
+     * Method to define which words to use in the game via a {@link WordsProvider}.
+     *
+     * @param provider Any {@link WordsProvider}
+     * @see WordsProvider
+     */
+    public void setWords(@NotNull WordsProvider provider) {
+        this.setWords(provider, true);
     }
 }
