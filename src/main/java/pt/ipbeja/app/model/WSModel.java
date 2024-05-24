@@ -382,6 +382,10 @@ public class WSModel {
      * @throws NoWordsException If no words were given for the game to be able to start
      * @throws CouldNotPopulateMatrixException If for some reason it couldn't put any words into the matrix
      * @throws InvalidInGameChangeException If a game it's currently running
+     * 
+     * @see #initMatrix()
+     * @see #setDimensions(int, int)
+     * @see #setWords(WordsProvider, boolean) 
      */
     public void startGame() throws NoWordsException, CouldNotPopulateMatrixException, InvalidInGameChangeException {
         if (inGame) {
@@ -843,6 +847,16 @@ public class WSModel {
         return found;
     }
 
+    /**
+     * Transforms the sequence of cells from start to end to a list of the possible words they can create.
+     * @param start The start position
+     * @param end The end position
+     * @return The possible words in the board in those positions
+     * 
+     * @see #getPossibleWordsVertically(Position, Position) 
+     * @see #getPossibleWordsHorizontally(Position, Position) 
+     * @see #getPossibleWordsDiagonally(Position, Position) 
+     */
     private @NotNull String @NotNull [] getPossibleWords(@NotNull Position start, @NotNull Position end) {
         if (start.col() == end.col()) {
             return this.getPossibleWordsVertically(start, end);
