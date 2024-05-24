@@ -28,6 +28,7 @@ public class Game extends HBox {
         this.board.requestFocus();
 
         this.log = new TextArea("STATUS:\n");
+        this.log.setDisable(true);
 
         VBox board = new VBox(this.board, end);
         board.setAlignment(Pos.CENTER);

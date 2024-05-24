@@ -193,6 +193,11 @@ public class App extends VBox implements WSView {
                 String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()) +
                 "\n");
 
+        for (String word : res.words()) {
+            System.out.println(word);
+        }
+        System.out.println("\n\n");
+
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(TITLE);
         alert.setHeaderText("Game ended");

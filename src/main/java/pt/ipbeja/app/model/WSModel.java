@@ -569,7 +569,7 @@ public class WSModel {
             final int walk = direction ? 1 : -1;
             int start = this.random.nextInt(0, this.lines - word.length() + 1);
             if (!direction) {
-                start += word.length();
+                start += word.length() - 1;
             }
             final int x = this.random.nextInt(0, this.cols);
 
@@ -641,7 +641,7 @@ public class WSModel {
             final int walk = direction ? 1 : -1;
             int start = this.random.nextInt(0, this.cols - word.length() + 1);
             if (!direction) {
-                start += word.length();
+                start += word.length() - 1;
             }
             final int y = this.random.nextInt(0, this.lines);
 
