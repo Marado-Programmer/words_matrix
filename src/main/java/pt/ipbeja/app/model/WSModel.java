@@ -12,10 +12,7 @@ import pt.ipbeja.app.model.cell.WildCell;
 import pt.ipbeja.app.model.message_to_ui.ClickMessage;
 import pt.ipbeja.app.model.message_to_ui.WordFoundMessage;
 import pt.ipbeja.app.model.results_saver.ResultsSaver;
-import pt.ipbeja.app.model.throwables.CouldNotPopulateMatrixException;
-import pt.ipbeja.app.model.throwables.InvalidInGameChangeException;
-import pt.ipbeja.app.model.throwables.NoWordsException;
-import pt.ipbeja.app.model.throwables.WordCanNotFitMatrixException;
+import pt.ipbeja.app.model.throwables.*;
 import pt.ipbeja.app.model.words_provider.DBWordsProvider;
 import pt.ipbeja.app.model.words_provider.WordsProvider;
 
@@ -40,6 +37,7 @@ public class WSModel {
 
     public static final @NotNull String INVALID_IN_GAME_CHANGE_MSG_ERR = "a game it's currently happening. Cannot perform this action";
     public static final @NotNull String NO_WORDS_MSG_ERR = "no words were given for the game to be able to start";
+    public static final @NotNull String NOT_IN_GAME_ERR = "can't perform this action if a game hasn't started";
     private static final @NotNull String INVALID_SIDE_LEN_MSG_FORMAT = String.format("the %s provided is invalid! it needs to be a number between %d and %d", "%s", MIN_SIDE_LEN, MAX_SIDE_LEN);
 
     private final @NotNull Random random;
@@ -88,11 +86,11 @@ public class WSModel {
     /**
      * Represents if a game it's currently happening.
      */
-    private boolean in_game;
+    private boolean inGame;
     /**
      * Saves the position of the first click on a word selection.
      */
-    private @Nullable Position start_selected;
+    private @Nullable Position startSelected;
     /**
      * A {@link ResultsSaver} that saves the game results when it ends the way it wants.
      *
@@ -235,7 +233,7 @@ public class WSModel {
      * @see #setCols(int)
      */
     public void setDimensions(int lines, int cols) throws InvalidInGameChangeException {
-        if (this.in_game) {
+        if (this.inGame) {
             throwInvalidInGameChange();
         }
 
@@ -276,7 +274,7 @@ public class WSModel {
      * @see #setDimensions(int, int)
      */
     public void setLines(int lines) throws InvalidInGameChangeException {
-        if (this.in_game) {
+        if (this.inGame) {
             throwInvalidInGameChange();
         }
 
@@ -313,7 +311,7 @@ public class WSModel {
      * @see #setDimensions(int, int)
      */
     public void setCols(int cols) throws InvalidInGameChangeException {
-        if (this.in_game) {
+        if (this.inGame) {
             throwInvalidInGameChange();
         }
 
@@ -376,6 +374,28 @@ public class WSModel {
         }
 
         return Arrays.stream(words).filter(s -> !s.isBlank()).toArray(String[]::new);
+    }
+
+    /**
+     * Starts the game
+     *
+     * @throws NoWordsException If no words were given for the game to be able to start
+     * @throws CouldNotPopulateMatrixException If for some reason it couldn't put any words into the matrix
+     * @throws InvalidInGameChangeException If a game it's currently running
+     */
+    public void startGame() throws NoWordsException, CouldNotPopulateMatrixException, InvalidInGameChangeException {
+        if (inGame) {
+            throw new InvalidInGameChangeException(INVALID_IN_GAME_CHANGE_MSG_ERR);
+        }
+
+        this.initMatrix();
+        this.inGame = true;
+        this.wordsFound = new TreeSet<>();
+        this.startSelected = null;
+
+        if (this.view != null) {
+            this.view.gameStarted();
+        }
     }
 
     /**
@@ -780,31 +800,38 @@ public class WSModel {
         }
     }
 
-    // TODO: DOCUMENT ALL BELOW THIS AND TEST TOO
-
-    public boolean findWord(@NotNull Position pos) {
-
-        if (!this.in_game) {
-            throw new RuntimeException();
+    /**
+     * Starts and ends a word find.
+     * <p>The first use of this funtion will set the starting position of the word you want to find. The second use will
+     * see if a word in start to end position it's a valid word to be found. Either way you can start finding another
+     * word again.</p>
+     * @param pos The position of the start or end of the word
+     * @return `false` if a word wasn't found
+     * @throws NotInGameException If trying to find a word while not in-game
+     */
+    public boolean findWord(@NotNull Position pos) throws NotInGameException {
+        if (!this.inGame) {
+            throw new NotInGameException(NOT_IN_GAME_ERR);
         }
 
         if (this.view != null) {
             this.view.update(new ClickMessage(pos, this.matrix[pos.line()][pos.col()].getDisplay()));
         }
 
-        if (this.start_selected == null) {
-            this.start_selected = pos;
+        if (this.startSelected == null) {
+            this.startSelected = pos;
             return true;
         }
 
-        Position start_pos = this.start_selected;
-        this.start_selected = null;
+        Position startPos = this.startSelected;
+        this.startSelected = null;
 
         boolean found = false;
-        for (String possibleWord : getPossibleWords(start_pos, pos)) {
-            if (this.wordFound(possibleWord)) {
-                this.view.wordFound(start_pos, pos);
-                this.view.update(new WordFoundMessage(start_pos, pos, possibleWord));
+        for (String possibleWord : this.getPossibleWords(startPos, pos)) {
+            String word = this.wordWithWildcardInBoard(possibleWord);
+            if (word != null) {
+                this.view.wordFound(startPos, pos);
+                this.view.update(new WordFoundMessage(startPos, pos, word));
                 found = true;
             }
         }
@@ -816,73 +843,136 @@ public class WSModel {
         return found;
     }
 
-    private @NotNull String[] getPossibleWords(@NotNull Position start_pos, @NotNull Position end_pos) {
-
-        List<String> words = new ArrayList<>();
-        words.add("");
-        double declive = (1.0 * start_pos.line() - end_pos.line()) / (start_pos.col() - end_pos.col());
-        if (start_pos.line() == end_pos.line()) {
-            BaseCell[] line = this.matrix[end_pos.line()];
-            int start = Math.min(start_pos.col(), end_pos.col());
-            int end = Math.max(start_pos.col(), end_pos.col());
-            for (int i = start; i <= end; i++) {
-                String[] bases = words.toArray(String[]::new);
-                words.clear();
-                for (char actual : line[i].getActuals()) {
-                    for (String base : bases) {
-                        words.add(base + actual);
-                    }
-                }
-            }
-        } else if (start_pos.col() == end_pos.col()) {
-            int start = Math.min(start_pos.line(), end_pos.line());
-            int end = Math.max(start_pos.line(), end_pos.line());
-            for (int i = start; i <= end; i++) {
-                BaseCell[] line = this.matrix[i];
-                String[] bases = words.toArray(String[]::new);
-                words.clear();
-                for (char actual : line[end_pos.col()].getActuals()) {
-                    for (String base : bases) {
-                        words.add(base + actual);
-                    }
-                }
-            }
-        } else if (Math.abs(declive) == 1) {
-            int startX = Math.min(start_pos.col(), end_pos.col());
-            int startY = Math.min(start_pos.line(), end_pos.line());
-            int endY = Math.max(start_pos.line(), end_pos.line());
-            if (declive == 1) {
-                for (int i = startY; i <= endY; i++) {
-                    BaseCell[] line = this.matrix[i];
-                    String[] bases = words.toArray(String[]::new);
-                    words.clear();
-                    for (char actual : line[startX].getActuals()) {
-                        for (String base : bases) {
-                            words.add(base + actual);
-                        }
-                    }
-                    startX++;
-                }
-            } else {
-                for (int i = endY; i >= startY; i--) {
-                    BaseCell[] line = this.matrix[i];
-                    String[] bases = words.toArray(String[]::new);
-                    words.clear();
-                    for (char actual : line[startX].getActuals()) {
-                        for (String base : bases) {
-                            words.add(base + actual);
-                        }
-                    }
-                    startX++;
-                }
+    private @NotNull String @NotNull [] getPossibleWords(@NotNull Position start, @NotNull Position end) {
+        if (start.col() == end.col()) {
+            return this.getPossibleWordsVertically(start, end);
+        } else if (start.line() == end.line()) {
+            return this.getPossibleWordsHorizontally(start, end);
+        } else {
+            double slope = (1.0 * start.line() - end.line()) / (start.col() - end.col());
+            if (Math.abs(slope) == 1) {
+                return this.getPossibleWordsDiagonally(start, end);
             }
         }
 
+        return new String[0];
+    }
+
+    private @NotNull String @NotNull [] getPossibleWordsVertically(@NotNull Position startPos, @NotNull Position endPos) {
+        List<String> words = new ArrayList<>();
+        words.add("");
+        int start = Math.min(startPos.line(), endPos.line());
+        int end = Math.max(startPos.line(), endPos.line());
+        for (int i = start; i <= end; i++) {
+            BaseCell[] line = this.matrix[i];
+            String[] bases = words.toArray(String[]::new);
+            words.clear();
+            for (char actual : line[endPos.col()].getActuals()) {
+                for (String base : bases) {
+                    words.add(base + actual);
+                }
+            }
+        }
         return words.toArray(String[]::new);
     }
 
+    private @NotNull String @NotNull [] getPossibleWordsHorizontally(@NotNull Position startPos, @NotNull Position endPos) {
+        List<String> words = new ArrayList<>();
+        words.add("");
+        BaseCell[] line = this.matrix[endPos.line()];
+        int start = Math.min(startPos.col(), endPos.col());
+        int end = Math.max(startPos.col(), endPos.col());
+        for (int i = start; i <= end; i++) {
+            String[] bases = words.toArray(String[]::new);
+            words.clear();
+            for (char actual : line[i].getActuals()) {
+                for (String base : bases) {
+                    words.add(base + actual);
+                }
+            }
+        }
+        return words.toArray(String[]::new);
+    }
+
+    private @NotNull String @NotNull [] getPossibleWordsDiagonally(@NotNull Position startPos, @NotNull Position endPos) {
+        List<String> words = new ArrayList<>();
+        words.add("");
+        double slope = (1.0 * startPos.line() - endPos.line()) / (startPos.col() - endPos.col());
+        int startX = Math.min(startPos.col(), endPos.col());
+        int startY = Math.min(startPos.line(), endPos.line());
+        int endY = Math.max(startPos.line(), endPos.line());
+        if (slope == 1) {
+            for (int i = startY; i <= endY; i++) {
+                BaseCell[] line = this.matrix[i];
+                String[] bases = words.toArray(String[]::new);
+                words.clear();
+                for (char actual : line[startX].getActuals()) {
+                    for (String base : bases) {
+                        words.add(base + actual);
+                    }
+                }
+                startX++;
+            }
+        } else if (slope == -1) {
+            for (int i = endY; i >= startY; i--) {
+                BaseCell[] line = this.matrix[i];
+                String[] bases = words.toArray(String[]::new);
+                words.clear();
+                for (char actual : line[startX].getActuals()) {
+                    for (String base : bases) {
+                        words.add(base + actual);
+                    }
+                }
+                startX++;
+            }
+        }
+        return words.toArray(String[]::new);
+    }
+
+    /**
+     * Check if the word is in the board
+     *
+     * @param word word
+     * @return if the word is in the board
+     */
+    public @Nullable String wordInBoard(@NotNull String word) throws NotInGameException {
+        if (!this.inGame) {
+            throw new NotInGameException(NOT_IN_GAME_ERR);
+        }
+
+        if (this.wordsToFind == null || this.wordsFound == null) {
+            throw new NotInGameException(NOT_IN_GAME_ERR);
+        }
+
+        word = word.toUpperCase();
+
+        // https://stackoverflow.com/questions/7569335/reverse-a-string-in-java
+        String reversed = new StringBuilder(word).reverse().toString();
+        if (this.wordsToFind.contains(word)) {
+            this.wordsToFind.remove(word);
+            this.wordsFound.add(word);
+            return word;
+        } else if (this.wordsToFind.contains(reversed)) {
+            this.wordsToFind.remove(reversed);
+            this.wordsFound.add(reversed);
+            return reversed;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Check if the word with wildcard is in the board
+     *
+     * @param word word
+     * @return if the word with wildcard is in the board
+     */
+    public @Nullable String wordWithWildcardInBoard(@NotNull String word) throws NotInGameException {
+        return this.wordInBoard(word);
+    }
+
     public @NotNull GameResults endGame() {
-        this.in_game = false;
+        this.inGame = false;
         GameResults res = this.curGameResults();
         if (this.view != null) {
             this.view.gameEnded(res);
@@ -907,21 +997,6 @@ public class WSModel {
         return this.wordsToFind == null || this.wordsToFind.isEmpty();
     }
 
-    public void startGame() throws NoWordsException, CouldNotPopulateMatrixException {
-        if (in_game) {
-            throw new RuntimeException();
-        }
-
-        this.initMatrix();
-        this.in_game = true;
-        this.wordsFound = new TreeSet<>();
-        this.start_selected = null;
-
-        if (this.view != null) {
-            this.view.gameStarted();
-        }
-    }
-
     public void registerView(WSView wsView) {
         this.view = wsView;
     }
@@ -943,52 +1018,10 @@ public class WSModel {
      * @return true if all words were found
      */
     public boolean allWordsWereFound() {
-        if (!this.in_game) {
+        if (!this.inGame) {
             throw new RuntimeException();
         }
         return this.wordsToFind == null || this.wordsToFind.isEmpty();
-    }
-
-    /**
-     * Check if the word is in the board
-     *
-     * @param word word
-     * @return true if the word is in the board
-     */
-    public boolean wordFound(String word) {
-        if (!this.in_game) {
-            throw new RuntimeException();
-        }
-
-        if (this.wordsToFind == null || this.wordsFound == null) {
-            return false;
-        }
-
-        word = word.toUpperCase();
-
-        // https://stackoverflow.com/questions/7569335/reverse-a-string-in-java
-        String reversed = new StringBuilder(word).reverse().toString();
-        if (this.wordsToFind.contains(word)) {
-            this.wordsToFind.remove(word);
-            this.wordsFound.add(word);
-            return true;
-        } else if (this.wordsToFind.contains(reversed)) {
-            this.wordsToFind.remove(reversed);
-            this.wordsFound.add(reversed);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Check if the word with wildcard is in the board
-     *
-     * @param word word
-     * @return true if the word with wildcard is in the board
-     */
-    public boolean wordWithWildcardFound(String word) {
-        return this.wordFound(word);
     }
 
     public void setSaver(@NotNull ResultsSaver saver) {

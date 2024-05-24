@@ -10,6 +10,7 @@ import pt.ipbeja.app.model.cell.BaseCell;
 import pt.ipbeja.app.model.cell.Cell;
 import pt.ipbeja.app.model.Position;
 import pt.ipbeja.app.model.WSModel;
+import pt.ipbeja.app.model.throwables.NotInGameException;
 
 /**
  * Game interface. Just a GridPane of buttons. No images. No menu.
@@ -57,12 +58,16 @@ public class WSBoard extends GridPane {
         button.setMinWidth(SQUARE_SIZE);
         button.setMinHeight(SQUARE_SIZE);
         button.setOnAction(event -> {
-            if (this.wsModel.findWord(new Position(line, col))) {
-                if (!button.getStyle().contains("green")) {
-                    button.setStyle("-fx-background-color: yellow;");
+            try {
+                if (this.wsModel.findWord(new Position(line, col))) {
+                    if (!button.getStyle().contains("green")) {
+                        button.setStyle("-fx-background-color: yellow;");
+                    }
+                } else {
+                    this.unselectAll();
                 }
-            } else {
-                this.unselectAll();
+            } catch (NotInGameException e) {
+                throw new RuntimeException(e);
             }
         });
         return button;

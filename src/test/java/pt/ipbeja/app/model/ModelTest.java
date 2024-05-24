@@ -52,7 +52,7 @@ public class ModelTest {
         model.registerView(new EmptyView());
         try {
             model.startGame();
-        } catch (NoWordsException | CouldNotPopulateMatrixException e) {
+        } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException e) {
             throw new RuntimeException(e);
         }
 

@@ -4,7 +4,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import pt.ipbeja.app.model.throwables.CouldNotPopulateMatrixException;
+import pt.ipbeja.app.model.throwables.InvalidInGameChangeException;
 import pt.ipbeja.app.model.throwables.NoWordsException;
+import pt.ipbeja.app.model.throwables.NotInGameException;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -40,11 +42,16 @@ class WSModelTest {
         model.registerView(new EmptyView());
         try {
             model.startGame();
-        } catch (NoWordsException | CouldNotPopulateMatrixException e) {
+        } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException e) {
             throw new RuntimeException(e);
         }
 
-        assertTrue(model.wordFound(Arrays.stream(contents.split("\n")).findFirst().orElse("")));
+        String word = Arrays.stream(contents.split("\n")).findFirst().orElse("");
+        try {
+            assertEquals(word.toUpperCase(), model.wordInBoard(word));
+        } catch (NotInGameException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -53,10 +60,16 @@ class WSModelTest {
         model.registerView(new EmptyView());
         try {
             model.startGame();
-        } catch (NoWordsException | CouldNotPopulateMatrixException e) {
+        } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException e) {
             throw new RuntimeException(e);
         }
-        assertTrue(model.wordWithWildcardFound(Arrays.stream(contents.split("\n")).findFirst().orElse("")));
+
+        String word = Arrays.stream(contents.split("\n")).findFirst().orElse("");
+        try {
+            assertEquals(word.toUpperCase(), model.wordInBoard(word));
+        } catch (NotInGameException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -65,13 +78,18 @@ class WSModelTest {
         model.registerView(new EmptyView());
         try {
             model.startGame();
-        } catch (NoWordsException | CouldNotPopulateMatrixException e) {
+        } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException e) {
             throw new RuntimeException(e);
         }
 
         for (String w :
                 contents.split("\n")) {
-            assertTrue(model.wordFound(w));
+            w = w.toUpperCase();
+            try {
+                assertEquals(w, model.wordInBoard(w));
+            } catch (NotInGameException e) {
+                throw new RuntimeException(e);
+            }
         }
         assertTrue(model.allWordsWereFound());
     }
@@ -82,14 +100,19 @@ class WSModelTest {
         model.registerView(new EmptyView());
         try {
             model.startGame();
-        } catch (NoWordsException | CouldNotPopulateMatrixException e) {
+        } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException e) {
             throw new RuntimeException(e);
         }
 
         for (String w :
                 contents.split("\n")) {
+            w = w.toUpperCase();
             assertFalse(model.gameEnded());
-            assertTrue(model.wordFound(w));
+            try {
+                assertEquals(w, model.wordInBoard(w));
+            } catch (NotInGameException e) {
+                throw new RuntimeException(e);
+            }
         }
         assertTrue(model.gameEnded());
         GameResults res = model.endGame();

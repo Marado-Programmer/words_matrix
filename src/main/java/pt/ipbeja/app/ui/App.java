@@ -84,7 +84,7 @@ public class App extends VBox implements WSView {
                 alert.setContentText(e.toString());
                 alert.showAndWait();
                 System.err.println(Arrays.toString(e.getStackTrace()));
-            } catch (NoWordsException | CouldNotPopulateMatrixException e) {
+            } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException e) {
                 throw new RuntimeException(e);
             }
         });
@@ -202,7 +202,7 @@ public class App extends VBox implements WSView {
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 model.startGame();
-            } catch (NoWordsException | CouldNotPopulateMatrixException e) {
+            } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException e) {
                 throw new RuntimeException(e);
             }
         } else {
