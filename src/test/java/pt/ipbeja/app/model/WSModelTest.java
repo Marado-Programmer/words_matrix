@@ -91,7 +91,11 @@ class WSModelTest {
                 throw new RuntimeException(e);
             }
         }
-        assertTrue(model.allWordsWereFound());
+        try {
+            assertTrue(model.allWordsWereFound());
+        } catch (NotInGameException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test

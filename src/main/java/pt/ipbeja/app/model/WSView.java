@@ -9,7 +9,6 @@ import pt.ipbeja.app.model.message_to_ui.MessageToUI;
  * @version 2024/04/14
  */
 public interface WSView {
-
     void update(MessageToUI messageToUI);
 
     void gameStarted();
@@ -17,5 +16,4 @@ public interface WSView {
     void wordFound(Position start, Position end);
 
     void gameEnded(GameResults res);
-
 }

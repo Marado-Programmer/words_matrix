@@ -67,4 +67,6 @@ public abstract class BaseCell {
     public char getDisplay() {
         return display;
     }
+
+    public abstract int getPoints();
 }

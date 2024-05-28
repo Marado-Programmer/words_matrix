@@ -143,21 +143,22 @@ public class App extends VBox implements WSView {
 
     @Override
     public void wordFound(@NotNull Position start, @NotNull Position end) {
-
         double declive = (1.0 * start.line() - end.line()) / (start.col() - end.col());
         if (start.line() == end.line()) {
             int start_pos = Math.min(start.col(), end.col());
             int end_pos = Math.max(start.col(), end.col());
             for (int i = start_pos; i <= end_pos; i++) {
-                Button btn = this.game.getBoard().getButton(end.line(), i);
+                CellButton btn = this.game.getBoard().getButton(end.line(), i);
                 btn.setStyle("-fx-background-color: green");
+                btn.setPartOfWord(true);
             }
         } else if (start.col() == end.col()) {
             int start_pos = Math.min(start.line(), end.line());
             int end_pos = Math.max(start.line(), end.line());
             for (int i = start_pos; i <= end_pos; i++) {
-                Button btn = this.game.getBoard().getButton(i, end.col());
+                CellButton btn = this.game.getBoard().getButton(i, end.col());
                 btn.setStyle("-fx-background-color: green");
+                btn.setPartOfWord(true);
             }
         } else if (Math.abs(declive) == 1) {
             int startX = Math.min(start.col(), end.col());
@@ -165,20 +166,22 @@ public class App extends VBox implements WSView {
             int endY = Math.max(start.line(), end.line());
             if (declive == 1) {
                 for (int i = startY; i <= endY; i++) {
-                    Button btn = this.game.getBoard().getButton(i, startX);
+                    CellButton btn = this.game.getBoard().getButton(i, startX);
                     btn.setStyle("-fx-background-color: green");
+                    btn.setPartOfWord(true);
                     startX++;
                 }
             } else {
                 for (int i = endY; i >= startY; i--) {
-                    Button btn = this.game.getBoard().getButton(i, startX);
+                    CellButton btn = this.game.getBoard().getButton(i, startX);
                     btn.setStyle("-fx-background-color: green");
+                    btn.setPartOfWord(true);
                     startX++;
                 }
             }
         }
 
-        this.model.gameEnded();
+        this.game.getBoard().unselectAll();
     }
 
     @Override

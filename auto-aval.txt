@@ -13,7 +13,7 @@
       mínimo permitido. O ficheiro de base de dados sao palavras separadas por **white spaces**. Usar palavras com
       acentos é possível. Visualmente elas aparecem como sem acento, mas ao selecionar a palavra o acento é usado. A
       mesma letra pode servir como diferentes variacoes da mesma. As palavras não existem na diagonal.
-[ ] - RE3
+[x] - RE3
 [x] - RE4
 [x] - RE5
 [x] - RE6
@@ -22,7 +22,7 @@
 [x] - RNE2 ---
 [x] - RNE3 ---
 ### Apenas para época normal
-[ ] - RNE4 ---
+[x] - RNE4 ---
 [ ] - RNE5 ---
 ### Apenas para época de recurso
 [ ] - RNE4 ---

@@ -22,4 +22,9 @@ public class WildCell extends BaseCell {
     public boolean hasSameDisplayAs(char actual) {
         return true;
     }
+
+    @Override
+    public int getPoints() {
+        return 2;
+    }
 }

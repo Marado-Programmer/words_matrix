@@ -11,6 +11,7 @@ import pt.ipbeja.app.model.cell.Cell;
 import pt.ipbeja.app.model.cell.WildCell;
 import pt.ipbeja.app.model.message_to_ui.ClickMessage;
 import pt.ipbeja.app.model.message_to_ui.WordFoundMessage;
+import pt.ipbeja.app.model.message_to_ui.WordPointsMessage;
 import pt.ipbeja.app.model.results_saver.ResultsSaver;
 import pt.ipbeja.app.model.throwables.*;
 import pt.ipbeja.app.model.words_provider.DBWordsProvider;
@@ -836,6 +837,7 @@ public class WSModel {
             if (word != null) {
                 this.view.wordFound(startPos, pos);
                 this.view.update(new WordFoundMessage(startPos, pos, word));
+                this.view.update(new WordPointsMessage(word, 0 /*points*/));
                 found = true;
             }
         }
@@ -944,10 +946,10 @@ public class WSModel {
     }
 
     /**
-     * Check if the word is in the board
-     *
-     * @param word word
-     * @return if the word is in the board
+     * Checks if the word is in the board.
+     * @param word The word or itself in reverse
+     * @return The word
+     * @throws NotInGameException If a game isn't happening
      */
     public @Nullable String wordInBoard(@NotNull String word) throws NotInGameException {
         if (!this.inGame) {
@@ -976,15 +978,25 @@ public class WSModel {
     }
 
     /**
-     * Check if the word with wildcard is in the board
+     * Checks if the word is in the board.
+     * <p>Because of how {@link BaseCell works}, there's no need to have a separated method like this. But because it
+     * was present in the projects base, I'll keep it.</p>
+     * @param word The word or itself in reverse
+     * @return The word
+     * @throws NotInGameException If a game isn't happening
      *
-     * @param word word
-     * @return if the word with wildcard is in the board
+     * @see #wordInBoard(String)
      */
     public @Nullable String wordWithWildcardInBoard(@NotNull String word) throws NotInGameException {
         return this.wordInBoard(word);
     }
 
+    /**
+     * Ends the game and tells the {@link #view} about it, and the {@link #saver} to save the game results.
+     * @return The game results
+     *
+     * @see #curGameResults()
+     */
     public @NotNull GameResults endGame() {
         this.inGame = false;
         GameResults res = this.curGameResults();
@@ -997,6 +1009,9 @@ public class WSModel {
         return res;
     }
 
+    /**
+     * @return The current game results
+     */
     public @NotNull GameResults curGameResults() {
         if (this.wordsToFind == null || this.wordsFound == null) {
             return new GameResults(new TreeSet<>(), new TreeSet<>());
@@ -1007,10 +1022,10 @@ public class WSModel {
         return new GameResults(union, this.wordsFound);
     }
 
-    public boolean gameEnded() {
-        return this.wordsToFind == null || this.wordsToFind.isEmpty();
-    }
-
+    /**
+     * Adds the {@link WSView} that the model will use.
+     * @param wsView The view
+     */
     public void registerView(WSView wsView) {
         this.view = wsView;
     }
@@ -1022,7 +1037,6 @@ public class WSModel {
      * @return the text in the position
      */
     public BaseCell textInPosition(@NotNull Position position) {
-
         return this.matrix[position.line()][position.col()];
     }
 
@@ -1031,15 +1045,11 @@ public class WSModel {
      *
      * @return true if all words were found
      */
-    public boolean allWordsWereFound() {
+    public boolean allWordsWereFound() throws NotInGameException {
         if (!this.inGame) {
-            throw new RuntimeException();
+            throw new NotInGameException();
         }
         return this.wordsToFind == null || this.wordsToFind.isEmpty();
-    }
-
-    public void setSaver(@NotNull ResultsSaver saver) {
-        this.saver = saver;
     }
 
     public int wordsInUse() {
@@ -1047,6 +1057,10 @@ public class WSModel {
             return this.wordsToFind.size() + this.wordsFound.size();
         }
         return 0;
+    }
+
+    public void setSaver(@NotNull ResultsSaver saver) {
+        this.saver = saver;
     }
 
     public void setMaxWords(int maxWords) {
@@ -1074,6 +1088,10 @@ public class WSModel {
         matrix.append('+').append(Arrays.stream(new String[size]).map(s -> "---").collect(Collectors.joining("+"))).append("+\n");
 
         return matrix.toString();
+    }
+
+    public boolean gameEnded() {
+        return this.wordsToFind == null || this.wordsToFind.isEmpty();
     }
 
     public void allowWordOrientation(WordOrientations... orientations) {

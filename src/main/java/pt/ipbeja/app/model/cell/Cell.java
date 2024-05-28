@@ -9,4 +9,9 @@ public class Cell extends BaseCell {
     public Cell(char actual) {
         super(actual);
     }
+
+    @Override
+    public int getPoints() {
+        return 1;
+    }
 }
