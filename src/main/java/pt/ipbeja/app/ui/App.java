@@ -2,7 +2,6 @@ package pt.ipbeja.app.ui;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -13,6 +12,7 @@ import pt.ipbeja.app.model.*;
 import pt.ipbeja.app.model.message_to_ui.MessageToUI;
 import pt.ipbeja.app.model.throwables.CouldNotPopulateMatrixException;
 import pt.ipbeja.app.model.throwables.InvalidInGameChangeException;
+import pt.ipbeja.app.model.throwables.NoDimensionsDefinedException;
 import pt.ipbeja.app.model.throwables.NoWordsException;
 import pt.ipbeja.app.model.words_provider.DBWordsProvider;
 import pt.ipbeja.app.model.words_provider.ManualWordsProvider;
@@ -26,6 +26,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static pt.ipbeja.app.model.WSModel.MIN_SIDE_LEN;
 import static pt.ipbeja.app.ui.StartWordSearch.TITLE;
 
 public class App extends VBox implements WSView {
@@ -75,17 +76,25 @@ public class App extends VBox implements WSView {
                 this.model.disallowWordOrientation(WordOrientations.DIAGONAL);
             }
 
-            try {
-                this.model.startGame();
-            } catch (RuntimeException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle(TITLE);
-                alert.setHeaderText("ERROR");
-                alert.setContentText(e.toString());
-                alert.showAndWait();
-                System.err.println(Arrays.toString(e.getStackTrace()));
-            } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException e) {
-                throw new RuntimeException(e);
+            int tries = MIN_SIDE_LEN;
+            while (tries > 0) {
+                try {
+                    this.model.startGame();
+                    break;
+                } catch (RuntimeException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle(TITLE);
+                    alert.setHeaderText("ERROR");
+                    alert.setContentText(e.toString());
+                    alert.showAndWait();
+                    System.err.println(Arrays.toString(e.getStackTrace()));
+                } catch (NoWordsException | NoDimensionsDefinedException e) {
+                    break;
+                } catch (InvalidInGameChangeException e) {
+                    throw new RuntimeException(e);
+                } catch (CouldNotPopulateMatrixException e) {
+                    tries--;
+                }
             }
         });
         this.menu.managedProperty().bind(this.menu.visibleProperty());
@@ -195,6 +204,11 @@ public class App extends VBox implements WSView {
                 "\n\tpercentage of words found:\t" +
                 String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()) +
                 "\n");
+        this.game.log("words in game:\n");
+        for (String word : res.words()) {
+            this.game.log("\t" + (res.words_found().contains(word) ? "+" : "-") + " " + word + "\n");
+        }
+        this.game.log("\n");
 
         for (String word : res.words()) {
             System.out.println(word);
@@ -209,8 +223,9 @@ public class App extends VBox implements WSView {
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                model.startGame();
-            } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException e) {
+                this.model.startGame();
+            } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException |
+                     NoDimensionsDefinedException e) {
                 throw new RuntimeException(e);
             }
         } else {

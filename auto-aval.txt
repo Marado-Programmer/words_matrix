@@ -7,26 +7,31 @@
 [x] - 5
 [x] - 6
 ## Requisitos Essenciais
-[x] - RE1
+[x] - RE1 --- O que mudou da base:
+      - Algumas classes foram movidas para sub-packages;
+      - Algumas classes mudaram para classes abstratas, interfaces para classes, records para classes, e mudancas desse
+        genero;
+      - Alguns metodos mudaram de signature;
+      - Alguns nomes tambem mas isso tem que ser trocado de volta para o nome original.
 [x] - RE2 --- Feito. Usando polimorfismo é possível, ao invés de usar um ficheiro como base de dados, fazer o utilizador
       escrever as palavras de que ele está a espera que apareça no seu jogo. Pode especificar o tamanho de palavra
       mínimo permitido. O ficheiro de base de dados sao palavras separadas por **white spaces**. Usar palavras com
       acentos é possível. Visualmente elas aparecem como sem acento, mas ao selecionar a palavra o acento é usado. A
-      mesma letra pode servir como diferentes variacoes da mesma. As palavras não existem na diagonal.
+      mesma letra pode servir como diferentes variacoes da mesma;
 [x] - RE3
 [x] - RE4
-[x] - RE5
+[x] - RE5 --- Mostra ainda a lista de palavras presentes no jogo;
 [x] - RE6
 ## Requisitos Não Essenciais
-[x] - RNE1 ---
-[x] - RNE2 ---
-[x] - RNE3 ---
+[x] - RNE1 --- Tirar a duvida na parte grafica com o prof
+[ ] - RNE2 --- opcao de gravar caso aparaca aquele pop up
+[x] - RNE3
 ### Apenas para época normal
-[x] - RNE4 ---
-[ ] - RNE5 ---
+[x] - RNE4
+[ ] - RNE5 ---  Parte grafica falta
 ### Apenas para época de recurso
-[ ] - RNE4 ---
-[ ] - RNE5 ---
+[x] - RNE4
+[ ] - RNE5 ---  Parte grafica falta
 [ ] - RNE6 ---
 
 # Auto Avaliação

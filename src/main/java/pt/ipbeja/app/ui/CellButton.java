@@ -15,8 +15,9 @@ public class CellButton extends Button {
         this.setMinHeight(SQUARE_SIZE);
         this.setOnAction(event -> {
             try {
-                if (model.findWord(pos)) {
-                    if (!this.partOfWord) {
+                String word = model.findWord(pos);
+                if (word != null) {
+                    if (word.isEmpty()) {
                         this.setStyle("-fx-background-color: yellow;");
                     }
                 } else {

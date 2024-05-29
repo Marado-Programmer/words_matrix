@@ -283,13 +283,16 @@ public class WSModel {
             throw new IllegalArgumentException("`lines` are natural numbers");
         }
 
-        boolean valid_lines = lines >= MIN_SIDE_LEN && lines <= MAX_SIDE_LEN;
-        if (!valid_lines) {
+        if (!this.validLines(lines)) {
             String msg = String.format(INVALID_SIDE_LEN_MSG_FORMAT, "`lines`");
             throw new IllegalArgumentException(msg);
         }
 
         this.lines = lines;
+    }
+
+    private boolean validLines(int lines) {
+        return lines >= MIN_SIDE_LEN && lines <= MAX_SIDE_LEN;
     }
 
     /**
@@ -320,13 +323,16 @@ public class WSModel {
             throw new IllegalArgumentException("`cols` are natural numbers");
         }
 
-        boolean valid_cols = cols >= MIN_SIDE_LEN && cols <= MAX_SIDE_LEN;
-        if (!valid_cols) {
+        if (!this.validCols(cols)) {
             String msg = String.format(INVALID_SIDE_LEN_MSG_FORMAT, "`cols`");
             throw new IllegalArgumentException(msg);
         }
 
         this.cols = cols;
+    }
+
+    private boolean validCols(int cols) {
+        return cols >= MIN_SIDE_LEN && cols <= MAX_SIDE_LEN;
     }
 
     /**
@@ -346,6 +352,16 @@ public class WSModel {
             String[] words = this.parseLine(line);
             Collections.addAll(this.words, words);
         }
+    }
+
+    /**
+     * Method to define which words to use in the game via a {@link WordsProvider}.
+     *
+     * @param provider Any {@link WordsProvider}
+     * @see WordsProvider
+     */
+    public void setWords(@NotNull WordsProvider provider) {
+        this.setWords(provider, true);
     }
 
     /**
@@ -388,7 +404,7 @@ public class WSModel {
      * @see #setDimensions(int, int)
      * @see #setWords(WordsProvider, boolean) 
      */
-    public void startGame() throws NoWordsException, CouldNotPopulateMatrixException, InvalidInGameChangeException {
+    public void startGame() throws NoWordsException, CouldNotPopulateMatrixException, InvalidInGameChangeException, NoDimensionsDefinedException {
         if (inGame) {
             throw new InvalidInGameChangeException(INVALID_IN_GAME_CHANGE_MSG_ERR);
         }
@@ -413,11 +429,11 @@ public class WSModel {
      * </ol>
      * <p>Some of this steps can be changed in behaviour by configuration.</p>
      */
-    private void initMatrix() throws NoWordsException, CouldNotPopulateMatrixException {
+    private void initMatrix() throws NoWordsException, CouldNotPopulateMatrixException, NoDimensionsDefinedException {
         this.initClearMatrix();
         this.populateMatrix();
         this.fillMatrix();
-        this.createWildCards(this.random.nextInt(0, MIN_SIDE_LEN));
+        this.createWildCards(this.random.nextInt(0, this.minWordSize)); // TODO: user chooses between n (>0) and m (<minWordSize)
     }
 
     /**
@@ -427,7 +443,10 @@ public class WSModel {
      * @see #setLines(int)
      * @see #setCols(int)
      */
-    private void initClearMatrix() {
+    private void initClearMatrix() throws NoDimensionsDefinedException {
+        if (!validLines(this.lines) || !validCols(cols)) {
+            throw new NoDimensionsDefinedException();
+        }
         this.matrix = new BaseCell[this.lines][this.cols];
     }
 
@@ -811,10 +830,10 @@ public class WSModel {
      * see if a word in start to end position it's a valid word to be found. Either way you can start finding another
      * word again.</p>
      * @param pos The position of the start or end of the word
-     * @return `false` if a word wasn't found
+     * @return The word, an empty String if it's the first click or null if no word was found
      * @throws NotInGameException If trying to find a word while not in-game
      */
-    public boolean findWord(@NotNull Position pos) throws NotInGameException {
+    public @Nullable String findWord(@NotNull Position pos) throws NotInGameException {
         if (!this.inGame) {
             throw new NotInGameException(NOT_IN_GAME_ERR);
         }
@@ -825,20 +844,22 @@ public class WSModel {
 
         if (this.startSelected == null) {
             this.startSelected = pos;
-            return true;
+            return "";
         }
 
         Position startPos = this.startSelected;
         this.startSelected = null;
 
-        boolean found = false;
+        String found = null;
         for (Word possibleWord : this.getPossibleWords(startPos, pos)) {
             String word = this.wordWithWildcardInBoard(possibleWord.word());
             if (word != null) {
-                this.view.wordFound(startPos, pos);
-                this.view.update(new WordFoundMessage(startPos, pos, word));
-                this.view.update(new WordPointsMessage(word, possibleWord.points()));
-                found = true;
+                if (this.view != null) {
+                    this.view.wordFound(startPos, pos);
+                    this.view.update(new WordFoundMessage(startPos, pos, word));
+                    this.view.update(new WordPointsMessage(word, possibleWord.points()));
+                }
+                found = word;
             }
         }
 
@@ -1106,13 +1127,7 @@ public class WSModel {
         return this.words;
     }
 
-    /**
-     * Method to define which words to use in the game via a {@link WordsProvider}.
-     *
-     * @param provider Any {@link WordsProvider}
-     * @see WordsProvider
-     */
-    public void setWords(@NotNull WordsProvider provider) {
-        this.setWords(provider, true);
+    public boolean isInGame() {
+        return this.inGame;
     }
 }

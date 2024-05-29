@@ -40,11 +40,7 @@ class WSModelTest {
     void testWordFound() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         model.registerView(new EmptyView());
-        try {
-            model.startGame();
-        } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException e) {
-            throw new RuntimeException(e);
-        }
+        assertDoesNotThrow(model::startGame);
 
         String word = Arrays.stream(contents.split("\n")).findFirst().orElse("");
         try {
@@ -58,11 +54,7 @@ class WSModelTest {
     void testWordWithWildcardFound() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         model.registerView(new EmptyView());
-        try {
-            model.startGame();
-        } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException e) {
-            throw new RuntimeException(e);
-        }
+        assertDoesNotThrow(model::startGame);
 
         String word = Arrays.stream(contents.split("\n")).findFirst().orElse("");
         try {
@@ -76,11 +68,7 @@ class WSModelTest {
     void testAllWordsWereFound() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         model.registerView(new EmptyView());
-        try {
-            model.startGame();
-        } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException e) {
-            throw new RuntimeException(e);
-        }
+        assertDoesNotThrow(model::startGame);
 
         for (String w :
                 contents.split("\n")) {
@@ -102,11 +90,7 @@ class WSModelTest {
     void game() {
         WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
         model.registerView(new EmptyView());
-        try {
-            model.startGame();
-        } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException e) {
-            throw new RuntimeException(e);
-        }
+        assertDoesNotThrow(model::startGame);
 
         for (String w :
                 contents.split("\n")) {
