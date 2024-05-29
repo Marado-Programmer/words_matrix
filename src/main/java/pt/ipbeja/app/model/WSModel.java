@@ -832,12 +832,12 @@ public class WSModel {
         this.startSelected = null;
 
         boolean found = false;
-        for (String possibleWord : this.getPossibleWords(startPos, pos)) {
-            String word = this.wordWithWildcardInBoard(possibleWord);
+        for (Word possibleWord : this.getPossibleWords(startPos, pos)) {
+            String word = this.wordWithWildcardInBoard(possibleWord.word());
             if (word != null) {
                 this.view.wordFound(startPos, pos);
                 this.view.update(new WordFoundMessage(startPos, pos, word));
-                this.view.update(new WordPointsMessage(word, 0 /*points*/));
+                this.view.update(new WordPointsMessage(word, possibleWord.points()));
                 found = true;
             }
         }
@@ -859,7 +859,7 @@ public class WSModel {
      * @see #getPossibleWordsHorizontally(Position, Position) 
      * @see #getPossibleWordsDiagonally(Position, Position) 
      */
-    private @NotNull String @NotNull [] getPossibleWords(@NotNull Position start, @NotNull Position end) {
+    private @NotNull Word @NotNull [] getPossibleWords(@NotNull Position start, @NotNull Position end) {
         if (start.col() == end.col()) {
             return this.getPossibleWordsVertically(start, end);
         } else if (start.line() == end.line()) {
@@ -871,48 +871,48 @@ public class WSModel {
             }
         }
 
-        return new String[0];
+        return new Word[0];
     }
 
-    private @NotNull String @NotNull [] getPossibleWordsVertically(@NotNull Position startPos, @NotNull Position endPos) {
-        List<String> words = new ArrayList<>();
-        words.add("");
+    private @NotNull Word @NotNull [] getPossibleWordsVertically(@NotNull Position startPos, @NotNull Position endPos) {
+        List<Word> words = new ArrayList<>();
+        words.add(new Word("", 0));
         int start = Math.min(startPos.line(), endPos.line());
         int end = Math.max(startPos.line(), endPos.line());
         for (int i = start; i <= end; i++) {
             BaseCell[] line = this.matrix[i];
-            String[] bases = words.toArray(String[]::new);
+            Word[] bases = words.toArray(Word[]::new);
             words.clear();
             for (char actual : line[endPos.col()].getActuals()) {
-                for (String base : bases) {
-                    words.add(base + actual);
+                for (Word base : bases) {
+                    words.add(new Word(base.word() + actual, base.points() + line[endPos.col()].getPoints()));
                 }
             }
         }
-        return words.toArray(String[]::new);
+        return words.toArray(Word[]::new);
     }
 
-    private @NotNull String @NotNull [] getPossibleWordsHorizontally(@NotNull Position startPos, @NotNull Position endPos) {
-        List<String> words = new ArrayList<>();
-        words.add("");
+    private @NotNull Word @NotNull [] getPossibleWordsHorizontally(@NotNull Position startPos, @NotNull Position endPos) {
+        List<Word> words = new ArrayList<>();
+        words.add(new Word("", 0));
         BaseCell[] line = this.matrix[endPos.line()];
         int start = Math.min(startPos.col(), endPos.col());
         int end = Math.max(startPos.col(), endPos.col());
         for (int i = start; i <= end; i++) {
-            String[] bases = words.toArray(String[]::new);
+            Word[] bases = words.toArray(Word[]::new);
             words.clear();
             for (char actual : line[i].getActuals()) {
-                for (String base : bases) {
-                    words.add(base + actual);
+                for (Word base : bases) {
+                    words.add(new Word(base.word() + actual, base.points() + line[endPos.col()].getPoints()));
                 }
             }
         }
-        return words.toArray(String[]::new);
+        return words.toArray(Word[]::new);
     }
 
-    private @NotNull String @NotNull [] getPossibleWordsDiagonally(@NotNull Position startPos, @NotNull Position endPos) {
-        List<String> words = new ArrayList<>();
-        words.add("");
+    private @NotNull Word @NotNull [] getPossibleWordsDiagonally(@NotNull Position startPos, @NotNull Position endPos) {
+        List<Word> words = new ArrayList<>();
+        words.add(new Word("", 0));
         double slope = (1.0 * startPos.line() - endPos.line()) / (startPos.col() - endPos.col());
         int startX = Math.min(startPos.col(), endPos.col());
         int startY = Math.min(startPos.line(), endPos.line());
@@ -920,11 +920,11 @@ public class WSModel {
         if (slope == 1) {
             for (int i = startY; i <= endY; i++) {
                 BaseCell[] line = this.matrix[i];
-                String[] bases = words.toArray(String[]::new);
+                Word[] bases = words.toArray(Word[]::new);
                 words.clear();
                 for (char actual : line[startX].getActuals()) {
-                    for (String base : bases) {
-                        words.add(base + actual);
+                    for (Word base : bases) {
+                        words.add(new Word(base.word() + actual, base.points() + line[endPos.col()].getPoints()));
                     }
                 }
                 startX++;
@@ -932,17 +932,17 @@ public class WSModel {
         } else if (slope == -1) {
             for (int i = endY; i >= startY; i--) {
                 BaseCell[] line = this.matrix[i];
-                String[] bases = words.toArray(String[]::new);
+                Word[] bases = words.toArray(Word[]::new);
                 words.clear();
                 for (char actual : line[startX].getActuals()) {
-                    for (String base : bases) {
-                        words.add(base + actual);
+                    for (Word base : bases) {
+                        words.add(new Word(base.word() + actual, base.points() + line[endPos.col()].getPoints()));
                     }
                 }
                 startX++;
             }
         }
-        return words.toArray(String[]::new);
+        return words.toArray(Word[]::new);
     }
 
     /**

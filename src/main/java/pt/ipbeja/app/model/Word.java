@@ -1,4 +1,6 @@
 package pt.ipbeja.app.model;
 
-public record Word(String word, int points) {
+import org.jetbrains.annotations.NotNull;
+
+public record Word(@NotNull String word, int points) {
 }
