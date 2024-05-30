@@ -89,7 +89,7 @@ public class App extends VBox implements WSView {
         }, this.model.getOptions());
         this.menu.managedProperty().bind(this.menu.visibleProperty());
 
-        this.bar = new MenuBar(stage);
+        this.bar = new MenuBar(stage, model);
 
         HBox centerH = new HBox(this.game, this.menu);
         VBox centerV = new VBox(centerH);
@@ -195,7 +195,7 @@ public class App extends VBox implements WSView {
             String resultsString = this.resultsString(res);
 
             this.game.log(resultsString);
-            GameEndedAlert dialog = new GameEndedAlert(this, resultsString, !res.onReplay());
+            GameEndedAlert dialog = new GameEndedAlert(this, resultsString);
 
             Optional<ButtonType> result = dialog.showAndWait();
 

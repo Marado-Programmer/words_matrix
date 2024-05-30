@@ -6,7 +6,7 @@ import javafx.scene.layout.VBox;
 import static pt.ipbeja.app.ui.StartWordSearch.TITLE;
 
 public class GameEndedAlert extends Alert {
-    public GameEndedAlert(App app, String content, boolean allowSavingLog) {
+    public GameEndedAlert(App app, String content) {
         super(AlertType.INFORMATION);
         this.setTitle(TITLE);
         this.setHeaderText("Game Ended");
@@ -20,17 +20,16 @@ public class GameEndedAlert extends Alert {
 
         VBox box = new VBox(new Label(content));
 
-        if (allowSavingLog) {
-            Button saveLog = new Button("Save game log");
+        Button saveLog = new Button("Save game log");
 
-            saveLog.setOnAction(event -> {
-                app.saveGameLog();
-                saveLog.setDisable(true);
-                saveLog.setVisible(false);
-            });
+        saveLog.setOnAction(event -> {
+            app.saveGameLog();
+            saveLog.setDisable(true);
+            saveLog.setVisible(false);
+        });
 
-            box.getChildren().add(saveLog);
-        }
+        box.getChildren().add(saveLog);
+
 
         this.getDialogPane().setContent(box);
     }

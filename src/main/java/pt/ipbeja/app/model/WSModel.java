@@ -115,6 +115,8 @@ public class WSModel {
     private final List<Position> plays;
     private boolean onReplay;
 
+    private final List<Position> wordsLettersPositions;
+
     /**
      * Creates the model for a words matrix game.
      *
@@ -136,6 +138,7 @@ public class WSModel {
         this.matrix = new BaseCell[0][];
         this.plays = new ArrayList<>();
         this.onReplay = false;
+        this.wordsLettersPositions = new ArrayList<>();
     }
 
     /**
@@ -602,6 +605,8 @@ public class WSModel {
                 continue;
             }
 
+            Position startPos = new Position(start, x);
+
             Set<Integer> sameDisplayPos = new TreeSet<>();
             Set<Integer> sameActualPos = new TreeSet<>();
             boolean invalid_pos = false;
@@ -637,6 +642,8 @@ public class WSModel {
             // We do not want words on top of others.
             // TODO: This does not stop bigger words of being inserted on top of smaller ones.
             if (!invalid_pos && (overlapCounter < word.length())) {
+                this.wordsLettersPositions.add(startPos);
+                this.wordsLettersPositions.add(new Position(start - walk, x));
                 return;
             }
 
@@ -674,6 +681,8 @@ public class WSModel {
                 continue;
             }
 
+            Position startPos = new Position(y, start);
+
             Set<Integer> same_display_pos = new TreeSet<>();
             Set<Integer> same_actual_pos = new TreeSet<>();
             boolean invalid_pos = false;
@@ -709,6 +718,8 @@ public class WSModel {
             // We do not want words on top of others.
             // TODO: This does not stop bigger words of being inserted on top of smaller ones.
             if (!invalid_pos && (overlapCounter < word.length())) {
+                this.wordsLettersPositions.add(startPos);
+                this.wordsLettersPositions.add(new Position(y,start - walk));
                 return;
             }
 
@@ -749,6 +760,8 @@ public class WSModel {
                 continue;
             }
 
+            Position startPos = new Position(startY, startX);
+
             final int direction_walk = directionX ? 1 : -1;
             final int incline_walk = directionY ? 1 : -1;
 
@@ -788,6 +801,8 @@ public class WSModel {
             // We do not want words on top of others.
             // TODO: This does not stop bigger words of being inserted on top of smaller ones.
             if (!invalid_pos && (overlapCounter < word.length())) {
+                this.wordsLettersPositions.add(startPos);
+                this.wordsLettersPositions.add(new Position(startY - incline_walk, startX - direction_walk));
                 return;
             }
 
@@ -1118,6 +1133,10 @@ public class WSModel {
             });
 
             task.start();
+    }
+
+    public void giveHint() {
+        this.view.click(this.wordsLettersPositions.remove(0));
     }
 
     public int wordsInUse() {

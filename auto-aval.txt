@@ -1,5 +1,5 @@
 # TODO
-# Características
+## Características
 [x] - 1
 [x] - 2
 [x] - 3
@@ -24,7 +24,7 @@
 [x] - RE6
 ## Requisitos Não Essenciais
 [x] - RNE1
-[ ] - RNE2 --- opcao de gravar caso aparaca aquele pop up
+[x] - RNE2
 [x] - RNE3
 ### Apenas para época normal
 [x] - RNE4
@@ -34,8 +34,15 @@
 [x] - RNE5
 [ ] - RNE6
 
+# Extras
+- Atráves de uma opção num menu, adicione a possibilidade do programa mostrar onde estão as palavras assinalando uma a
+  uma as letras, como faria um jogador.
+- Adicione a possibilidade do programa reproduzir, automaticamente, no final do jogo, os cliques do jogador.
+- Detecção de palavras considerando wildcards. Por exemplo: se a matriz contiver "apart**ento", a palavra "apartamento"
+  deve ser contada como estando na matriz.
+
 # Auto Avaliação
-0/20
+20/20
 
 # Tempo de trabalho
 
@@ -46,6 +53,3 @@ git log
 git log --all --graph --abbrev-commit --decorate
 git log --all --graph --oneline --decorate
 ```
-
-# Duvidas
-caracteristicas 4

@@ -21,7 +21,7 @@ public class Game extends HBox {
     public Game(App app, WSModel model) {
         this.app = app;
         Button end = new Button("End Game Now");
-        end.setOnAction(event -> model.endGame());
+        end.setOnAction(event -> model.giveHint());
 
         this.board = new WSBoard(model, app);
         this.board.requestFocus();
