@@ -7,13 +7,12 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import org.jetbrains.annotations.NotNull;
 
 import static pt.ipbeja.app.model.WSModel.MAX_SIDE_LEN;
 import static pt.ipbeja.app.model.WSModel.MIN_SIDE_LEN;
 
 public class Menu extends VBox {
-    public Menu(@NotNull OnStartHandler handler) {
+    public Menu(OnStartHandler handler) {
         Button btn = new Button("Start");
         NumberInput lines = new NumberInput("lines:\t", MIN_SIDE_LEN);
         lines.setMin(MIN_SIDE_LEN);
@@ -64,7 +63,7 @@ public class Menu extends VBox {
     }
 
     public interface OnStartHandler {
-        void onStart(int lines, int cols, @NotNull ProviderMode mode, int max, int min, boolean diagonal, int wilds);
+        void onStart(int lines, int cols, ProviderMode mode, int max, int min, boolean diagonal, int wilds);
     }
 
     public enum ProviderMode { MANUAL, DB }

@@ -3,15 +3,13 @@ package pt.ipbeja.app.ui;
 import javafx.scene.control.MenuItem;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class DirectorySaver extends MenuItem {
-    private @Nullable Path dir;
-    private static final @NotNull Path DEFAULT = Paths.get(System.getProperty("user.dir"));
+    private Path dir;
+    private static final Path DEFAULT = Paths.get(System.getProperty("user.dir"));
     public DirectorySaver(Stage stage, String display, String title) {
         super(display);
         this.setOnAction(event -> {
@@ -21,7 +19,7 @@ public class DirectorySaver extends MenuItem {
         });
     }
 
-    public @NotNull Path getDir() {
+    public Path getDir() {
         if (this.dir == null) {
             return DirectorySaver.DEFAULT;
         }

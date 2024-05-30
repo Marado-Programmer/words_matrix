@@ -6,7 +6,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
-import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.Position;
 import pt.ipbeja.app.model.WSModel;
 
@@ -71,7 +70,7 @@ public class WSBoard extends GridPane {
      * @param col  column of label in board
      * @return the button at line, col
      */
-    public @NotNull CellButton getButton(int line, int col) {
+    public CellButton getButton(int line, int col) {
         ObservableList<Node> children = this.getChildren();
         for (Node node : children) {
             if (GridPane.getRowIndex(node) == line + 1 && GridPane.getColumnIndex(node) == col + 1) {

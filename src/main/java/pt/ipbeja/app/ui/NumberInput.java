@@ -5,15 +5,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class NumberInput extends HBox {
-    private final @NotNull Label valLabel;
-    private @Nullable OnChangeHandler handler = null;
+    private final Label valLabel;
+    private OnChangeHandler handler = null;
     private Optional<Integer> min, max;
     private int val;
 
@@ -72,7 +70,7 @@ public class NumberInput extends HBox {
         this.valLabel.setText(String.valueOf(this.val));
     }
 
-    public void setHandler(@Nullable OnChangeHandler handler) {
+    public void setHandler(OnChangeHandler handler) {
         this.handler = handler;
     }
 

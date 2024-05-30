@@ -1,7 +1,5 @@
 package pt.ipbeja.app.model.cell;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -10,7 +8,7 @@ import java.util.TreeSet;
  * Contains a letter and a boolean that indicates if the cell is part of a word
  */
 public abstract class BaseCell {
-    private final @NotNull Set<Character> reals;
+    private final Set<Character> reals;
     protected final char display;
 
     public BaseCell(char real) {

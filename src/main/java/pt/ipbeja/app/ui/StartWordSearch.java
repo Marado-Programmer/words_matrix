@@ -3,7 +3,6 @@ package pt.ipbeja.app.ui;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Start a game with a hardcoded board
@@ -23,7 +22,7 @@ public class StartWordSearch extends Application {
     }
 
     @Override
-    public void start(@NotNull Stage stage) {
+    public void start(Stage stage) {
         stage.setTitle(TITLE);
         stage.setScene(new Scene(new App(stage), WIDTH, HEIGHT));
         stage.show();

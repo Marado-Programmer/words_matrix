@@ -4,8 +4,6 @@
  */
 package pt.ipbeja.app.model;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import pt.ipbeja.app.model.cell.BaseCell;
 import pt.ipbeja.app.model.cell.Cell;
 import pt.ipbeja.app.model.cell.WildCell;
@@ -35,16 +33,16 @@ public class WSModel {
      */
     public static final int MAX_SIDE_LEN = 12;
 
-    public static final @NotNull String INVALID_IN_GAME_CHANGE_MSG_ERR = "a game it's currently happening. Cannot perform this action";
-    public static final @NotNull String NO_WORDS_MSG_ERR = "no words were given for the game to be able to start";
-    public static final @NotNull String NOT_IN_GAME_ERR = "can't perform this action if a game hasn't started";
-    private static final @NotNull String INVALID_SIDE_LEN_MSG_FORMAT = String.format("the %s provided is invalid! it needs to be a number between %d and %d", "%s", MIN_SIDE_LEN, MAX_SIDE_LEN);
+    public static final String INVALID_IN_GAME_CHANGE_MSG_ERR = "a game it's currently happening. Cannot perform this action";
+    public static final String NO_WORDS_MSG_ERR = "no words were given for the game to be able to start";
+    public static final String NOT_IN_GAME_ERR = "can't perform this action if a game hasn't started";
+    private static final String INVALID_SIDE_LEN_MSG_FORMAT = String.format("the %s provided is invalid! it needs to be a number between %d and %d", "%s", MIN_SIDE_LEN, MAX_SIDE_LEN);
 
-    private final @NotNull Random random;
+    private final Random random;
     /**
      * The allowed orientations a word can be found in game.
      */
-    private final @NotNull Set<@NotNull WordOrientations> orientationsAllowed;
+    private final Set<WordOrientations> orientationsAllowed;
     /**
      * The number of lines in the matrix.
      */
@@ -60,29 +58,29 @@ public class WSModel {
      *
      * @see BaseCell
      */
-    private @Nullable BaseCell @NotNull [] @NotNull [] matrix;
+    private BaseCell [] [] matrix;
     /**
      * The user interface. To use when we want to communicate with the player.
      */
-    private @Nullable WSView view;
+    private WSView view;
     /**
      * Set of valid words that came from the last database provided using {@link #setWords(WordsProvider)}.
      *
      * @see #setWords(WordsProvider)
      */
-    private @Nullable Set<@NotNull String> words;
+    private Set<String> words;
     /**
      * Subset of {@link #words} of the words that are currently on the matrix to be found.
      *
      * @see #wordsFound
      */
-    private @Nullable Set<@NotNull String> wordsToFind;
+    private Set<String> wordsToFind;
     /**
      * Subset of {@link #words} of the words that are currently on the matrix, that were already found.
      *
      * @see #wordsToFind
      */
-    private @Nullable Set<@NotNull String> wordsFound;
+    private Set<String> wordsFound;
     /**
      * Represents if a game it's currently happening.
      */
@@ -90,13 +88,13 @@ public class WSModel {
     /**
      * Saves the position of the first click on a word selection.
      */
-    private @Nullable Position startSelected;
+    private Position startSelected;
     /**
      * A {@link ResultsSaver} that saves the game results when it ends the way it wants.
      *
      * @see ResultsSaver
      */
-    private @Nullable ResultsSaver saver;
+    private ResultsSaver saver;
     /**
      * Maximum of words that can appear in a game.
      */
@@ -161,7 +159,7 @@ public class WSModel {
      * @see #setLines(int)
      * @see #setCols(int)
      */
-    public WSModel(@NotNull WordsProvider provider) {
+    public WSModel(WordsProvider provider) {
         this();
         this.setWords(provider);
     }
@@ -173,7 +171,7 @@ public class WSModel {
      * @param cols     initial number of columns for the game to have
      * @param provider where the words used in game come from
      */
-    public WSModel(int lines, int cols, @NotNull WordsProvider provider) {
+    public WSModel(int lines, int cols, WordsProvider provider) {
         this(lines, cols);
         this.setWords(provider);
     }
@@ -185,7 +183,7 @@ public class WSModel {
      * @param cols  initial number of columns for the game to have
      * @param file  the database with the words to put in the game
      */
-    public WSModel(int lines, int cols, @NotNull String file) {
+    public WSModel(int lines, int cols, String file) {
         this(lines, cols, new DBWordsProvider(Paths.get(file).toFile()));
     }
 
@@ -196,7 +194,7 @@ public class WSModel {
      * @param cols  initial number of columns for the game to have
      * @param file  the database with the words to put in the game
      */
-    public WSModel(int lines, int cols, @NotNull URI file) {
+    public WSModel(int lines, int cols, URI file) {
         this(lines, cols, new DBWordsProvider(Paths.get(file).toFile()));
     }
 
@@ -207,7 +205,7 @@ public class WSModel {
      * @param cols  initial number of columns for the game to have
      * @param file  the database with the words to put in the game
      */
-    public WSModel(int lines, int cols, @NotNull Path file) {
+    public WSModel(int lines, int cols, Path file) {
         this(lines, cols, new DBWordsProvider(file.toFile()));
     }
 
@@ -217,7 +215,7 @@ public class WSModel {
      * @param random To be able to create pseudorandom numbers
      * @return The random character
      */
-    public static char randomLatinCharacter(@NotNull Random random) {
+    public static char randomLatinCharacter(Random random) {
         return (char) random.nextInt('A', 'Z' + 1);
     }
 
@@ -345,7 +343,7 @@ public class WSModel {
      * @param keepExistent Choose if you want to keep the existent words provided in the past
      * @see WordsProvider
      */
-    public void setWords(@NotNull WordsProvider provider, boolean keepExistent) {
+    public void setWords(WordsProvider provider, boolean keepExistent) {
         if (!keepExistent || this.words == null) {
             this.words = new TreeSet<>();
         }
@@ -363,7 +361,7 @@ public class WSModel {
      * @param line Line to be parsed
      * @return An array of words found in the line
      */
-    private @NotNull String @NotNull [] parseLine(String line) {
+    private String [] parseLine(String line) {
         // trim whitespaces
         line = line.trim();
 
@@ -498,7 +496,7 @@ public class WSModel {
      * @see #calculateUsableWords()
      * @see #setMaxWords(int)
      */
-    private @NotNull Set<String> getGameWords() {
+    private Set<String> getGameWords() {
         Set<String> usableWords = this.calculateUsableWords();
 
         List<String> words = new ArrayList<>(usableWords);
@@ -521,7 +519,7 @@ public class WSModel {
      * @see #wordFitsGrid(String)
      * @see #setMinWordSize(int)
      */
-    private @NotNull Set<String> calculateUsableWords() {
+    private Set<String> calculateUsableWords() {
         if (this.words == null) {
             return new TreeSet<>();
         }
@@ -541,7 +539,7 @@ public class WSModel {
      * @param word The word to test
      * @return `true` if it fits
      */
-    private boolean wordFitsGrid(@NotNull String word) {
+    private boolean wordFitsGrid(String word) {
         return this.wordFitsHorizontally(word) || this.wordFitsVertically(word);
     }
 
@@ -551,7 +549,7 @@ public class WSModel {
      * @param word The word to test
      * @return `true` if it fits
      */
-    private boolean wordFitsHorizontally(@NotNull String word) {
+    private boolean wordFitsHorizontally(String word) {
         return word.length() <= this.cols;
     }
 
@@ -561,7 +559,7 @@ public class WSModel {
      * @param word The word to test
      * @return `true` if it fits
      */
-    private boolean wordFitsVertically(@NotNull String word) {
+    private boolean wordFitsVertically(String word) {
         return word.length() <= this.lines;
     }
 
@@ -571,7 +569,7 @@ public class WSModel {
      * @param word The word that will try to add
      * @throws WordCanNotFitMatrixException In case the `word` couldn't be put in any way into the matrix like this.
      */
-    private void addWordVertically(@NotNull String word) throws WordCanNotFitMatrixException {
+    private void addWordVertically(String word) throws WordCanNotFitMatrixException {
         // Saves 'the x-y-direction' "tuple" of invalid combination for the word to be put on.
         Set<String> invalids = new TreeSet<>();
 
@@ -643,7 +641,7 @@ public class WSModel {
      * @param word The word that will try to add
      * @throws WordCanNotFitMatrixException In case the `word` couldn't be put in any way into the matrix like this.
      */
-    private void addWordHorizontally(@NotNull String word) throws WordCanNotFitMatrixException {
+    private void addWordHorizontally(String word) throws WordCanNotFitMatrixException {
         // Saves 'the x-y-direction' "tuple" of invalid combination for the word to be put on.
         Set<String> invalids = new TreeSet<>();
 
@@ -715,7 +713,7 @@ public class WSModel {
      * @param word The word that will try to add
      * @throws WordCanNotFitMatrixException In case the `word` couldn't be put in any way into the matrix like this.
      */
-    private void addWordDiagonally(@NotNull String word) throws WordCanNotFitMatrixException {
+    private void addWordDiagonally(String word) throws WordCanNotFitMatrixException {
         // Saves 'the x-y-directionX-directionY' "tuple" of invalid combination for the word to be put on.
         Set<String> invalids = new TreeSet<>();
 
@@ -826,7 +824,7 @@ public class WSModel {
      * @return The word, an empty String if it's the first click or null if no word was found
      * @throws NotInGameException If trying to find a word while not in-game
      */
-    public @Nullable String findWord(@NotNull Position pos) throws NotInGameException {
+    public String findWord(Position pos) throws NotInGameException {
         if (!this.inGame) {
             throw new NotInGameException(NOT_IN_GAME_ERR);
         }
@@ -875,7 +873,7 @@ public class WSModel {
      * @see #getPossibleWordsHorizontally(Position, Position)
      * @see #getPossibleWordsDiagonally(Position, Position)
      */
-    private @NotNull Word @NotNull [] getPossibleWords(@NotNull Position start, @NotNull Position end) {
+    private Word [] getPossibleWords(Position start, Position end) {
         if (start.col() == end.col()) {
             return this.getPossibleWordsVertically(start, end);
         } else if (start.line() == end.line()) {
@@ -890,7 +888,7 @@ public class WSModel {
         return new Word[0];
     }
 
-    private @NotNull Word @NotNull [] getPossibleWordsVertically(@NotNull Position startPos, @NotNull Position endPos) {
+    private Word [] getPossibleWordsVertically(Position startPos, Position endPos) {
         List<Word> words = new ArrayList<>();
         words.add(new Word("", 0));
         int start = Math.min(startPos.line(), endPos.line());
@@ -908,7 +906,7 @@ public class WSModel {
         return words.toArray(Word[]::new);
     }
 
-    private @NotNull Word @NotNull [] getPossibleWordsHorizontally(@NotNull Position startPos, @NotNull Position endPos) {
+    private Word [] getPossibleWordsHorizontally(Position startPos, Position endPos) {
         List<Word> words = new ArrayList<>();
         words.add(new Word("", 0));
         BaseCell[] line = this.matrix[endPos.line()];
@@ -926,7 +924,7 @@ public class WSModel {
         return words.toArray(Word[]::new);
     }
 
-    private @NotNull Word @NotNull [] getPossibleWordsDiagonally(@NotNull Position startPos, @NotNull Position endPos) {
+    private Word [] getPossibleWordsDiagonally(Position startPos, Position endPos) {
         List<Word> words = new ArrayList<>();
         words.add(new Word("", 0));
         double slope = (1.0 * startPos.line() - endPos.line()) / (startPos.col() - endPos.col());
@@ -968,7 +966,7 @@ public class WSModel {
      * @return The word
      * @throws NotInGameException If a game isn't happening
      */
-    public @Nullable String wordInBoard(@NotNull String word) throws NotInGameException {
+    public String wordInBoard(String word) throws NotInGameException {
         if (!this.inGame) {
             throw new NotInGameException(NOT_IN_GAME_ERR);
         }
@@ -1004,7 +1002,7 @@ public class WSModel {
      * @throws NotInGameException If a game isn't happening
      * @see #wordInBoard(String)
      */
-    public @Nullable String wordWithWildcardInBoard(@NotNull String word) throws NotInGameException {
+    public String wordWithWildcardInBoard(String word) throws NotInGameException {
         return this.wordInBoard(word);
     }
 
@@ -1014,7 +1012,7 @@ public class WSModel {
      * @return The game results
      * @see #curGameResults()
      */
-    public @NotNull GameResults endGame() {
+    public GameResults endGame() {
         this.inGame = false;
         GameResults res = this.curGameResults();
         if (this.view != null) {
@@ -1029,7 +1027,7 @@ public class WSModel {
     /**
      * @return The current game results
      */
-    public @NotNull GameResults curGameResults() {
+    public GameResults curGameResults() {
         if (this.wordsToFind == null || this.wordsFound == null) {
             return new GameResults(new TreeSet<>(), new TreeSet<>());
         }
@@ -1054,7 +1052,7 @@ public class WSModel {
      * @param position position
      * @return the text in the position
      */
-    public BaseCell textInPosition(@NotNull Position position) {
+    public BaseCell textInPosition(Position position) {
         return this.matrix[position.line()][position.col()];
     }
 
@@ -1077,7 +1075,7 @@ public class WSModel {
         return 0;
     }
 
-    public void setSaver(@NotNull ResultsSaver saver) {
+    public void setSaver(ResultsSaver saver) {
         this.saver = saver;
     }
 
@@ -1091,7 +1089,7 @@ public class WSModel {
         this.minWordSize = minWordSize;
     }
 
-    public @NotNull String matrixToString() {
+    public String matrixToString() {
         StringBuilder matrix = new StringBuilder();
         int size = 0;
 
@@ -1120,7 +1118,7 @@ public class WSModel {
         List.of(orientations).forEach(this.orientationsAllowed::remove);
     }
 
-    public @Nullable Set<String> getWords() {
+    public Set<String> getWords() {
         return this.words;
     }
 
@@ -1130,7 +1128,7 @@ public class WSModel {
      * @param provider Any {@link WordsProvider}
      * @see WordsProvider
      */
-    public void setWords(@NotNull WordsProvider provider) {
+    public void setWords(WordsProvider provider) {
         this.setWords(provider, true);
     }
 

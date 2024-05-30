@@ -7,7 +7,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.*;
 import pt.ipbeja.app.model.message_to_ui.MessageToUI;
 import pt.ipbeja.app.model.throwables.CouldNotPopulateMatrixException;
@@ -30,11 +29,11 @@ import static pt.ipbeja.app.model.WSModel.MIN_SIDE_LEN;
 import static pt.ipbeja.app.ui.StartWordSearch.TITLE;
 
 public class App extends VBox implements WSView {
-    private final @NotNull WSModel model;
+    private final WSModel model;
 
-    private final @NotNull MenuBar bar;
-    private final @NotNull Game game;
-    private final @NotNull Menu menu;
+    private final MenuBar bar;
+    private final Game game;
+    private final Menu menu;
 
     public App(Stage stage) {
         this.model = new WSModel();
@@ -139,12 +138,12 @@ public class App extends VBox implements WSView {
      * @param messageToUI the WS model
      */
     @Override
-    public void update(@NotNull MessageToUI messageToUI) {
+    public void update(MessageToUI messageToUI) {
         this.game.log(messageToUI.getMessage() + "\n");
     }
 
     @Override
-    public void updatePoints(@NotNull Word word) {
+    public void updatePoints(Word word) {
         this.game.points(word);
     }
 
@@ -157,7 +156,7 @@ public class App extends VBox implements WSView {
     }
 
     @Override
-    public void wordFound(@NotNull Position start, @NotNull Position end) {
+    public void wordFound(Position start, Position end) {
         double slope = (1.0 * start.line() - end.line()) / (start.col() - end.col());
         if (start.line() == end.line()) {
             int start_pos = Math.min(start.col(), end.col());
@@ -200,7 +199,7 @@ public class App extends VBox implements WSView {
     }
 
     @Override
-    public void gameEnded(@NotNull GameResults res) {
+    public void gameEnded(GameResults res) {
         assert res.words_found() != null && res.words() != null;
 
         this.game.log("\twords found:\t" +
@@ -240,11 +239,11 @@ public class App extends VBox implements WSView {
         }
     }
 
-    public @NotNull Path getLogDir() {
+    public Path getLogDir() {
         return this.bar.getLogDir();
     }
 
-    public @NotNull String matrixToString() {
+    public String matrixToString() {
         return this.model.matrixToString();
     }
 }

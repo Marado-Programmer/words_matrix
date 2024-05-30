@@ -1,7 +1,5 @@
 package pt.ipbeja.app.model;
 
-import org.jetbrains.annotations.NotNull;
-
 /**
  * Position in the board
  *
@@ -11,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 public record Position(int line, int col) {
 
     @Override
-    public @NotNull String toString() {
+    public String toString() {
         return line + ", " + col;
     }
 

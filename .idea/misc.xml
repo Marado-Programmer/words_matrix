@@ -1,5 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="EntryPointsManager">
+    <pattern value="pt.ipbeja.app.model.words_provider.AggregateWordsProvider" />
+    <pattern value="pt.ipbeja.app.model.words_provider.AggregateWordsProvider" method="AggregateWordsProvider" />
+    <pattern value="pt.ipbeja.app.ui.App" />
+    <pattern value="pt.ipbeja.app.ui.App" method="App" />
+    <pattern value="pt.ipbeja.app.model.WSModelTest" method="beforeAll" />
+    <pattern value="pt.ipbeja.app.ui.CellButton" />
+    <pattern value="pt.ipbeja.app.ui.CellButton" method="CellButton" />
+    <pattern value="pt.ipbeja.app.model.throwables.CouldNotPopulateMatrixException" />
+    <pattern value="pt.ipbeja.app.ui.DirectorySaver" />
+    <pattern value="pt.ipbeja.app.ui.DirectorySaver" method="DirectorySaver" />
+    <pattern value="pt.ipbeja.app.ui.FileChooser" />
+    <pattern value="pt.ipbeja.app.ui.FileChooser" method="FileChooser" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="findWordFirstClick" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="findWordForSingleWordGame" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="findWordWhileNotInGame" />
+    <pattern value="pt.ipbeja.app.ui.Game" />
+    <pattern value="pt.ipbeja.app.model.WSModelTest" method="game" />
+    <pattern value="pt.ipbeja.app.ui.Game" method="Game" />
+    <pattern value="pt.ipbeja.app.model.throwables.CouldNotPopulateMatrixException" method="getCols" />
+    <pattern value="pt.ipbeja.app.model.throwables.WordCanNotFitMatrixException" method="getCols" />
+    <pattern value="pt.ipbeja.app.model.throwables.CouldNotPopulateMatrixException" method="getLines" />
+    <pattern value="pt.ipbeja.app.model.throwables.WordCanNotFitMatrixException" method="getLines" />
+    <pattern value="pt.ipbeja.app.model.throwables.WordCanNotFitMatrixException" method="getWord" />
+    <pattern value="pt.ipbeja.app.model.throwables.CouldNotPopulateMatrixException" method="getWords" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" />
+    <pattern value="pt.ipbeja.app.ui.StartWordSearch" />
+    <pattern value="pt.ipbeja.app.model.WSModelTest" />
+    <pattern value="pt.ipbeja.app.ui.StartWordSearch" method="main" />
+    <pattern value="pt.ipbeja.app.ui.Menu" />
+    <pattern value="pt.ipbeja.app.ui.Menu" method="Menu" />
+    <pattern value="pt.ipbeja.app.ui.MenuBar" />
+    <pattern value="pt.ipbeja.app.ui.MenuBar" method="MenuBar" />
+    <pattern value="pt.ipbeja.app.ui.NumberInput" />
+    <pattern value="pt.ipbeja.app.ui.NumberInput" method="NumberInput" />
+    <pattern value="pt.ipbeja.app.ui.NumberInput.OnChangeHandler" method="onChange" />
+    <pattern value="pt.ipbeja.app.ui.NumberInput.OnChangeHandler" />
+    <pattern value="pt.ipbeja.app.ui.Menu.OnStartHandler" />
+    <pattern value="pt.ipbeja.app.model.words_provider.AggregateWordsProvider" method="provide" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="provideProvider" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="provideProviderToTestParsing" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="provideProviderWithDifferentWords" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="provideProviderWithDifferentWordsWithoutKeepingThePrevious" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="provideProviderWithSameWords" />
+    <pattern value="pt.ipbeja.app.ui.Menu.ProviderMode" />
+    <pattern value="pt.ipbeja.app.ui.ProvideWordDialog" />
+    <pattern value="pt.ipbeja.app.ui.ProvideWordDialog" method="ProvideWordDialog" />
+    <pattern value="pt.ipbeja.app.model.WSModel" method="setCols" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="setDimensionsInGame" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="setInvalidDimensions" />
+    <pattern value="pt.ipbeja.app.model.WSModel" method="setLines" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="setNonNaturalDimensions" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="setValidDimensions" />
+    <pattern value="pt.ipbeja.app.ui.StartWordSearch" method="start" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="startGame" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="startGameWhileInGame" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="startGameWithMaxWordsSet" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="startGameWithNoDimensionsSpecified" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="startGameWithNoUsableWords" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="startGameWithNoWords" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="startGameWithNoWordsGiven" />
+    <pattern value="pt.ipbeja.app.model.ModelTest" method="startGameWithZeroWordsGiven" />
+    <pattern value="pt.ipbeja.app.model.WSModelTest" method="testAllWordsWereFound" />
+    <pattern value="pt.ipbeja.app.model.WSModelTest" method="testWordFound" />
+    <pattern value="pt.ipbeja.app.model.WSModelTest" method="testWordWithWildcardFound" />
+    <pattern value="pt.ipbeja.app.model.throwables.WordCanNotFitMatrixException" />
+    <pattern value="pt.ipbeja.app.ui.WSBoard" />
+    <pattern value="pt.ipbeja.app.ui.WSBoard" method="WSBoard" />
+    <pattern value="pt.ipbeja.app.model.WSModel" />
+    <pattern value="pt.ipbeja.app.model.WSModel" method="WSModel" />
+  </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="JavadocGenerationManager">
+    <option name="OUTPUT_DIRECTORY" value="$PROJECT_DIR$/jdoc" />
+    <option name="OPTION_SCOPE" value="private" />
+    <option name="OPTION_DOCUMENT_TAG_USE" value="true" />
+    <option name="OPTION_DOCUMENT_TAG_AUTHOR" value="true" />
+    <option name="OPTION_DOCUMENT_TAG_VERSION" value="true" />
+  </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>

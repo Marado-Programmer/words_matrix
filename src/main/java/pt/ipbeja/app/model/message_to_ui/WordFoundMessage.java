@@ -1,6 +1,5 @@
 package pt.ipbeja.app.model.message_to_ui;
 
-import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.Position;
 
 import java.util.ArrayList;
@@ -18,7 +17,7 @@ public class WordFoundMessage extends Message {
     }
 
     @Override
-    public @NotNull String getMessage() {
+    public String getMessage() {
         List<String> pos = new ArrayList<>();
         if (this.init.line() == this.end.line()) {
             int start = Math.min(this.init.col(), this.end.col());

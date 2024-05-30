@@ -7,7 +7,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.WSModel;
 import pt.ipbeja.app.model.Word;
 
@@ -16,14 +15,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 public class Game extends HBox {
-    private final @NotNull App app;
-    private final @NotNull WSBoard board;
-    private final @NotNull TextArea log;
-    private final @NotNull TextArea points;
+    private final App app;
+    private final WSBoard board;
+    private final TextArea log;
+    private final TextArea points;
 
     private StringBuilder gameLog;
 
-    public Game(@NotNull App app, @NotNull WSModel model) {
+    public Game(App app, WSModel model) {
         this.app = app;
         Button end = new Button("End Game Now");
         end.setOnAction(event -> model.endGame());
@@ -53,7 +52,6 @@ public class Game extends HBox {
         this.gameLog = new StringBuilder();
     }
 
-    @NotNull
     private Button getSaveLog() {
         Button saveLog = new Button("Save current game log");
         saveLog.setOnAction(event -> {
@@ -74,7 +72,7 @@ public class Game extends HBox {
         return saveLog;
     }
 
-    public @NotNull WSBoard getBoard() {
+    public WSBoard getBoard() {
         return board;
     }
 
@@ -83,7 +81,7 @@ public class Game extends HBox {
         this.gameLog.append(msg);
     }
 
-    public void points(@NotNull Word word) {
+    public void points(Word word) {
         this.points.setText(String.format("\"%s\" = %d pontos.", word.word(), word.points()));
     }
 

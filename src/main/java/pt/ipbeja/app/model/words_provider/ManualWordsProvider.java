@@ -1,14 +1,11 @@
 package pt.ipbeja.app.model.words_provider;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 public class ManualWordsProvider implements WordsProvider, AutoCloseable {
-    private final @NotNull List<String> words;
+    private final List<String> words;
     private boolean closed;
 
     public ManualWordsProvider() {
@@ -29,14 +26,14 @@ public class ManualWordsProvider implements WordsProvider, AutoCloseable {
         this.words.add(word);
     }
 
-    public void provide(String @NotNull [] words) {
+    public void provide(String [] words) {
         for (String word : words) {
             this.provide(word);
         }
     }
 
     @Override
-    public @Nullable String getLine() {
+    public String getLine() {
         if (closed && this.words.isEmpty()) {
             return null;
         }

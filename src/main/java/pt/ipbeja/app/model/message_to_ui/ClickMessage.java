@@ -1,6 +1,5 @@
 package pt.ipbeja.app.model.message_to_ui;
 
-import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.Position;
 
 public class ClickMessage extends Message {
@@ -13,7 +12,7 @@ public class ClickMessage extends Message {
     }
 
     @Override
-    public @NotNull String getMessage() {
+    public String getMessage() {
         return String.format("(%d, %c) -> %c", this.pos.line(), this.pos.col() + 'A', this.c);
     }
 }
