@@ -70,6 +70,50 @@
     <pattern value="pt.ipbeja.app.ui.WSBoard" method="WSBoard" />
     <pattern value="pt.ipbeja.app.model.WSModel" />
     <pattern value="pt.ipbeja.app.model.WSModel" method="WSModel" />
+    <pattern value="pt.ipbeja.app.model.WSModel" method="allowWordOrientation" />
+    <pattern value="pt.ipbeja.app.model.cell.BaseCell" />
+    <pattern value="pt.ipbeja.app.model.cell.BaseCell" method="BaseCell" />
+    <pattern value="pt.ipbeja.app.model.cell.Cell" />
+    <pattern value="pt.ipbeja.app.model.cell.Cell" method="Cell" />
+    <pattern value="pt.ipbeja.app.model.message_to_ui.ClickMessage" />
+    <pattern value="pt.ipbeja.app.model.message_to_ui.ClickMessage" method="ClickMessage" />
+    <pattern value="pt.ipbeja.app.model.words_provider.DBWordsProvider" />
+    <pattern value="pt.ipbeja.app.model.words_provider.DBWordsProvider" method="DBWordsProvider" />
+    <pattern value="pt.ipbeja.app.model.WSModel" method="disallowWordOrientation" />
+    <pattern value="pt.ipbeja.app.model.EmptyView" />
+    <pattern value="pt.ipbeja.app.model.WSModel" method="gameEnded" />
+    <pattern value="pt.ipbeja.app.model.GameOptions" />
+    <pattern value="pt.ipbeja.app.model.GameOptions" method="GameOptions" />
+    <pattern value="pt.ipbeja.app.model.GameResults" />
+    <pattern value="pt.ipbeja.app.model.GameResults" method="GameResults" />
+    <pattern value="pt.ipbeja.app.model.WSModel" method="getWords" />
+    <pattern value="pt.ipbeja.app.model.message_to_ui.Message" />
+    <pattern value="pt.ipbeja.app.model.throwables.InvalidInGameChangeException" />
+    <pattern value="pt.ipbeja.app.model.throwables.InvalidInGameChangeException" method="InvalidInGameChangeException" />
+    <pattern value="pt.ipbeja.app.model.WSModel" method="isInGame" />
+    <pattern value="pt.ipbeja.app.model.words_provider.ManualWordsProvider" />
+    <pattern value="pt.ipbeja.app.model.words_provider.ManualWordsProvider" method="ManualWordsProvider" />
+    <pattern value="pt.ipbeja.app.model.message_to_ui.MessageToUI" />
+    <pattern value="pt.ipbeja.app.model.throwables.NoDimensionsDefinedException" />
+    <pattern value="pt.ipbeja.app.model.throwables.NoDimensionsDefinedException" method="NoDimensionsDefinedException" />
+    <pattern value="pt.ipbeja.app.model.throwables.NotInGameException" />
+    <pattern value="pt.ipbeja.app.model.throwables.NotInGameException" method="NotInGameException" />
+    <pattern value="pt.ipbeja.app.model.throwables.NoWordsException" />
+    <pattern value="pt.ipbeja.app.model.throwables.NoWordsException" method="NoWordsException" />
+    <pattern value="pt.ipbeja.app.model.Position" />
+    <pattern value="pt.ipbeja.app.model.Position" method="Position" />
+    <pattern value="pt.ipbeja.app.model.words_provider.ManualWordsProvider" method="provide" />
+    <pattern value="pt.ipbeja.app.model.results_saver.ResultsSaver" />
+    <pattern value="pt.ipbeja.app.model.cell.WildCell" />
+    <pattern value="pt.ipbeja.app.model.cell.WildCell" method="WildCell" />
+    <pattern value="pt.ipbeja.app.model.Word" />
+    <pattern value="pt.ipbeja.app.model.Word" method="Word" />
+    <pattern value="pt.ipbeja.app.model.message_to_ui.WordFoundMessage" />
+    <pattern value="pt.ipbeja.app.model.message_to_ui.WordFoundMessage" method="WordFoundMessage" />
+    <pattern value="pt.ipbeja.app.model.WordOrientations" />
+    <pattern value="pt.ipbeja.app.model.WSModel" method="wordsInUse" />
+    <pattern value="pt.ipbeja.app.model.words_provider.WordsProvider" />
+    <pattern value="pt.ipbeja.app.model.WSView" />
   </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="JavadocGenerationManager">
@@ -78,6 +122,7 @@
     <option name="OPTION_DOCUMENT_TAG_USE" value="true" />
     <option name="OPTION_DOCUMENT_TAG_AUTHOR" value="true" />
     <option name="OPTION_DOCUMENT_TAG_VERSION" value="true" />
+    <option name="OPTION_INCLUDE_LIBS" value="true" />
   </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">

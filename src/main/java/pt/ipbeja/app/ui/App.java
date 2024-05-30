@@ -43,19 +43,8 @@ public class App extends VBox implements WSView {
         // https://stackoverflow.com/questions/28558165/javafx-setvisible-hides-the-element-but-doesnt-rearrange-adjacent-nodes
         this.game.managedProperty().bind(this.game.visibleProperty());
         this.game.setVisible(false);
-        this.menu = new Menu((lines, cols, mode, max, min, diagonal, wilds) -> {
-            try {
-                this.model.setDimensions(lines, cols);
-            } catch (InvalidInGameChangeException e) {
-                // TODO: handle the error better.
-                return;
-            }
-
-            this.model.setMaxWords(max);
-            this.model.setMinWordSize(min);
-            this.model.setWildCards(wilds);
-
-            this.model.setWords(switch (mode) {
+        this.menu = new Menu((GameOptions opts, Menu.ProviderMode mode) -> {
+            opts.setProvider(switch (mode) {
                 case DB -> new DBWordsProvider(new FileChooser(stage).choose());
                 case MANUAL -> {
                     ManualWordsProvider provider = new ManualWordsProvider();
@@ -68,12 +57,14 @@ public class App extends VBox implements WSView {
 
                     yield provider;
                 }
-            }, false);
+            });
+            opts.setKeepExistent(false);
 
-            if (diagonal) {
-                this.model.allowWordOrientation(WordOrientations.DIAGONAL);
-            } else {
-                this.model.disallowWordOrientation(WordOrientations.DIAGONAL);
+            try {
+                this.model.setOptions(opts);
+            } catch (InvalidInGameChangeException e) {
+                throw new RuntimeException(e);
+                // TODO: handle the error better.
             }
 
             int tries = MIN_SIDE_LEN;
@@ -88,6 +79,7 @@ public class App extends VBox implements WSView {
                     alert.setContentText(e.toString());
                     alert.showAndWait();
                     System.err.println(Arrays.toString(e.getStackTrace()));
+                    break;
                 } catch (NoWordsException | NoDimensionsDefinedException e) {
                     break;
                 } catch (InvalidInGameChangeException e) {
@@ -96,7 +88,7 @@ public class App extends VBox implements WSView {
                     tries--;
                 }
             }
-        });
+        }, this.model.getOptions());
         this.menu.managedProperty().bind(this.menu.visibleProperty());
 
         this.bar = new MenuBar(stage);

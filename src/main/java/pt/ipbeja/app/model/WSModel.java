@@ -32,6 +32,10 @@ public class WSModel {
      * A natural number representing the maximum acceptable length for a matrix side.
      */
     public static final int MAX_SIDE_LEN = 12;
+    /**
+     * A natural number representing the default amount of words the matrix will have in the game.
+     */
+    public static final int DEFAULT_AMOUNT_OF_WORDS = 8;
 
     public static final String INVALID_IN_GAME_CHANGE_MSG_ERR = "a game it's currently happening. Cannot perform this action";
     public static final String NO_WORDS_MSG_ERR = "no words were given for the game to be able to start";
@@ -42,7 +46,7 @@ public class WSModel {
     /**
      * The allowed orientations a word can be found in game.
      */
-    private final Set<WordOrientations> orientationsAllowed;
+    private Set<WordOrientations> orientationsAllowed;
     /**
      * The number of lines in the matrix.
      */
@@ -724,12 +728,12 @@ public class WSModel {
         while (invalids.size() < placesToTryToFit) {
             // FIXME: this combinations can be repeated
             final boolean directionX = this.random.nextBoolean();
-            int startX = this.random.nextInt(0, this.lines - word.length() + 1);
+            int startX = this.random.nextInt(0, this.cols - word.length() + 1);
             if (!directionX) {
                 startX += word.length() - 1;
             }
             boolean directionY = this.random.nextBoolean();
-            int startY = this.random.nextInt(0, this.cols - word.length() + 1);
+            int startY = this.random.nextInt(0, this.lines - word.length() + 1);
             if (!directionY) {
                 startY += word.length() - 1;
             }
@@ -810,7 +814,8 @@ public class WSModel {
         for (int i = 0; i < n; i++) {
             int x = this.random.nextInt(0, this.cols);
             int y = this.random.nextInt(0, this.lines);
-            this.matrix[y][x] = WildCell.fromCell(this.matrix[y][x]);
+            BaseCell cell = this.matrix[y][x];
+            this.matrix[y][x] = WildCell.fromCell(cell == null ? new Cell(' ') : cell);
         }
     }
 
@@ -917,7 +922,7 @@ public class WSModel {
             words.clear();
             for (char actual : line[i].getReals()) {
                 for (Word base : bases) {
-                    words.add(new Word(base.word() + actual, base.points() + line[endPos.col()].getPoints()));
+                    words.add(new Word(base.word() + actual, base.points() + line[i].getPoints()));
                 }
             }
         }
@@ -938,7 +943,7 @@ public class WSModel {
                 words.clear();
                 for (char actual : line[startX].getReals()) {
                     for (Word base : bases) {
-                        words.add(new Word(base.word() + actual, base.points() + line[endPos.col()].getPoints()));
+                        words.add(new Word(base.word() + actual, base.points() + line[startX].getPoints()));
                     }
                 }
                 startX++;
@@ -950,7 +955,7 @@ public class WSModel {
                 words.clear();
                 for (char actual : line[startX].getReals()) {
                     for (Word base : bases) {
-                        words.add(new Word(base.word() + actual, base.points() + line[endPos.col()].getPoints()));
+                        words.add(new Word(base.word() + actual, base.points() + line[startX].getPoints()));
                     }
                 }
                 startX++;
@@ -1053,7 +1058,8 @@ public class WSModel {
      * @return the text in the position
      */
     public BaseCell textInPosition(Position position) {
-        return this.matrix[position.line()][position.col()];
+        BaseCell cell = this.matrix[position.line()][position.col()];
+        return cell == null ? new Cell(' ') : cell;
     }
 
     /**
@@ -1139,5 +1145,32 @@ public class WSModel {
     public void setWildCards(int wildCards) {
         assert wildCards < this.minWordSize;
         this.wildCards = wildCards;
+    }
+
+    public GameOptions getOptions() {
+        GameOptions opts = new GameOptions();
+        opts.setLines(this.lines > 0 ? this.lines : MIN_SIDE_LEN);
+        opts.setColumns(this.cols > 0 ? this.cols : MAX_SIDE_LEN);
+        opts.setMaxWords(this.maxWords > 0 ? this.maxWords : DEFAULT_AMOUNT_OF_WORDS);
+        opts.setMinWordSize(this.minWordSize);
+        opts.setNumberOfWilds(this.wildCards > 0 ? this.wildCards : this.minWordSize);
+        opts.setKeepExistent(false);
+        opts.clearOrientationAllowed();
+        for (WordOrientations orientation : this.orientationsAllowed) {
+            opts.addOrientationAllowed(orientation);
+        }
+        return opts;
+    }
+
+    public void setOptions(GameOptions opts) throws InvalidInGameChangeException {
+        this.setDimensions(opts.getLines(), opts.getColumns());
+
+        this.setMaxWords(opts.getMaxWords());
+        this.setMinWordSize(opts.getMinWordSize());
+        this.setWildCards(opts.getNumberOfWilds());
+
+        this.setWords(opts.getProvider(), opts.isKeepExistent());
+
+        this.orientationsAllowed = opts.getOrientationsAllowed();
     }
 }
