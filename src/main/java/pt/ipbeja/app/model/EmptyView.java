@@ -9,6 +9,11 @@ final public class EmptyView implements WSView {
     }
 
     @Override
+    public void updatePoints(Word word) {
+
+    }
+
+    @Override
     public void gameStarted() {
 
     }

@@ -44,7 +44,7 @@ public class App extends VBox implements WSView {
         // https://stackoverflow.com/questions/28558165/javafx-setvisible-hides-the-element-but-doesnt-rearrange-adjacent-nodes
         this.game.managedProperty().bind(this.game.visibleProperty());
         this.game.setVisible(false);
-        this.menu = new Menu((lines, cols, mode, max, min, diagonal) -> {
+        this.menu = new Menu((lines, cols, mode, max, min, diagonal, wilds) -> {
             try {
                 this.model.setDimensions(lines, cols);
             } catch (InvalidInGameChangeException e) {
@@ -54,6 +54,7 @@ public class App extends VBox implements WSView {
 
             this.model.setMaxWords(max);
             this.model.setMinWordSize(min);
+            this.model.setWildCards(wilds);
 
             this.model.setWords(switch (mode) {
                 case DB -> new DBWordsProvider(new FileChooser(stage).choose());
@@ -143,6 +144,11 @@ public class App extends VBox implements WSView {
     }
 
     @Override
+    public void updatePoints(@NotNull Word word) {
+        this.game.points(word);
+    }
+
+    @Override
     public void gameStarted() {
         this.game.getBoard().buildGUI();
         this.game.setVisible(true);
@@ -152,7 +158,7 @@ public class App extends VBox implements WSView {
 
     @Override
     public void wordFound(@NotNull Position start, @NotNull Position end) {
-        double declive = (1.0 * start.line() - end.line()) / (start.col() - end.col());
+        double slope = (1.0 * start.line() - end.line()) / (start.col() - end.col());
         if (start.line() == end.line()) {
             int start_pos = Math.min(start.col(), end.col());
             int end_pos = Math.max(start.col(), end.col());
@@ -169,11 +175,11 @@ public class App extends VBox implements WSView {
                 btn.setStyle("-fx-background-color: green");
                 btn.setPartOfWord(true);
             }
-        } else if (Math.abs(declive) == 1) {
+        } else if (Math.abs(slope) == 1) {
             int startX = Math.min(start.col(), end.col());
             int startY = Math.min(start.line(), end.line());
             int endY = Math.max(start.line(), end.line());
-            if (declive == 1) {
+            if (slope == 1) {
                 for (int i = startY; i <= endY; i++) {
                     CellButton btn = this.game.getBoard().getButton(i, startX);
                     btn.setStyle("-fx-background-color: green");
@@ -238,7 +244,7 @@ public class App extends VBox implements WSView {
         return this.bar.getLogDir();
     }
 
-    public String matrixToString() {
+    public @NotNull String matrixToString() {
         return this.model.matrixToString();
     }
 }

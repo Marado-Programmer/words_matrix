@@ -11,7 +11,6 @@ import pt.ipbeja.app.model.cell.Cell;
 import pt.ipbeja.app.model.cell.WildCell;
 import pt.ipbeja.app.model.message_to_ui.ClickMessage;
 import pt.ipbeja.app.model.message_to_ui.WordFoundMessage;
-import pt.ipbeja.app.model.message_to_ui.WordPointsMessage;
 import pt.ipbeja.app.model.results_saver.ResultsSaver;
 import pt.ipbeja.app.model.throwables.*;
 import pt.ipbeja.app.model.words_provider.DBWordsProvider;
@@ -106,6 +105,10 @@ public class WSModel {
      * Minimum length in characters that a word needs to be in the game.
      */
     private int minWordSize;
+    /**
+     * Number of wild cards.
+     */
+    private int wildCards;
 
     /**
      * Creates the model for a words matrix game.
@@ -283,7 +286,7 @@ public class WSModel {
             throw new IllegalArgumentException("`lines` are natural numbers");
         }
 
-        if (!this.validLines(lines)) {
+        if (this.invalidLines(lines)) {
             String msg = String.format(INVALID_SIDE_LEN_MSG_FORMAT, "`lines`");
             throw new IllegalArgumentException(msg);
         }
@@ -291,8 +294,8 @@ public class WSModel {
         this.lines = lines;
     }
 
-    private boolean validLines(int lines) {
-        return lines >= MIN_SIDE_LEN && lines <= MAX_SIDE_LEN;
+    private boolean invalidLines(int lines) {
+        return lines < MIN_SIDE_LEN || lines > MAX_SIDE_LEN;
     }
 
     /**
@@ -323,7 +326,7 @@ public class WSModel {
             throw new IllegalArgumentException("`cols` are natural numbers");
         }
 
-        if (!this.validCols(cols)) {
+        if (this.invalidCols(cols)) {
             String msg = String.format(INVALID_SIDE_LEN_MSG_FORMAT, "`cols`");
             throw new IllegalArgumentException(msg);
         }
@@ -331,8 +334,8 @@ public class WSModel {
         this.cols = cols;
     }
 
-    private boolean validCols(int cols) {
-        return cols >= MIN_SIDE_LEN && cols <= MAX_SIDE_LEN;
+    private boolean invalidCols(int cols) {
+        return cols < MIN_SIDE_LEN || cols > MAX_SIDE_LEN;
     }
 
     /**
@@ -352,16 +355,6 @@ public class WSModel {
             String[] words = this.parseLine(line);
             Collections.addAll(this.words, words);
         }
-    }
-
-    /**
-     * Method to define which words to use in the game via a {@link WordsProvider}.
-     *
-     * @param provider Any {@link WordsProvider}
-     * @see WordsProvider
-     */
-    public void setWords(@NotNull WordsProvider provider) {
-        this.setWords(provider, true);
     }
 
     /**
@@ -396,13 +389,12 @@ public class WSModel {
     /**
      * Starts the game
      *
-     * @throws NoWordsException If no words were given for the game to be able to start
+     * @throws NoWordsException                If no words were given for the game to be able to start
      * @throws CouldNotPopulateMatrixException If for some reason it couldn't put any words into the matrix
-     * @throws InvalidInGameChangeException If a game it's currently running
-     * 
+     * @throws InvalidInGameChangeException    If a game it's currently running
      * @see #initMatrix()
      * @see #setDimensions(int, int)
-     * @see #setWords(WordsProvider, boolean) 
+     * @see #setWords(WordsProvider, boolean)
      */
     public void startGame() throws NoWordsException, CouldNotPopulateMatrixException, InvalidInGameChangeException, NoDimensionsDefinedException {
         if (inGame) {
@@ -433,7 +425,7 @@ public class WSModel {
         this.initClearMatrix();
         this.populateMatrix();
         this.fillMatrix();
-        this.createWildCards(this.random.nextInt(0, this.minWordSize)); // TODO: user chooses between n (>0) and m (<minWordSize)
+        this.createWildCards(this.wildCards);
     }
 
     /**
@@ -444,7 +436,7 @@ public class WSModel {
      * @see #setCols(int)
      */
     private void initClearMatrix() throws NoDimensionsDefinedException {
-        if (!validLines(this.lines) || !validCols(cols)) {
+        if (invalidLines(this.lines) || invalidCols(cols)) {
             throw new NoDimensionsDefinedException();
         }
         this.matrix = new BaseCell[this.lines][this.cols];
@@ -615,7 +607,7 @@ public class WSModel {
                         if (!sameDisplayPos.contains(start)) {
                             this.matrix[start][x] = null;
                         } else if (!sameActualPos.contains(start)) {
-                            this.matrix[start][x].removeActual(c);
+                            this.matrix[start][x].removeReal(c);
                         }
                     }
                     invalid_pos = true;
@@ -627,14 +619,14 @@ public class WSModel {
                 } else {
                     ++overlapCounter;
                     sameDisplayPos.add(start);
-                    if (!this.matrix[start][x].addActual(c)) {
+                    if (!this.matrix[start][x].addReal(c)) {
                         sameActualPos.add(start);
                     }
                 }
             }
 
             // We do not want words on top of others.
-            // TODO: This does not stop bigger words of beign inserted on top of smaller ones.
+            // TODO: This does not stop bigger words of being inserted on top of smaller ones.
             if (!invalid_pos && (overlapCounter < word.length())) {
                 return;
             }
@@ -687,7 +679,7 @@ public class WSModel {
                         if (!same_display_pos.contains(start)) {
                             this.matrix[y][start] = null;
                         } else if (!same_actual_pos.contains(start)) {
-                            this.matrix[y][start].removeActual(c);
+                            this.matrix[y][start].removeReal(c);
                         }
                     }
                     invalid_pos = true;
@@ -699,14 +691,14 @@ public class WSModel {
                 } else {
                     ++overlapCounter;
                     same_display_pos.add(start);
-                    if (!this.matrix[y][start].addActual(c)) {
+                    if (!this.matrix[y][start].addReal(c)) {
                         same_actual_pos.add(start);
                     }
                 }
             }
 
             // We do not want words on top of others.
-            // TODO: This does not stop bigger words of beign inserted on top of smaller ones.
+            // TODO: This does not stop bigger words of being inserted on top of smaller ones.
             if (!invalid_pos && (overlapCounter < word.length())) {
                 return;
             }
@@ -766,7 +758,7 @@ public class WSModel {
                         if (!same_display_pos.contains(startY)) {
                             this.matrix[startY][startX] = null;
                         } else if (!same_actual_pos.contains(startY)) {
-                            this.matrix[startY][startX].removeActual(c);
+                            this.matrix[startY][startX].removeReal(c);
                         }
                     }
                     invalid_pos = true;
@@ -778,14 +770,14 @@ public class WSModel {
                 } else {
                     ++overlapCounter;
                     same_display_pos.add(startY);
-                    if (!this.matrix[startY][startX].addActual(c)) {
+                    if (!this.matrix[startY][startX].addReal(c)) {
                         same_actual_pos.add(startY);
                     }
                 }
             }
 
             // We do not want words on top of others.
-            // TODO: This does not stop bigger words of beign inserted on top of smaller ones.
+            // TODO: This does not stop bigger words of being inserted on top of smaller ones.
             if (!invalid_pos && (overlapCounter < word.length())) {
                 return;
             }
@@ -826,9 +818,10 @@ public class WSModel {
 
     /**
      * Starts and ends a word find.
-     * <p>The first use of this funtion will set the starting position of the word you want to find. The second use will
-     * see if a word in start to end position it's a valid word to be found. Either way you can start finding another
-     * word again.</p>
+     * <p>The first use of this function will set the starting position of the word you want to find. The second use
+     * will see if a word in start to end position it's a valid word to be found. Either way you can start finding
+     * another word again.</p>
+     *
      * @param pos The position of the start or end of the word
      * @return The word, an empty String if it's the first click or null if no word was found
      * @throws NotInGameException If trying to find a word while not in-game
@@ -839,7 +832,9 @@ public class WSModel {
         }
 
         if (this.view != null) {
-            this.view.update(new ClickMessage(pos, this.matrix[pos.line()][pos.col()].getDisplay()));
+            BaseCell cell = this.matrix[pos.line()][pos.col()];
+            this.view.update(new ClickMessage(pos, cell.getDisplay()));
+            this.view.updatePoints(new Word(cell.getDisplay() + "", cell.getPoints()));
         }
 
         if (this.startSelected == null) {
@@ -857,7 +852,7 @@ public class WSModel {
                 if (this.view != null) {
                     this.view.wordFound(startPos, pos);
                     this.view.update(new WordFoundMessage(startPos, pos, word));
-                    this.view.update(new WordPointsMessage(word, possibleWord.points()));
+                    this.view.updatePoints(new Word(word, possibleWord.points()));
                 }
                 found = word;
             }
@@ -872,13 +867,13 @@ public class WSModel {
 
     /**
      * Transforms the sequence of cells from start to end to a list of the possible words they can create.
+     *
      * @param start The start position
-     * @param end The end position
+     * @param end   The end position
      * @return The possible words in the board in those positions
-     * 
-     * @see #getPossibleWordsVertically(Position, Position) 
-     * @see #getPossibleWordsHorizontally(Position, Position) 
-     * @see #getPossibleWordsDiagonally(Position, Position) 
+     * @see #getPossibleWordsVertically(Position, Position)
+     * @see #getPossibleWordsHorizontally(Position, Position)
+     * @see #getPossibleWordsDiagonally(Position, Position)
      */
     private @NotNull Word @NotNull [] getPossibleWords(@NotNull Position start, @NotNull Position end) {
         if (start.col() == end.col()) {
@@ -904,7 +899,7 @@ public class WSModel {
             BaseCell[] line = this.matrix[i];
             Word[] bases = words.toArray(Word[]::new);
             words.clear();
-            for (char actual : line[endPos.col()].getActuals()) {
+            for (char actual : line[endPos.col()].getReals()) {
                 for (Word base : bases) {
                     words.add(new Word(base.word() + actual, base.points() + line[endPos.col()].getPoints()));
                 }
@@ -922,7 +917,7 @@ public class WSModel {
         for (int i = start; i <= end; i++) {
             Word[] bases = words.toArray(Word[]::new);
             words.clear();
-            for (char actual : line[i].getActuals()) {
+            for (char actual : line[i].getReals()) {
                 for (Word base : bases) {
                     words.add(new Word(base.word() + actual, base.points() + line[endPos.col()].getPoints()));
                 }
@@ -943,7 +938,7 @@ public class WSModel {
                 BaseCell[] line = this.matrix[i];
                 Word[] bases = words.toArray(Word[]::new);
                 words.clear();
-                for (char actual : line[startX].getActuals()) {
+                for (char actual : line[startX].getReals()) {
                     for (Word base : bases) {
                         words.add(new Word(base.word() + actual, base.points() + line[endPos.col()].getPoints()));
                     }
@@ -955,7 +950,7 @@ public class WSModel {
                 BaseCell[] line = this.matrix[i];
                 Word[] bases = words.toArray(Word[]::new);
                 words.clear();
-                for (char actual : line[startX].getActuals()) {
+                for (char actual : line[startX].getReals()) {
                     for (Word base : bases) {
                         words.add(new Word(base.word() + actual, base.points() + line[endPos.col()].getPoints()));
                     }
@@ -968,6 +963,7 @@ public class WSModel {
 
     /**
      * Checks if the word is in the board.
+     *
      * @param word The word or itself in reverse
      * @return The word
      * @throws NotInGameException If a game isn't happening
@@ -1002,10 +998,10 @@ public class WSModel {
      * Checks if the word is in the board.
      * <p>Because of how {@link BaseCell works}, there's no need to have a separated method like this. But because it
      * was present in the projects base, I'll keep it.</p>
+     *
      * @param word The word or itself in reverse
      * @return The word
      * @throws NotInGameException If a game isn't happening
-     *
      * @see #wordInBoard(String)
      */
     public @Nullable String wordWithWildcardInBoard(@NotNull String word) throws NotInGameException {
@@ -1014,8 +1010,8 @@ public class WSModel {
 
     /**
      * Ends the game and tells the {@link #view} about it, and the {@link #saver} to save the game results.
-     * @return The game results
      *
+     * @return The game results
      * @see #curGameResults()
      */
     public @NotNull GameResults endGame() {
@@ -1045,6 +1041,7 @@ public class WSModel {
 
     /**
      * Adds the {@link WSView} that the model will use.
+     *
      * @param wsView The view
      */
     public void registerView(WSView wsView) {
@@ -1127,7 +1124,22 @@ public class WSModel {
         return this.words;
     }
 
+    /**
+     * Method to define which words to use in the game via a {@link WordsProvider}.
+     *
+     * @param provider Any {@link WordsProvider}
+     * @see WordsProvider
+     */
+    public void setWords(@NotNull WordsProvider provider) {
+        this.setWords(provider, true);
+    }
+
     public boolean isInGame() {
         return this.inGame;
+    }
+
+    public void setWildCards(int wildCards) {
+        assert wildCards < this.minWordSize;
+        this.wildCards = wildCards;
     }
 }

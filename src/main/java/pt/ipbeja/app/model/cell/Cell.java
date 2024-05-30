@@ -6,8 +6,8 @@ package pt.ipbeja.app.model.cell;
  */
 public class Cell extends BaseCell {
 
-    public Cell(char actual) {
-        super(actual);
+    public Cell(char real) {
+        super(real);
     }
 
     @Override

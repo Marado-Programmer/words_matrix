@@ -11,6 +11,8 @@ import pt.ipbeja.app.model.message_to_ui.MessageToUI;
 public interface WSView {
     void update(MessageToUI messageToUI);
 
+    void updatePoints(Word word);
+
     void gameStarted();
 
     void wordFound(Position start, Position end);

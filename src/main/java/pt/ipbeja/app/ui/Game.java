@@ -4,9 +4,12 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.WSModel;
+import pt.ipbeja.app.model.Word;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -16,6 +19,7 @@ public class Game extends HBox {
     private final @NotNull App app;
     private final @NotNull WSBoard board;
     private final @NotNull TextArea log;
+    private final @NotNull TextArea points;
 
     private StringBuilder gameLog;
 
@@ -33,7 +37,16 @@ public class Game extends HBox {
         VBox board = new VBox(this.board, end);
         board.setAlignment(Pos.CENTER);
         Button saveLog = getSaveLog();
-        VBox log = new VBox(saveLog, this.log);
+        // https://stackoverflow.com/questions/40883858/how-to-evenly-distribute-elements-of-a-javafx-vbox
+        Region r = new Region();
+        HBox.setHgrow(r, Priority.ALWAYS);
+        this.points = new TextArea();
+        this.points.setDisable(true);
+        this.points.setPrefHeight(saveLog.getHeight());
+        HBox.setHgrow(this.points, Priority.SOMETIMES);
+        HBox top = new HBox(saveLog, r, this.points);
+        top.setAlignment(Pos.CENTER_RIGHT);
+        VBox log = new VBox(top, this.log);
         this.getChildren().addAll(board, log);
         this.setAlignment(Pos.CENTER);
 
@@ -68,6 +81,10 @@ public class Game extends HBox {
     public void log(String msg) {
         this.log.appendText(msg);
         this.gameLog.append(msg);
+    }
+
+    public void points(@NotNull Word word) {
+        this.points.setText(String.format("\"%s\" = %d pontos.", word.word(), word.points()));
     }
 
     public void resetGameLog() {

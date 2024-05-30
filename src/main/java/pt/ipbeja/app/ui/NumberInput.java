@@ -28,7 +28,7 @@ public class NumberInput extends HBox {
         inc.setOnAction(event -> {
             if (this.max.isEmpty() || (this.val + 1) <= this.max.get()) {
                 if (this.handler != null) {
-                    this.handler.onChange(this.val, this.val + 1);
+                    this.handler.onChange(this.val + 1);
                 }
                 this.val++;
                 this.update();
@@ -37,7 +37,7 @@ public class NumberInput extends HBox {
         dec.setOnAction(event -> {
             if (this.min.isEmpty() || (this.val - 1) >= this.min.get()) {
                 if (this.handler != null) {
-                    this.handler.onChange(this.val, this.val - 1);
+                    this.handler.onChange(this.val - 1);
                 }
                 this.val--;
                 this.update();
@@ -60,6 +60,14 @@ public class NumberInput extends HBox {
         return val;
     }
 
+    public void setVal(int val) {
+        this.val = Math.max(Math.min(val, this.max.orElse(Integer.MAX_VALUE)), this.min.orElse(Integer.MIN_VALUE));
+        if (this.handler != null) {
+            this.handler.onChange(this.val);
+        }
+        this.update();
+    }
+
     private void update() {
         this.valLabel.setText(String.valueOf(this.val));
     }
@@ -69,6 +77,6 @@ public class NumberInput extends HBox {
     }
 
     public interface OnChangeHandler {
-        void onChange(int oldVal, int newVal);
+        void onChange(int newVal);
     }
 }

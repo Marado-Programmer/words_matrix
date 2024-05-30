@@ -2,11 +2,15 @@ package pt.ipbeja.app.ui;
 
 
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.Position;
 import pt.ipbeja.app.model.WSModel;
+
+import static pt.ipbeja.app.ui.CellButton.SQUARE_SIZE;
 
 /**
  * Game interface. Just a GridPane of buttons. No images. No menu.
@@ -33,10 +37,26 @@ public class WSBoard extends GridPane {
 
         this.getChildren().clear();
 
+        for (int line = 1; line <= this.wsModel.getLines(); line++) {
+            Label label = new Label(String.valueOf(line));
+            label.setAlignment(Pos.CENTER);
+            label.setMinWidth(SQUARE_SIZE);
+            label.setMinHeight(SQUARE_SIZE);
+            this.add(label, 0, line);
+        }
+
+        for (int col = 1; col <= this.wsModel.getCols(); col++) {
+            Label label = new Label(((char) (col - 1 + 'A')) + "");
+            label.setAlignment(Pos.CENTER);
+            label.setMinWidth(SQUARE_SIZE);
+            label.setMinHeight(SQUARE_SIZE);
+            this.add(label, col, 0);
+        }
+
         // create one label for each position
-        for (int line = 0; line < this.wsModel.getLines(); line++) {
-            for (int col = 0; col < this.wsModel.getCols(); col++) {
-                Position pos = new Position(line, col);
+        for (int line = 1; line <= this.wsModel.getLines(); line++) {
+            for (int col = 1; col <= this.wsModel.getCols(); col++) {
+                Position pos = new Position(line - 1, col - 1);
                 CellButton button = new CellButton(this, this.wsModel, pos);
                 this.add(button, col, line);
             }
@@ -54,7 +74,7 @@ public class WSBoard extends GridPane {
     public @NotNull CellButton getButton(int line, int col) {
         ObservableList<Node> children = this.getChildren();
         for (Node node : children) {
-            if (GridPane.getRowIndex(node) == line && GridPane.getColumnIndex(node) == col) {
+            if (GridPane.getRowIndex(node) == line + 1 && GridPane.getColumnIndex(node) == col + 1) {
                 assert (node.getClass() == CellButton.class);
                 return (CellButton) node;
             }
@@ -65,11 +85,18 @@ public class WSBoard extends GridPane {
 
     public void unselectAll() {
         for (Node child : this.getChildren()) {
-            CellButton btn = (CellButton) child;
-            if (!btn.isPartOfWord()) {
-                btn.setStyle("");
-            } else {
-                btn.setStyle("-fx-background-color: green;");
+            if (child == null) {
+                continue;
+            }
+
+            try {
+                CellButton btn = (CellButton) child;
+                if (!btn.isPartOfWord()) {
+                    btn.setStyle("");
+                } else {
+                    btn.setStyle("-fx-background-color: green;");
+                }
+            } catch (ClassCastException ignored) {
             }
         }
     }

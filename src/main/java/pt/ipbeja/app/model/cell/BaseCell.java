@@ -10,21 +10,21 @@ import java.util.TreeSet;
  * Contains a letter and a boolean that indicates if the cell is part of a word
  */
 public abstract class BaseCell {
-    private final @NotNull Set<Character> actuals;
+    private final @NotNull Set<Character> reals;
     protected final char display;
 
-    public BaseCell(char actual) {
-        this(actual, BaseCell.getDisplay(actual));
+    public BaseCell(char real) {
+        this(real, BaseCell.getDisplay(real));
     }
-    protected BaseCell(char actual, char display) {
-        this.actuals = new TreeSet<>();
-        this.actuals.add(actual);
+    protected BaseCell(char real, char display) {
+        this.reals = new TreeSet<>();
+        this.reals.add(real);
         this.display = display;
     }
 
-    private static char getDisplay(char actual) {
-        actual = String.valueOf(actual).toUpperCase().charAt(0);
-        return switch (actual) {
+    private static char getDisplay(char real) {
+        real = String.valueOf(real).toUpperCase().charAt(0);
+        return switch (real) {
             case 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å' -> 'A';
             case 'Ç' -> 'C';
             case 'È', 'É', 'Ê', 'Ë' -> 'E';
@@ -35,33 +35,33 @@ public abstract class BaseCell {
             case 'Ù', 'Ú', 'Û', 'Ü' -> 'U';
             case 'Ý' -> 'Y';
             case 'ß' -> 'S';
-            default -> actual;
+            default -> real;
         };
     }
 
-    public boolean addActual(char actual) {
-        int sz = this.actuals.size();
-        if (this.hasSameDisplayAs(actual)) {
-            this.actuals.add(actual);
+    public boolean addReal(char real) {
+        int sz = this.reals.size();
+        if (this.hasSameDisplayAs(real)) {
+            this.reals.add(real);
         }
-        return this.actuals.size() > sz;
+        return this.reals.size() > sz;
     }
 
-    public void removeActual(char actual) {
-        this.actuals.remove(actual);
+    public void removeReal(char real) {
+        this.reals.remove(real);
     }
 
-    public char[] getActuals() {
-        char[] actuals = new char[this.actuals.size()];
+    public char[] getReals() {
+        char[] reals = new char[this.reals.size()];
         int i = 0;
-        for (Character actual : this.actuals) {
-            actuals[i++] = actual;
+        for (Character real : this.reals) {
+            reals[i++] = real;
         }
-        return actuals;
+        return reals;
     }
 
-    public boolean hasSameDisplayAs(char actual) {
-        return this.display == BaseCell.getDisplay(actual);
+    public boolean hasSameDisplayAs(char real) {
+        return this.display == BaseCell.getDisplay(real);
     }
 
     public char getDisplay() {

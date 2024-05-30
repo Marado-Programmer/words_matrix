@@ -26,7 +26,15 @@ public class Menu extends VBox {
         max.setMin(1);
 
         NumberInput min = new NumberInput("minimum length of an word:\t", 1);
-        max.setMin(1);
+        min.setMin(1);
+
+        NumberInput wilds = new NumberInput("Number of wild cards:\t", 1);
+        wilds.setMin(1);
+        wilds.setMax(min.getVal());
+        min.setHandler(newVal -> {
+            wilds.setMax(newVal);
+            wilds.setVal(wilds.getVal());
+        });
 
         // https://docs.oracle.com/javafx/2/ui_controls/radio-button.htm
         final ToggleGroup group = new ToggleGroup();
@@ -46,16 +54,17 @@ public class Menu extends VBox {
                 (ProviderMode) group.getSelectedToggle().getUserData(),
                 max.getVal(),
                 min.getVal(),
-                diagonalAllowed.isSelected()
+                diagonalAllowed.isSelected(),
+                wilds.getVal()
         ));
 
-        this.getChildren().addAll(lines, columns, new HBox(manual, db), btn, max, min, diagonalAllowed);
+        this.getChildren().addAll(lines, columns, new HBox(manual, db), max, min, diagonalAllowed, wilds, btn);
 
         this.setAlignment(Pos.CENTER);
     }
 
     public interface OnStartHandler {
-        void onStart(int lines, int cols, @NotNull ProviderMode mode, int max, int min, boolean diagonal);
+        void onStart(int lines, int cols, @NotNull ProviderMode mode, int max, int min, boolean diagonal, int wilds);
     }
 
     public enum ProviderMode { MANUAL, DB }

@@ -3,9 +3,6 @@ package pt.ipbeja.app.model;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import pt.ipbeja.app.model.throwables.CouldNotPopulateMatrixException;
-import pt.ipbeja.app.model.throwables.InvalidInGameChangeException;
-import pt.ipbeja.app.model.throwables.NoWordsException;
 import pt.ipbeja.app.model.throwables.NotInGameException;
 
 import java.io.BufferedWriter;

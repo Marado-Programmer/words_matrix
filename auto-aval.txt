@@ -23,16 +23,16 @@
 [x] - RE5 --- Mostra ainda a lista de palavras presentes no jogo;
 [x] - RE6
 ## Requisitos Não Essenciais
-[x] - RNE1 --- Tirar a duvida na parte grafica com o prof
+[x] - RNE1
 [ ] - RNE2 --- opcao de gravar caso aparaca aquele pop up
 [x] - RNE3
 ### Apenas para época normal
 [x] - RNE4
-[ ] - RNE5 ---  Parte grafica falta
+[x] - RNE5
 ### Apenas para época de recurso
 [x] - RNE4
-[ ] - RNE5 ---  Parte grafica falta
-[ ] - RNE6 ---
+[x] - RNE5
+[ ] - RNE6
 
 # Auto Avaliação
 0/20

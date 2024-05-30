@@ -1,15 +1,16 @@
 package pt.ipbeja.app.ui;
 
 import javafx.scene.control.Button;
+import org.jetbrains.annotations.NotNull;
 import pt.ipbeja.app.model.Position;
 import pt.ipbeja.app.model.WSModel;
 import pt.ipbeja.app.model.throwables.NotInGameException;
 
 public class CellButton extends Button {
-    private static final int SQUARE_SIZE = 32;
+    public static final int SQUARE_SIZE = 32;
     private boolean partOfWord;
 
-    public CellButton(WSBoard board, WSModel model, Position pos) {
+    public CellButton(@NotNull WSBoard board, @NotNull WSModel model, @NotNull Position pos) {
         super(model.textInPosition(pos).getDisplay() + "");
         this.setMinWidth(SQUARE_SIZE);
         this.setMinHeight(SQUARE_SIZE);

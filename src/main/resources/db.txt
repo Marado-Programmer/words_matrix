@@ -52,7 +52,6 @@ hat
 key
 ink
 jug
-nut
 car
 cat
 pen
