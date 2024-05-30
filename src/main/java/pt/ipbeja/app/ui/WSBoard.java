@@ -8,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import pt.ipbeja.app.model.Position;
 import pt.ipbeja.app.model.WSModel;
+import pt.ipbeja.app.model.WSView;
 
 import static pt.ipbeja.app.ui.CellButton.SQUARE_SIZE;
 
@@ -19,12 +20,14 @@ import static pt.ipbeja.app.ui.CellButton.SQUARE_SIZE;
  */
 public class WSBoard extends GridPane {
     private final WSModel wsModel;
+    private final WSView view;
 
     /**
      * Create a board with letters
      */
-    public WSBoard(WSModel wsModel) {
+    public WSBoard(WSModel wsModel, WSView view) {
         this.wsModel = wsModel;
+        this.view = view;
         this.buildGUI();
     }
 
@@ -82,6 +85,16 @@ public class WSBoard extends GridPane {
         return null;
     }
 
+    /**
+     * Can be optimized using an additional matrix with all the buttons
+     *
+     * @param pos The position of the button you want
+     * @return the button at line, col
+     */
+    public CellButton getButton(Position pos) {
+        return this.getButton(pos.line(), pos.col());
+    }
+
     public void unselectAll() {
         for (Node child : this.getChildren()) {
             if (child == null) {
@@ -98,5 +111,9 @@ public class WSBoard extends GridPane {
             } catch (ClassCastException ignored) {
             }
         }
+    }
+
+    public WSView getView() {
+        return view;
     }
 }

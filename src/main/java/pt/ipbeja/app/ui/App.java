@@ -1,5 +1,6 @@
 package pt.ipbeja.app.ui;
 
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -9,10 +10,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import pt.ipbeja.app.model.*;
 import pt.ipbeja.app.model.message_to_ui.MessageToUI;
-import pt.ipbeja.app.model.throwables.CouldNotPopulateMatrixException;
-import pt.ipbeja.app.model.throwables.InvalidInGameChangeException;
-import pt.ipbeja.app.model.throwables.NoDimensionsDefinedException;
-import pt.ipbeja.app.model.throwables.NoWordsException;
+import pt.ipbeja.app.model.throwables.*;
 import pt.ipbeja.app.model.words_provider.DBWordsProvider;
 import pt.ipbeja.app.model.words_provider.ManualWordsProvider;
 
@@ -193,42 +191,111 @@ public class App extends VBox implements WSView {
     @Override
     public void gameEnded(GameResults res) {
         assert res.words_found() != null && res.words() != null;
+        Platform.runLater(() -> {
+            String resultsString = this.resultsString(res);
 
-        this.game.log("\twords found:\t" +
-                res.words_found().size() +
-                "\n\ttotal of words:\t" +
-                res.words().size() +
-                "\n\tpercentage of words found:\t" +
-                String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()) +
-                "\n");
-        this.game.log("words in game:\n");
+            this.game.log(resultsString);
+            GameEndedAlert dialog = new GameEndedAlert(this, resultsString, !res.onReplay());
+
+            Optional<ButtonType> result = dialog.showAndWait();
+
+            if (result.isPresent()) {
+                switch (result.get().getButtonData()) {
+                    case BACK_PREVIOUS -> this.model.replay();
+                    case NEXT_FORWARD -> {
+                        try {
+                            this.moreWordsQuestion();
+                            this.model.startGame();
+                        } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException |
+                                 NoDimensionsDefinedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    default -> {
+                        this.game.setVisible(false);
+                        this.menu.setVisible(true);
+                    }
+                }
+            } else {
+                this.game.setVisible(false);
+                this.menu.setVisible(true);
+            }
+        });
+    }
+
+    private String resultsString(GameResults res) {
+        StringBuilder s = new StringBuilder();
+        s.append("\twords found:\t")
+                .append(res.words_found().size())
+                .append("\n\ttotal of words:\t")
+                .append(res.words().size())
+                .append("\n\tpercentage of words found:\t")
+                .append(String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()))
+                .append("\n")
+                .append("words in game:\n");
+
         for (String word : res.words()) {
-            this.game.log("\t" + (res.words_found().contains(word) ? "+" : "-") + " " + word + "\n");
+            s.append("\t")
+                    .append(res.words_found().contains(word) ? "+" : "-")
+                    .append(" ")
+                    .append(word)
+                    .append("\n");
         }
-        this.game.log("\n");
+        s.append("\n");
+        return s.toString();
+    }
 
-        for (String word : res.words()) {
-            System.out.println(word);
-        }
-        System.out.println("\n\n");
-
+    private void moreWordsQuestion() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(TITLE);
-        alert.setHeaderText("Game ended");
-        alert.setContentText("Do you want to play again (same configurations)?");
+        alert.setHeaderText("Add words");
+        alert.setContentText("Would you like to add more words to the game?");
 
         Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
+        if (result.isPresent() && result.get() == ButtonType.OK){
+            ManualWordsProvider provider = new ManualWordsProvider();
+
+            while (!provider.isClosed()) {
+                ProvideWordDialog dialog = new ProvideWordDialog();
+                dialog.showAndWait().ifPresentOrElse(provider::provide, provider::close);
+            }
+
+            this.model.setWords(provider, true);
+        }
+    }
+
+    public void saveGameLog() {
+        // https://stackoverflow.com/questions/732034/getting-unixtime-in-java
+        long now = System.currentTimeMillis();
+        try (BufferedWriter writer = Files.newBufferedWriter(
+                this.getLogDir().resolve("log_" + now + ".md")
+        )) {
+            writer.write(String.format(
+                    "# Date\n%d\n\n# Matrix\n%s\n# Logs\n```\n%s```\n",
+                    now,
+                    this.matrixToString(),
+                    this.game.getLog()
+            ));
+        } catch (IOException ignored) {
+        }
+    }
+
+    @Override
+    public void click(Position pos) {
+        Platform.runLater(() -> {
             try {
-                this.model.startGame();
-            } catch (NoWordsException | CouldNotPopulateMatrixException | InvalidInGameChangeException |
-                     NoDimensionsDefinedException e) {
+                String word = model.findWord(pos);
+                if (word != null) {
+                    if (word.isEmpty()) {
+                        this.game.getBoard().getButton(pos).setStyle("-fx-background-color: yellow;");
+                    }
+                } else {
+                    this.game.getBoard().unselectAll();
+                }
+            } catch (NotInGameException e) {
                 throw new RuntimeException(e);
             }
-        } else {
-            this.game.setVisible(false);
-            this.menu.setVisible(true);
-        }
+        });
     }
 
     public Path getLogDir() {

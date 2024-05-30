@@ -18,4 +18,6 @@ public interface WSView {
     void wordFound(Position start, Position end);
 
     void gameEnded(GameResults res);
+
+    void click(Position pos);
 }

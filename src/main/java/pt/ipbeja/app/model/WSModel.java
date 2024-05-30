@@ -112,6 +112,9 @@ public class WSModel {
      */
     private int wildCards;
 
+    private final List<Position> plays;
+    private boolean onReplay;
+
     /**
      * Creates the model for a words matrix game.
      *
@@ -131,6 +134,8 @@ public class WSModel {
         this.orientationsAllowed = new TreeSet<>();
         this.orientationsAllowed.addAll(List.of(WordOrientations.VERTICAL, WordOrientations.HORIZONTAL));
         this.matrix = new BaseCell[0][];
+        this.plays = new ArrayList<>();
+        this.onReplay = false;
     }
 
     /**
@@ -407,6 +412,8 @@ public class WSModel {
         this.inGame = true;
         this.wordsFound = new TreeSet<>();
         this.startSelected = null;
+
+        this.plays.clear();
 
         if (this.view != null) {
             this.view.gameStarted();
@@ -840,6 +847,10 @@ public class WSModel {
             this.view.updatePoints(new Word(cell.getDisplay() + "", cell.getPoints()));
         }
 
+        if (!this.onReplay) {
+            this.plays.add(pos);
+        }
+
         if (this.startSelected == null) {
             this.startSelected = pos;
             return "";
@@ -1034,12 +1045,12 @@ public class WSModel {
      */
     public GameResults curGameResults() {
         if (this.wordsToFind == null || this.wordsFound == null) {
-            return new GameResults(new TreeSet<>(), new TreeSet<>());
+            return new GameResults(new TreeSet<>(), new TreeSet<>(), this.onReplay);
         }
 
         Set<String> union = new TreeSet<>(this.wordsToFind);
         union.addAll(this.wordsFound);
-        return new GameResults(union, this.wordsFound);
+        return new GameResults(union, this.wordsFound, this.onReplay);
     }
 
     /**
@@ -1072,6 +1083,41 @@ public class WSModel {
             throw new NotInGameException();
         }
         return this.wordsToFind == null || this.wordsToFind.isEmpty();
+    }
+
+    public void replay() {
+        this.inGame = true;
+        this.onReplay = true;
+        this.wordsToFind.addAll(this.wordsFound);
+        this.wordsFound.clear();
+        this.view.gameStarted();
+        this.replayPlay(0);
+    }
+
+    private void replayPlay(int i) {
+        Position play = this.plays.get(i);
+        Thread task = new Thread(() -> {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                this.view.click(play);
+
+
+                if (i + 1 >= this.plays.size()) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    this.onReplay = false;
+                } else {
+                    this.replayPlay(i + 1);
+                }
+            });
+
+            task.start();
     }
 
     public int wordsInUse() {

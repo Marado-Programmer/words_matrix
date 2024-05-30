@@ -27,4 +27,9 @@ final public class EmptyView implements WSView {
     public void gameEnded(GameResults res) {
 
     }
+
+    @Override
+    public void click(Position pos) {
+
+    }
 }

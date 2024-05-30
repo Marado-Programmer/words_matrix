@@ -10,10 +10,6 @@ import javafx.scene.layout.VBox;
 import pt.ipbeja.app.model.WSModel;
 import pt.ipbeja.app.model.Word;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-
 public class Game extends HBox {
     private final App app;
     private final WSBoard board;
@@ -27,7 +23,7 @@ public class Game extends HBox {
         Button end = new Button("End Game Now");
         end.setOnAction(event -> model.endGame());
 
-        this.board = new WSBoard(model);
+        this.board = new WSBoard(model, app);
         this.board.requestFocus();
 
         this.log = new TextArea("STATUS:\n");
@@ -35,7 +31,8 @@ public class Game extends HBox {
 
         VBox board = new VBox(this.board, end);
         board.setAlignment(Pos.CENTER);
-        Button saveLog = getSaveLog();
+        Button saveLog = new Button("Save current game log");
+        saveLog.setOnAction(event -> this.app.saveGameLog());
         // https://stackoverflow.com/questions/40883858/how-to-evenly-distribute-elements-of-a-javafx-vbox
         Region r = new Region();
         HBox.setHgrow(r, Priority.ALWAYS);
@@ -52,26 +49,6 @@ public class Game extends HBox {
         this.gameLog = new StringBuilder();
     }
 
-    private Button getSaveLog() {
-        Button saveLog = new Button("Save current game log");
-        saveLog.setOnAction(event -> {
-            // https://stackoverflow.com/questions/732034/getting-unixtime-in-java
-            long now = System.currentTimeMillis();
-            try (BufferedWriter writer = Files.newBufferedWriter(
-                    this.app.getLogDir().resolve("log_" + now + ".md")
-            )) {
-                writer.write(String.format(
-                        "# Date\n%d\n\n# Matrix\n%s\n# Logs\n```\n%s```\n",
-                        now,
-                        this.app.matrixToString(),
-                        this.gameLog.toString()
-                ));
-            } catch (IOException ignored) {
-            }
-        });
-        return saveLog;
-    }
-
     public WSBoard getBoard() {
         return board;
     }
@@ -79,6 +56,10 @@ public class Game extends HBox {
     public void log(String msg) {
         this.log.appendText(msg);
         this.gameLog.append(msg);
+    }
+
+    public String getLog() {
+        return this.gameLog.toString();
     }
 
     public void points(Word word) {
