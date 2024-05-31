@@ -320,6 +320,7 @@ public class App extends VBox implements WSView {
                 String word = this.model.findWord(pos);
                 if (word != null) {
                     if (word.isEmpty()) {
+                        this.game.getBoard().unselectAll();
                         this.game.getBoard().getButton(pos).setStyle("-fx-background-color: yellow;");
                     }
                 } else {
