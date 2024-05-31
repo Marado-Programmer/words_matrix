@@ -13,7 +13,7 @@ public class CellButton extends Button {
         this.setMinWidth(SQUARE_SIZE);
         this.setMinHeight(SQUARE_SIZE);
         this.setOnAction(event -> {
-            if (!model.isOnReplay()) {
+            if (model.isNotOnReplay()) {
                 board.getView().click(pos);
             }
         });

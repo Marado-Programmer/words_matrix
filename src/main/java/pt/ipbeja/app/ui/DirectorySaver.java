@@ -9,23 +9,24 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class DirectorySaver extends MenuItem {
-    private Path dir;
+    private Path dir = null;
     private static final Path DEFAULT = Paths.get(System.getProperty("user.dir"));
-    public DirectorySaver(Stage stage, String display, String title) {
-        super(display);
+
+    public DirectorySaver(Stage stage, String text, String title) {
+        super(text);
         this.setOnAction(event -> {
             DirectoryChooser directoryChooser = new DirectoryChooser();
             directoryChooser.setTitle(title);
             File file = directoryChooser.showDialog(stage);
-            if (file != null) {
+            if (null != file) {
                 this.dir = file.toPath();
             }
         });
     }
 
     public Path getDir() {
-        if (this.dir == null) {
-            return DirectorySaver.DEFAULT;
+        if (null == this.dir) {
+            return DEFAULT;
         }
         return this.dir;
     }

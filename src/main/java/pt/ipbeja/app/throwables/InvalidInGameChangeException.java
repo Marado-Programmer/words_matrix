@@ -1,9 +1,10 @@
-package pt.ipbeja.app.model.throwables;
+package pt.ipbeja.app.throwables;
 
 public class InvalidInGameChangeException extends Exception {
     public InvalidInGameChangeException() {
         super();
     }
+
     public InvalidInGameChangeException(String message) {
         super(message);
     }

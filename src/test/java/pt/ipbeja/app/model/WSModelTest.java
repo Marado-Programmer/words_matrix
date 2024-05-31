@@ -3,14 +3,14 @@ package pt.ipbeja.app.model;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import pt.ipbeja.app.model.throwables.NotInGameException;
+import pt.ipbeja.app.throwables.NotInGameException;
 
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,7 +39,7 @@ class WSModelTest {
         WSModel model;
         try {
             model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         model.registerView(new EmptyView());
@@ -47,7 +47,7 @@ class WSModelTest {
 
         String word = Arrays.stream(contents.split("\n")).findFirst().orElse("");
         try {
-            assertEquals(word.toUpperCase(), model.wordInBoard(word));
+            assertEquals(word.toUpperCase(Locale.ROOT), model.wordFound(word));
         } catch (NotInGameException e) {
             throw new RuntimeException(e);
         }
@@ -58,7 +58,7 @@ class WSModelTest {
         WSModel model;
         try {
             model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         model.registerView(new EmptyView());
@@ -66,7 +66,7 @@ class WSModelTest {
 
         String word = Arrays.stream(contents.split("\n")).findFirst().orElse("");
         try {
-            assertEquals(word.toUpperCase(), model.wordInBoard(word));
+            assertEquals(word.toUpperCase(Locale.ROOT), model.wordFound(word));
         } catch (NotInGameException e) {
             throw new RuntimeException(e);
         }
@@ -77,7 +77,7 @@ class WSModelTest {
         WSModel model;
         try {
             model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         model.registerView(new EmptyView());
@@ -85,9 +85,9 @@ class WSModelTest {
 
         for (String w :
                 contents.split("\n")) {
-            w = w.toUpperCase();
+            w = w.toUpperCase(Locale.ROOT);
             try {
-                assertEquals(w, model.wordInBoard(w));
+                assertEquals(w, model.wordFound(w));
             } catch (NotInGameException e) {
                 throw new RuntimeException(e);
             }
@@ -104,7 +104,7 @@ class WSModelTest {
         WSModel model;
         try {
             model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         model.registerView(new EmptyView());
@@ -112,10 +112,10 @@ class WSModelTest {
 
         for (String w :
                 contents.split("\n")) {
-            w = w.toUpperCase();
+            w = w.toUpperCase(Locale.ROOT);
             assertFalse(model.gameEnded());
             try {
-                assertEquals(w, model.wordInBoard(w));
+                assertEquals(w, model.wordFound(w));
             } catch (NotInGameException e) {
                 throw new RuntimeException(e);
             }

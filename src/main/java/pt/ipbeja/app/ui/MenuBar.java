@@ -15,6 +15,7 @@ public class MenuBar extends javafx.scene.control.MenuBar {
     private final MenuItem hint;
 
     public MenuBar(Stage stage, WSModel model) {
+        super();
         Menu opts = new Menu("Options");
         this.scoreDir = new DirectorySaver(
                 stage,
@@ -29,7 +30,7 @@ public class MenuBar extends javafx.scene.control.MenuBar {
 
         this.hint = new MenuItem("Give word hint");
         this.hint.setOnAction(event -> {
-            if (!model.isOnReplay()) {
+            if (model.isNotOnReplay()) {
                 model.giveHint();
             }
         });
@@ -56,9 +57,11 @@ public class MenuBar extends javafx.scene.control.MenuBar {
         opts.getItems().addAll(this.scoreDir, this.logDir, this.hint);
         this.getMenus().addAll(opts, quit);
     }
+
     public Path getScoreDir() {
         return this.scoreDir.getDir();
     }
+
     public Path getLogDir() {
         return this.logDir.getDir();
     }

@@ -1,14 +1,16 @@
 package pt.ipbeja.app.ui;
 
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
-import static pt.ipbeja.app.ui.StartWordSearch.TITLE;
-
-public class GameEndedAlert extends Alert {
+class GameEndedAlert extends Alert {
     public GameEndedAlert(App app, String content) {
         super(AlertType.INFORMATION);
-        this.setTitle(TITLE);
+        this.setTitle(StartWordSearch.TITLE);
         this.setHeaderText("Game Ended");
         this.setContentText(content);
 

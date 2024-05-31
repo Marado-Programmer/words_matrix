@@ -1,8 +1,6 @@
 package pt.ipbeja.app.model;
 
-import pt.ipbeja.app.model.message_to_ui.MessageToUI;
-
-final public class EmptyView implements WSView {
+public class EmptyView implements WSView {
     @Override
     public void update(MessageToUI messageToUI) {
 

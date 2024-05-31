@@ -1,4 +1,4 @@
-package pt.ipbeja.app.model.cell;
+package pt.ipbeja.app.model;
 
 /**
  * Cell in the board

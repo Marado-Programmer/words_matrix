@@ -1,11 +1,10 @@
 package pt.ipbeja.app.model;
 
-import pt.ipbeja.app.model.words_provider.WordsProvider;
+import pt.ipbeja.app.model.wordsprovider.WordsProvider;
 
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
-import java.util.TreeSet;
-
-import static pt.ipbeja.app.model.WSModel.MIN_SIDE_LEN;
 
 public class GameOptions {
     private int lines;
@@ -19,13 +18,15 @@ public class GameOptions {
     private int numberOfWilds;
 
     public GameOptions() {
-        this.lines = MIN_SIDE_LEN;
-        this.columns = MIN_SIDE_LEN;
+        super();
+        this.lines = WSModel.MIN_SIDE_LEN;
+        this.columns = WSModel.MIN_SIDE_LEN;
         this.provider = null;
         this.keepExistent = false;
         this.maxWords = 5;
         this.minWordSize = 1;
-        this.orientationsAllowed = new TreeSet<>();
+        // https://docs.oracle.com/javase/8/docs/api/java/util/EnumSet.html
+        this.orientationsAllowed = EnumSet.noneOf(WordOrientations.class);
         this.orientationsAllowed.add(WordOrientations.VERTICAL);
         this.orientationsAllowed.add(WordOrientations.HORIZONTAL);
         this.numberOfWilds = 1;
@@ -100,6 +101,6 @@ public class GameOptions {
     }
 
     public Set<WordOrientations> getOrientationsAllowed() {
-        return this.orientationsAllowed;
+        return Collections.unmodifiableSet(this.orientationsAllowed);
     }
 }

@@ -1,5 +1,6 @@
-package pt.ipbeja.app.model.cell;
+package pt.ipbeja.app.model;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -9,19 +10,21 @@ import java.util.TreeSet;
  */
 public abstract class BaseCell {
     private final Set<Character> reals;
-    protected final char display;
+    private final char display;
 
     public BaseCell(char real) {
-        this(real, BaseCell.getDisplay(real));
+        this(real, getDisplay(real));
     }
+
     protected BaseCell(char real, char display) {
+        super();
         this.reals = new TreeSet<>();
         this.reals.add(real);
         this.display = display;
     }
 
     private static char getDisplay(char real) {
-        real = String.valueOf(real).toUpperCase().charAt(0);
+        real = String.valueOf(real).toUpperCase(Locale.ROOT).charAt(0);
         return switch (real) {
             case 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å' -> 'A';
             case 'Ç' -> 'C';
@@ -53,13 +56,14 @@ public abstract class BaseCell {
         char[] reals = new char[this.reals.size()];
         int i = 0;
         for (Character real : this.reals) {
-            reals[i++] = real;
+            reals[i] = real;
+            i++;
         }
         return reals;
     }
 
     public boolean hasSameDisplayAs(char real) {
-        return this.display == BaseCell.getDisplay(real);
+        return (int) this.display == (int) getDisplay(real);
     }
 
     public char getDisplay() {

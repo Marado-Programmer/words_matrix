@@ -8,14 +8,14 @@ import javafx.scene.layout.VBox;
 
 import java.util.Optional;
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class NumberInput extends HBox {
     private final Label valLabel;
-    private OnChangeHandler handler = null;
+    private OnChangeHandler handler;
     private Optional<Integer> min, max;
     private int val;
 
     public NumberInput(String label, int defaultValue) {
+        super();
         this.val = defaultValue;
         this.max = Optional.empty();
         this.min = Optional.empty();
@@ -25,7 +25,7 @@ public class NumberInput extends HBox {
         Button dec = new Button("v");
         inc.setOnAction(event -> {
             if (this.max.isEmpty() || (this.val + 1) <= this.max.get()) {
-                if (this.handler != null) {
+                if (null != this.handler) {
                     this.handler.onChange(this.val + 1);
                 }
                 this.val++;
@@ -34,7 +34,7 @@ public class NumberInput extends HBox {
         });
         dec.setOnAction(event -> {
             if (this.min.isEmpty() || (this.val - 1) >= this.min.get()) {
-                if (this.handler != null) {
+                if (null != this.handler) {
                     this.handler.onChange(this.val - 1);
                 }
                 this.val--;
@@ -60,7 +60,7 @@ public class NumberInput extends HBox {
 
     public void setVal(int val) {
         this.val = Math.max(Math.min(val, this.max.orElse(Integer.MAX_VALUE)), this.min.orElse(Integer.MIN_VALUE));
-        if (this.handler != null) {
+        if (null != this.handler) {
             this.handler.onChange(this.val);
         }
         this.update();

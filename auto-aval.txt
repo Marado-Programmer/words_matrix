@@ -8,11 +8,8 @@
 [x] - 6
 ## Requisitos Essenciais
 [x] - RE1 --- O que mudou da base:
-      - Algumas classes foram movidas para sub-packages;
-      - Algumas classes mudaram para classes abstratas, interfaces para classes, records para classes, e mudancas desse
-        genero;
+      - Alguns records mudaram para interfaces, e podem ter acontecido mais mudancas desse genero;
       - Alguns metodos mudaram de signature;
-      - Alguns nomes tambem mas isso tem que ser trocado de volta para o nome original.
 [x] - RE2 --- Feito. Usando polimorfismo é possível, ao invés de usar um ficheiro como base de dados, fazer o utilizador
       escrever as palavras de que ele está a espera que apareça no seu jogo. Pode especificar o tamanho de palavra
       mínimo permitido. O ficheiro de base de dados sao palavras separadas por **white spaces**. Usar palavras com

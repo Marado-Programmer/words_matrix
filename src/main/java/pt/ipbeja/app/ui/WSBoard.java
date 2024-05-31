@@ -10,7 +10,6 @@ import pt.ipbeja.app.model.Position;
 import pt.ipbeja.app.model.WSModel;
 import pt.ipbeja.app.model.WSView;
 
-import static pt.ipbeja.app.ui.CellButton.SQUARE_SIZE;
 
 /**
  * Game interface. Just a GridPane of buttons. No images. No menu.
@@ -23,9 +22,12 @@ public class WSBoard extends GridPane {
     private final WSView view;
 
     /**
-     * Create a board with letters
+     * Create a board with letters.
+     * @param wsModel The model
+     * @param view The view which the board is part of
      */
     public WSBoard(WSModel wsModel, WSView view) {
+        super();
         this.wsModel = wsModel;
         this.view = view;
         this.buildGUI();
@@ -35,29 +37,29 @@ public class WSBoard extends GridPane {
      * Build the interface
      */
     public void buildGUI() {
-        assert (this.wsModel != null);
+        assert (null != this.wsModel);
 
         this.getChildren().clear();
 
-        for (int line = 1; line <= this.wsModel.getLines(); line++) {
+        for (int line = 1; line <= this.wsModel.nLines(); line++) {
             Label label = new Label(String.valueOf(line));
             label.setAlignment(Pos.CENTER);
-            label.setMinWidth(SQUARE_SIZE);
-            label.setMinHeight(SQUARE_SIZE);
+            label.setMinWidth(CellButton.SQUARE_SIZE);
+            label.setMinHeight(CellButton.SQUARE_SIZE);
             this.add(label, 0, line);
         }
 
-        for (int col = 1; col <= this.wsModel.getCols(); col++) {
-            Label label = new Label(((char) (col - 1 + 'A')) + "");
+        for (int col = 1; col <= this.wsModel.nCols(); col++) {
+            Label label = new Label(((char) (col - 1 + (int) 'A')) + "");
             label.setAlignment(Pos.CENTER);
-            label.setMinWidth(SQUARE_SIZE);
-            label.setMinHeight(SQUARE_SIZE);
+            label.setMinWidth(CellButton.SQUARE_SIZE);
+            label.setMinHeight(CellButton.SQUARE_SIZE);
             this.add(label, col, 0);
         }
 
         // create one label for each position
-        for (int line = 1; line <= this.wsModel.getLines(); line++) {
-            for (int col = 1; col <= this.wsModel.getCols(); col++) {
+        for (int line = 1; line <= this.wsModel.nLines(); line++) {
+            for (int col = 1; col <= this.wsModel.nCols(); col++) {
                 Position pos = new Position(line - 1, col - 1);
                 CellButton button = new CellButton(this, this.wsModel, pos);
                 this.add(button, col, line);
@@ -77,7 +79,7 @@ public class WSBoard extends GridPane {
         ObservableList<Node> children = this.getChildren();
         for (Node node : children) {
             if (GridPane.getRowIndex(node) == line + 1 && GridPane.getColumnIndex(node) == col + 1) {
-                assert (node.getClass() == CellButton.class);
+                assert (CellButton.class == node.getClass());
                 return (CellButton) node;
             }
         }
@@ -97,16 +99,16 @@ public class WSBoard extends GridPane {
 
     public void unselectAll() {
         for (Node child : this.getChildren()) {
-            if (child == null) {
+            if (null == child) {
                 continue;
             }
 
             try {
                 CellButton btn = (CellButton) child;
-                if (!btn.isPartOfWord()) {
-                    btn.setStyle("");
-                } else {
+                if (btn.isPartOfWord()) {
                     btn.setStyle("-fx-background-color: green;");
+                } else {
+                    btn.setStyle("");
                 }
             } catch (ClassCastException ignored) {
             }

@@ -1,4 +1,4 @@
-package pt.ipbeja.app.model.message_to_ui;
+package pt.ipbeja.app.model;
 
 /**
  * Message to be sent from the model so that the interface updates the positions in the list

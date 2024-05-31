@@ -1,4 +1,4 @@
-package pt.ipbeja.app.model.results_saver;
+package pt.ipbeja.app.model.resultssaver;
 
 import pt.ipbeja.app.model.GameResults;
 

@@ -1,5 +1,6 @@
-package pt.ipbeja.app.model.throwables;
+package pt.ipbeja.app.throwables;
 
+import java.util.Collections;
 import java.util.Set;
 
 public class CouldNotPopulateMatrixException extends Exception {
@@ -14,7 +15,7 @@ public class CouldNotPopulateMatrixException extends Exception {
     }
 
     public Set<String> getWords() {
-        return this.words;
+        return Collections.unmodifiableSet(this.words);
     }
 
     public int getLines() {

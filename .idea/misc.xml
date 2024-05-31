@@ -114,6 +114,46 @@
     <pattern value="pt.ipbeja.app.model.WSModel" method="wordsInUse" />
     <pattern value="pt.ipbeja.app.model.words_provider.WordsProvider" />
     <pattern value="pt.ipbeja.app.model.WSView" />
+    <pattern value="pt.ipbeja.app.model.wordsprovider.AggregateWordsProvider" />
+    <pattern value="pt.ipbeja.app.model.wordsprovider.AggregateWordsProvider" method="AggregateWordsProvider" />
+    <pattern value="pt.ipbeja.app.model.BaseCell" />
+    <pattern value="pt.ipbeja.app.model.BaseCell" method="BaseCell" />
+    <pattern value="pt.ipbeja.app.model.Cell" />
+    <pattern value="pt.ipbeja.app.model.Cell" method="Cell" />
+    <pattern value="pt.ipbeja.app.model.ClickMessage" />
+    <pattern value="pt.ipbeja.app.model.ClickMessage" method="ClickMessage" />
+    <pattern value="pt.ipbeja.app.throwables.CouldNotPopulateMatrixException" />
+    <pattern value="pt.ipbeja.app.throwables.CouldNotPopulateMatrixException" method="CouldNotPopulateMatrixException" />
+    <pattern value="pt.ipbeja.app.model.wordsprovider.DBWordsProvider" />
+    <pattern value="pt.ipbeja.app.model.wordsprovider.DBWordsProvider" method="DBWordsProvider" />
+    <pattern value="pt.ipbeja.app.throwables.CouldNotPopulateMatrixException" method="getCols" />
+    <pattern value="pt.ipbeja.app.throwables.WordCanNotFitMatrixException" method="getCols" />
+    <pattern value="pt.ipbeja.app.throwables.CouldNotPopulateMatrixException" method="getLines" />
+    <pattern value="pt.ipbeja.app.throwables.WordCanNotFitMatrixException" method="getLines" />
+    <pattern value="pt.ipbeja.app.throwables.WordCanNotFitMatrixException" method="getWord" />
+    <pattern value="pt.ipbeja.app.throwables.CouldNotPopulateMatrixException" method="getWords" />
+    <pattern value="pt.ipbeja.app.model.Message" />
+    <pattern value="pt.ipbeja.app.throwables.InvalidInGameChangeException" />
+    <pattern value="pt.ipbeja.app.throwables.InvalidInGameChangeException" method="InvalidInGameChangeException" />
+    <pattern value="pt.ipbeja.app.model.wordsprovider.ManualWordsProvider" />
+    <pattern value="pt.ipbeja.app.model.wordsprovider.ManualWordsProvider" method="ManualWordsProvider" />
+    <pattern value="pt.ipbeja.app.model.MessageToUI" />
+    <pattern value="pt.ipbeja.app.throwables.NoDimensionsDefinedException" />
+    <pattern value="pt.ipbeja.app.throwables.NoDimensionsDefinedException" method="NoDimensionsDefinedException" />
+    <pattern value="pt.ipbeja.app.throwables.NotInGameException" />
+    <pattern value="pt.ipbeja.app.throwables.NotInGameException" method="NotInGameException" />
+    <pattern value="pt.ipbeja.app.throwables.NoWordsException" />
+    <pattern value="pt.ipbeja.app.throwables.NoWordsException" method="NoWordsException" />
+    <pattern value="pt.ipbeja.app.model.wordsprovider.ManualWordsProvider" method="provide" />
+    <pattern value="pt.ipbeja.app.model.wordsprovider.AggregateWordsProvider" method="provide" />
+    <pattern value="pt.ipbeja.app.model.resultssaver.ResultsSaver" />
+    <pattern value="pt.ipbeja.app.model.WildCell" />
+    <pattern value="pt.ipbeja.app.model.WildCell" method="WildCell" />
+    <pattern value="pt.ipbeja.app.throwables.WordCanNotFitMatrixException" />
+    <pattern value="pt.ipbeja.app.throwables.WordCanNotFitMatrixException" method="WordCanNotFitMatrixException" />
+    <pattern value="pt.ipbeja.app.model.WordFoundMessage" />
+    <pattern value="pt.ipbeja.app.model.WordFoundMessage" method="WordFoundMessage" />
+    <pattern value="pt.ipbeja.app.model.wordsprovider.WordsProvider" />
   </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="JavadocGenerationManager">

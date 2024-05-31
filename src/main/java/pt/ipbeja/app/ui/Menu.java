@@ -8,21 +8,48 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import pt.ipbeja.app.model.GameOptions;
+import pt.ipbeja.app.model.WSModel;
 import pt.ipbeja.app.model.WordOrientations;
-
-import static pt.ipbeja.app.model.WSModel.MAX_SIDE_LEN;
-import static pt.ipbeja.app.model.WSModel.MIN_SIDE_LEN;
+import pt.ipbeja.app.throwables.InvalidInGameChangeException;
 
 public class Menu extends VBox {
     public Menu(OnStartHandler handler, GameOptions opts) {
+        super();
         Button btn = new Button("Start");
+
+        // https://docs.oracle.com/javafx/2/ui_controls/radio-button.htm
+        ToggleGroup group = new ToggleGroup();
+
+        CheckBox diagonalAllowed = new CheckBox("Allow diagonal words?");
+        diagonalAllowed.setOnAction(event -> {
+            if (diagonalAllowed.isSelected()) {
+                opts.addOrientationAllowed(WordOrientations.DIAGONAL);
+            } else {
+                opts.removeOrientationAllowed(WordOrientations.DIAGONAL);
+            }
+        });
+
+        btn.setOnAction(event -> {
+            try {
+                handler.onStart(opts, (ProviderMode) group.getSelectedToggle().getUserData());
+            } catch (InvalidInGameChangeException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        this.getChildren().addAll(getNumberInputs(opts), diagonalAllowed, getProviderModeToggles(group), btn);
+
+        this.setAlignment(Pos.CENTER);
+    }
+
+    private static VBox getNumberInputs(GameOptions opts) {
         NumberInput lines = new NumberInput("lines:\t", opts.getLines());
-        lines.setMin(MIN_SIDE_LEN);
-        lines.setMax(MAX_SIDE_LEN);
+        lines.setMin(WSModel.MIN_SIDE_LEN);
+        lines.setMax(WSModel.MAX_SIDE_LEN);
         lines.setHandler(opts::setLines);
         NumberInput columns = new NumberInput("columns:\t", opts.getColumns());
-        columns.setMin(MIN_SIDE_LEN);
-        columns.setMax(MAX_SIDE_LEN);
+        columns.setMin(WSModel.MIN_SIDE_LEN);
+        columns.setMax(WSModel.MAX_SIDE_LEN);
         columns.setHandler(opts::setColumns);
 
         NumberInput max = new NumberInput("maximum amount of words:\t", opts.getMaxWords());
@@ -42,8 +69,12 @@ public class Menu extends VBox {
         });
         wilds.setHandler(opts::setNumberOfWilds);
 
-        // https://docs.oracle.com/javafx/2/ui_controls/radio-button.htm
-        final ToggleGroup group = new ToggleGroup();
+        VBox numberInputs = new VBox(lines, columns, max, min, wilds);
+        numberInputs.setAlignment(Pos.CENTER);
+        return numberInputs;
+    }
+
+    private static HBox getProviderModeToggles(ToggleGroup group) {
         RadioButton manual = new RadioButton("Manual");
         manual.setUserData(ProviderMode.MANUAL);
         RadioButton db = new RadioButton("Database");
@@ -51,26 +82,12 @@ public class Menu extends VBox {
         manual.setToggleGroup(group);
         db.setToggleGroup(group);
         db.setSelected(true);
-
-        CheckBox diagonalAllowed = new CheckBox("Allow diagonal words?");
-        diagonalAllowed.setOnAction(event -> {
-            if (diagonalAllowed.isSelected()) {
-                opts.addOrientationAllowed(WordOrientations.DIAGONAL);
-            } else {
-                opts.removeOrientationAllowed(WordOrientations.DIAGONAL);
-            }
-        });
-
-        btn.setOnAction(event -> handler.onStart(opts, (ProviderMode) group.getSelectedToggle().getUserData()));
-
-        this.getChildren().addAll(lines, columns, new HBox(manual, db), max, min, diagonalAllowed, wilds, btn);
-
-        this.setAlignment(Pos.CENTER);
+        return new HBox(manual, db);
     }
 
     public interface OnStartHandler {
-        void onStart(GameOptions opts, ProviderMode mode);
+        void onStart(GameOptions opts, ProviderMode mode) throws InvalidInGameChangeException;
     }
 
-    public enum ProviderMode { MANUAL, DB }
+    public enum ProviderMode {MANUAL, DB}
 }

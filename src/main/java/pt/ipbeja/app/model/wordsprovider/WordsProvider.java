@@ -1,4 +1,4 @@
-package pt.ipbeja.app.model.words_provider;
+package pt.ipbeja.app.model.wordsprovider;
 
 public interface WordsProvider {
     String getLine();

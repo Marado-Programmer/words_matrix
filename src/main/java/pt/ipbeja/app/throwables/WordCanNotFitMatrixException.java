@@ -1,4 +1,4 @@
-package pt.ipbeja.app.model.throwables;
+package pt.ipbeja.app.throwables;
 
 public class WordCanNotFitMatrixException extends Exception {
     private final String word;

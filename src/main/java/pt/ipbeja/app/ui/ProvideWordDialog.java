@@ -3,14 +3,17 @@ package pt.ipbeja.app.ui;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
-
-import static pt.ipbeja.app.ui.StartWordSearch.TITLE;
 
 public class ProvideWordDialog extends Dialog<String> {
     public ProvideWordDialog() {
-        this.setTitle(TITLE);
+        super();
+        this.setTitle(StartWordSearch.TITLE);
         this.setHeaderText("Manual Words Provider");
         this.setContentText("Provide a new word for the game to use:");
 

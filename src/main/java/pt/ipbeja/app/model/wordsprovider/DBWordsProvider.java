@@ -1,14 +1,16 @@
-package pt.ipbeja.app.model.words_provider;
+package pt.ipbeja.app.model.wordsprovider;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class DBWordsProvider implements WordsProvider {
-    Scanner scanner;
+    private final Scanner scanner;
 
-    public DBWordsProvider(File file) throws FileNotFoundException {
-        this.scanner = new Scanner(file);
+    public DBWordsProvider(File file) throws IOException {
+        super();
+        this.scanner = new Scanner(file, StandardCharsets.UTF_8);
     }
 
     @Override

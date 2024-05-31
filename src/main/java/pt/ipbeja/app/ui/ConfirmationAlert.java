@@ -5,15 +5,13 @@ import javafx.scene.control.ButtonType;
 
 import java.util.Optional;
 
-import static pt.ipbeja.app.ui.StartWordSearch.TITLE;
-
 public class ConfirmationAlert extends Alert {
 
     private final OnConfirmHandler handler;
 
     public ConfirmationAlert(String header, String content, OnConfirmHandler handler) {
         super(AlertType.CONFIRMATION);
-        this.setTitle(TITLE);
+        this.setTitle(StartWordSearch.TITLE);
         this.setHeaderText(header);
         this.setContentText(content);
         this.handler = handler;

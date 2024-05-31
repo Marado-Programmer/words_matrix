@@ -9,7 +9,7 @@ import pt.ipbeja.app.model.WSModel;
 import pt.ipbeja.app.model.Word;
 
 public class Game extends HBox {
-    private static final double SAVE_LOG_BTN_WIDTH = 200;
+    private static final double SAVE_LOG_BTN_WIDTH = 200.0;
     private final App app;
     private final WSBoard board;
     private final TextArea log;
@@ -21,9 +21,14 @@ public class Game extends HBox {
     private StringBuilder gameLog;
 
     public Game(App app, WSModel model) {
+        super();
         this.app = app;
         this.end = new Button("End Game Now");
-        this.endGameConfirmation = new ConfirmationAlert("End Game", "Are you sure you want to end game?", model::endGame);
+        this.endGameConfirmation = new ConfirmationAlert(
+                "End Game",
+                "Are you sure you want to end game?",
+                model::endGame
+        );
         this.end.setOnAction(event -> this.endGameConfirmation.showAlert());
 
         this.board = new WSBoard(model, app);

@@ -12,8 +12,8 @@ import javafx.stage.Stage;
  */
 public class StartWordSearch extends Application {
 
-    private static final double WIDTH = 720;
-    private static final double HEIGHT = WIDTH * 3 / 4;
+    private static final double WIDTH = 720.0;
+    private static final double HEIGHT = WIDTH * 3.0 / 4.0;
 
     public static final String TITLE = "TicTacToe";
 
@@ -22,9 +22,9 @@ public class StartWordSearch extends Application {
     }
 
     @Override
-    public void start(Stage stage) {
-        stage.setTitle(TITLE);
-        stage.setScene(new Scene(new App(stage), WIDTH, HEIGHT));
-        stage.show();
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle(TITLE);
+        primaryStage.setScene(new Scene(new App(primaryStage), WIDTH, HEIGHT));
+        primaryStage.show();
     }
 }

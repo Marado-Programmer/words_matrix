@@ -1,33 +1,35 @@
-package pt.ipbeja.app.model.words_provider;
+package pt.ipbeja.app.model.wordsprovider;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class AggregateWordsProvider implements WordsProvider, AutoCloseable {
+public class ManualWordsProvider implements WordsProvider {
     private final List<String> words;
     private boolean closed;
 
-    public AggregateWordsProvider() {
+    public ManualWordsProvider() {
+        super();
         this.closed = false;
 
         this.words = new ArrayList<>();
     }
 
-    public void provide(WordsProvider provider) {
+    public boolean isOpen() {
+        return !this.closed;
+    }
+
+    public void provide(String word) {
         if (this.closed) {
             throw new RuntimeException();
         }
 
-        String line;
-        while ((line = provider.getLine()) != null) {
-            this.words.add(line);
-        }
+        this.words.add(word);
     }
 
-    public void provide(WordsProvider [] providers) {
-        for (WordsProvider provider : providers) {
-            this.provide(provider);
+    public void provide(String[] words) {
+        for (String word : words) {
+            this.provide(word);
         }
     }
 
@@ -46,7 +48,6 @@ public class AggregateWordsProvider implements WordsProvider, AutoCloseable {
         }
     }
 
-    @Override
     public void close() {
         this.closed = true;
     }

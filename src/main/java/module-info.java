@@ -1,10 +1,10 @@
+/**
+ * @author João Augusto Costa Branco Marado Torres
+ */
 module pt.ipbeja {
     requires javafx.controls;
-    exports pt.ipbeja.app.ui;
     exports pt.ipbeja.app.model;
-    exports pt.ipbeja.app.model.cell;
-    exports pt.ipbeja.app.model.message_to_ui;
-    exports pt.ipbeja.app.model.throwables;
-    exports pt.ipbeja.app.model.words_provider;
-    exports pt.ipbeja.app.model.results_saver;
+    exports pt.ipbeja.app.throwables;
+    exports pt.ipbeja.app.model.wordsprovider;
+    exports pt.ipbeja.app.model.resultssaver;
 }
