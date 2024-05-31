@@ -4,13 +4,12 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import pt.ipbeja.app.model.WSModel;
 import pt.ipbeja.app.model.Word;
 
 public class Game extends HBox {
+    private static final double SAVE_LOG_BTN_WIDTH = 200;
     private final App app;
     private final WSBoard board;
     private final TextArea log;
@@ -37,15 +36,12 @@ public class Game extends HBox {
         board.setAlignment(Pos.CENTER);
         Button saveLog = new Button("Save current game log");
         saveLog.setOnAction(event -> this.app.saveGameLog());
+        saveLog.setMinWidth(SAVE_LOG_BTN_WIDTH);
         // https://stackoverflow.com/questions/40883858/how-to-evenly-distribute-elements-of-a-javafx-vbox
-        Region r = new Region();
-        HBox.setHgrow(r, Priority.ALWAYS);
         this.points = new TextArea();
         this.points.setDisable(true);
         this.points.setPrefHeight(saveLog.getHeight());
-        HBox.setHgrow(this.points, Priority.SOMETIMES);
-        HBox top = new HBox(saveLog, r, this.points);
-        top.setAlignment(Pos.CENTER_RIGHT);
+        HBox top = new HBox(saveLog, this.points);
         VBox log = new VBox(top, this.log);
         this.getChildren().addAll(board, log);
         this.setAlignment(Pos.CENTER);
