@@ -15,7 +15,7 @@ public class AggregateWordsProvider implements WordsProvider, AutoCloseable {
     }
 
     public void provide(WordsProvider provider) {
-        if (closed) {
+        if (this.closed) {
             throw new RuntimeException();
         }
 
@@ -33,7 +33,7 @@ public class AggregateWordsProvider implements WordsProvider, AutoCloseable {
 
     @Override
     public String getLine() {
-        if (closed && this.words.isEmpty()) {
+        if (this.closed && this.words.isEmpty()) {
             return null;
         }
 

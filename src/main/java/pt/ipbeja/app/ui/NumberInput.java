@@ -55,7 +55,7 @@ public class NumberInput extends HBox {
     }
 
     public int getVal() {
-        return val;
+        return this.val;
     }
 
     public void setVal(int val) {

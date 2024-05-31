@@ -14,6 +14,7 @@ import pt.ipbeja.app.model.throwables.*;
 import pt.ipbeja.app.model.words_provider.DBWordsProvider;
 import pt.ipbeja.app.model.words_provider.WordsProvider;
 
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -195,7 +196,7 @@ public class WSModel {
      * @param cols  initial number of columns for the game to have
      * @param file  the database with the words to put in the game
      */
-    public WSModel(int lines, int cols, String file) {
+    public WSModel(int lines, int cols, String file) throws FileNotFoundException {
         this(lines, cols, new DBWordsProvider(Paths.get(file).toFile()));
     }
 
@@ -206,7 +207,7 @@ public class WSModel {
      * @param cols  initial number of columns for the game to have
      * @param file  the database with the words to put in the game
      */
-    public WSModel(int lines, int cols, URI file) {
+    public WSModel(int lines, int cols, URI file) throws FileNotFoundException {
         this(lines, cols, new DBWordsProvider(Paths.get(file).toFile()));
     }
 
@@ -217,7 +218,7 @@ public class WSModel {
      * @param cols  initial number of columns for the game to have
      * @param file  the database with the words to put in the game
      */
-    public WSModel(int lines, int cols, Path file) {
+    public WSModel(int lines, int cols, Path file) throws FileNotFoundException {
         this(lines, cols, new DBWordsProvider(file.toFile()));
     }
 
@@ -407,7 +408,7 @@ public class WSModel {
      * @see #setWords(WordsProvider, boolean)
      */
     public void startGame() throws NoWordsException, CouldNotPopulateMatrixException, InvalidInGameChangeException, NoDimensionsDefinedException {
-        if (inGame) {
+        if (this.inGame) {
             throw new InvalidInGameChangeException(INVALID_IN_GAME_CHANGE_MSG_ERR);
         }
 
@@ -448,7 +449,7 @@ public class WSModel {
      * @see #setCols(int)
      */
     private void initClearMatrix() throws NoDimensionsDefinedException {
-        if (invalidLines(this.lines) || invalidCols(cols)) {
+        if (this.invalidLines(this.lines) || this.invalidCols(this.cols)) {
             throw new NoDimensionsDefinedException();
         }
         this.matrix = new BaseCell[this.lines][this.cols];
@@ -539,7 +540,7 @@ public class WSModel {
         }
 
         Set<String> usableWords = new TreeSet<>();
-        for (String w : words) {
+        for (String w : this.words) {
             if (this.wordFitsGrid(w) && (this.minWordSize <= w.length())) {
                 usableWords.add(w);
             }
@@ -882,6 +883,8 @@ public class WSModel {
                     this.view.wordFound(startPos, pos);
                     this.view.update(new WordFoundMessage(startPos, pos, word));
                     this.view.updatePoints(new Word(word, possibleWord.points()));
+                    this.wordsLettersPositions.remove(startPos);
+                    this.wordsLettersPositions.remove(pos);
                 }
                 found = word;
             }
@@ -1049,7 +1052,7 @@ public class WSModel {
         if (this.view != null) {
             this.view.gameEnded(res);
         }
-        if (saver != null) {
+        if (this.saver != null && !this.onReplay) {
             this.saver.save(res);
         }
         return res;
@@ -1126,6 +1129,7 @@ public class WSModel {
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
+                    this.endGame();
                     this.onReplay = false;
                 } else {
                     this.replayPlay(i + 1);
@@ -1136,7 +1140,18 @@ public class WSModel {
     }
 
     public void giveHint() {
-        this.view.click(this.wordsLettersPositions.remove(0));
+        if (this.startSelected != null) {
+            int clicked = this.wordsLettersPositions.indexOf(this.startSelected);
+            if (clicked >= 0) {
+                this.view.click(this.wordsLettersPositions.get(clicked + ((clicked % 2 == 0) ? 1 : -1)));
+                return;
+            } else {
+                this.startSelected = null;
+            }
+        }
+
+        int word = this.random.nextInt(0, this.wordsLettersPositions.size() / 2);
+        this.view.click(this.wordsLettersPositions.get(word * 2));
     }
 
     public int wordsInUse() {
@@ -1237,5 +1252,9 @@ public class WSModel {
         this.setWords(opts.getProvider(), opts.isKeepExistent());
 
         this.orientationsAllowed = opts.getOrientationsAllowed();
+    }
+
+    public boolean isOnReplay() {
+        return this.onReplay;
     }
 }

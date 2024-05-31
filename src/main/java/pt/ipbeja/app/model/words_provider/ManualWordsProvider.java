@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class ManualWordsProvider implements WordsProvider, AutoCloseable {
+public class ManualWordsProvider implements WordsProvider {
     private final List<String> words;
     private boolean closed;
 
@@ -14,12 +14,12 @@ public class ManualWordsProvider implements WordsProvider, AutoCloseable {
         this.words = new ArrayList<>();
     }
 
-    public boolean isClosed() {
-        return closed;
+    public boolean isOpen() {
+        return !this.closed;
     }
 
     public void provide(String word) {
-        if (closed) {
+        if (this.closed) {
             throw new RuntimeException();
         }
 
@@ -34,7 +34,7 @@ public class ManualWordsProvider implements WordsProvider, AutoCloseable {
 
     @Override
     public String getLine() {
-        if (closed && this.words.isEmpty()) {
+        if (this.closed && this.words.isEmpty()) {
             return null;
         }
 
@@ -47,7 +47,6 @@ public class ManualWordsProvider implements WordsProvider, AutoCloseable {
         }
     }
 
-    @Override
     public void close() {
         this.closed = true;
     }

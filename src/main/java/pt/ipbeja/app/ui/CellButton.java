@@ -12,13 +12,17 @@ public class CellButton extends Button {
         super(model.textInPosition(pos).getDisplay() + "");
         this.setMinWidth(SQUARE_SIZE);
         this.setMinHeight(SQUARE_SIZE);
-        this.setOnAction(event -> board.getView().click(pos));
+        this.setOnAction(event -> {
+            if (!model.isOnReplay()) {
+                board.getView().click(pos);
+            }
+        });
 
         this.partOfWord = false;
     }
 
     public boolean isPartOfWord() {
-        return partOfWord;
+        return this.partOfWord;
     }
 
     public void setPartOfWord(boolean partOfWord) {

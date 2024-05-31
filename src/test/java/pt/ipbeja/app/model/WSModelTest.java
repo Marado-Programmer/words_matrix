@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir;
 import pt.ipbeja.app.model.throwables.NotInGameException;
 
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,7 +36,12 @@ class WSModelTest {
 
     @Test
     void testWordFound() {
-        WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
+        WSModel model;
+        try {
+            model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         model.registerView(new EmptyView());
         assertDoesNotThrow(model::startGame);
 
@@ -49,7 +55,12 @@ class WSModelTest {
 
     @Test
     void testWordWithWildcardFound() {
-        WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
+        WSModel model;
+        try {
+            model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         model.registerView(new EmptyView());
         assertDoesNotThrow(model::startGame);
 
@@ -63,7 +74,12 @@ class WSModelTest {
 
     @Test
     void testAllWordsWereFound() {
-        WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
+        WSModel model;
+        try {
+            model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         model.registerView(new EmptyView());
         assertDoesNotThrow(model::startGame);
 
@@ -85,7 +101,12 @@ class WSModelTest {
 
     @Test
     void game() {
-        WSModel model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
+        WSModel model;
+        try {
+            model = new WSModel(WSModel.MAX_SIDE_LEN, WSModel.MAX_SIDE_LEN, tmp_db);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         model.registerView(new EmptyView());
         assertDoesNotThrow(model::startGame);
 

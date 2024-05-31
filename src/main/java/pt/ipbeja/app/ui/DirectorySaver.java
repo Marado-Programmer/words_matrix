@@ -4,6 +4,7 @@ import javafx.scene.control.MenuItem;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -15,7 +16,10 @@ public class DirectorySaver extends MenuItem {
         this.setOnAction(event -> {
             DirectoryChooser directoryChooser = new DirectoryChooser();
             directoryChooser.setTitle(title);
-            this.dir = directoryChooser.showDialog(stage).toPath();
+            File file = directoryChooser.showDialog(stage);
+            if (file != null) {
+                this.dir = file.toPath();
+            }
         });
     }
 

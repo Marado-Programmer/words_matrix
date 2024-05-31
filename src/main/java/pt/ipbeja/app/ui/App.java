@@ -15,6 +15,8 @@ import pt.ipbeja.app.model.words_provider.DBWordsProvider;
 import pt.ipbeja.app.model.words_provider.ManualWordsProvider;
 
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -27,6 +29,7 @@ import static pt.ipbeja.app.model.WSModel.MIN_SIDE_LEN;
 import static pt.ipbeja.app.ui.StartWordSearch.TITLE;
 
 public class App extends VBox implements WSView {
+    public static final double PERCENT = 100.0;
     private final WSModel model;
 
     private final MenuBar bar;
@@ -43,11 +46,23 @@ public class App extends VBox implements WSView {
         this.game.setVisible(false);
         this.menu = new Menu((GameOptions opts, Menu.ProviderMode mode) -> {
             opts.setProvider(switch (mode) {
-                case DB -> new DBWordsProvider(new FileChooser(stage).choose());
+                case DB -> {
+                    while (true) {
+                        try {
+                            File choose = new FileChooser(stage).choose();
+                            yield new DBWordsProvider(choose);
+                        } catch (FileNotFoundException ignored) {
+                        } catch (Exception e) {
+                            ManualWordsProvider provider = new ManualWordsProvider();
+                            provider.close();
+                            yield provider;
+                        }
+                    }
+                }
                 case MANUAL -> {
                     ManualWordsProvider provider = new ManualWordsProvider();
 
-                    while (!provider.isClosed()) {
+                    while (provider.isOpen()) {
                         ProvideWordDialog dialog = new ProvideWordDialog();
                         Optional<String> result = dialog.showAndWait();
                         result.ifPresentOrElse(provider::provide, provider::close);
@@ -68,8 +83,9 @@ public class App extends VBox implements WSView {
             int tries = MIN_SIDE_LEN;
             while (tries > 0) {
                 try {
+                    this.game.allowReplay(true);
                     this.model.startGame();
-                    break;
+                    return;
                 } catch (RuntimeException e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle(TITLE);
@@ -77,19 +93,40 @@ public class App extends VBox implements WSView {
                     alert.setContentText(e.toString());
                     alert.showAndWait();
                     System.err.println(Arrays.toString(e.getStackTrace()));
-                    break;
-                } catch (NoWordsException | NoDimensionsDefinedException e) {
-                    break;
+                    return;
                 } catch (InvalidInGameChangeException e) {
                     throw new RuntimeException(e);
                 } catch (CouldNotPopulateMatrixException e) {
                     tries--;
+                } catch (NoDimensionsDefinedException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle(TITLE);
+                    alert.setHeaderText("ERROR");
+                    alert.setContentText("No dimensions were given, can't start the game");
+                    alert.showAndWait();
+                    return;
+                } catch (NoWordsException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle(TITLE);
+                    alert.setHeaderText("ERROR");
+                    alert.setContentText("No valid words were given so the game could not start.\n" +
+                            "Valid words are words with latin characters with the minimum length defined in the menu " +
+                            "and need to fit in a matrix with the given dimensions");
+                    alert.showAndWait();
+                    return;
                 }
+
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle(TITLE);
+                alert.setHeaderText("ERROR");
+                alert.setContentText("Tried to start the game but could no make it in " + MIN_SIDE_LEN + " tries.\n" +
+                        "Try to change the game options to some more realistic ones");
+                alert.showAndWait();
             }
         }, this.model.getOptions());
         this.menu.managedProperty().bind(this.menu.visibleProperty());
 
-        this.bar = new MenuBar(stage, model);
+        this.bar = new MenuBar(stage, this.model);
 
         HBox centerH = new HBox(this.game, this.menu);
         VBox centerV = new VBox(centerH);
@@ -99,16 +136,16 @@ public class App extends VBox implements WSView {
         // https://docs.oracle.com/javase/8/javafx/api/javafx/scene/layout/VBox.html
         VBox.setVgrow(centerV, Priority.ALWAYS);
 
-        model.setSaver(res -> {
+        this.model.setSaver(res -> {
             Path dir = this.bar.getScoreDir();
             try (BufferedWriter writer = Files.newBufferedWriter(
                     dir.resolve("scores.txt"),
                     StandardOpenOption.APPEND
             )) {
-                writer.write(String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()));
+                writer.write(String.format("%.2f%%\n", PERCENT * res.words_found().size() / res.words().size()));
             } catch (NoSuchFileException e) {
                 try (BufferedWriter writer = Files.newBufferedWriter(dir.resolve("scores.txt"))) {
-                    writer.write(String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()));
+                    writer.write(String.format("%.2f%%\n", PERCENT * res.words_found().size() / res.words().size()));
                 } catch (IOException ignored) {
                 }
             } catch (IOException ignored) {
@@ -116,10 +153,6 @@ public class App extends VBox implements WSView {
         });
     }
 
-    //play
-    //options
-    //quit
-    //language
     //help
 
     /**
@@ -143,6 +176,7 @@ public class App extends VBox implements WSView {
         this.game.setVisible(true);
         this.menu.setVisible(false);
         this.game.resetGameLog();
+        this.bar.permitHints(true);
     }
 
     @Override
@@ -191,6 +225,7 @@ public class App extends VBox implements WSView {
     @Override
     public void gameEnded(GameResults res) {
         assert res.words_found() != null && res.words() != null;
+        this.bar.permitHints(false);
         Platform.runLater(() -> {
             String resultsString = this.resultsString(res);
 
@@ -201,7 +236,10 @@ public class App extends VBox implements WSView {
 
             if (result.isPresent()) {
                 switch (result.get().getButtonData()) {
-                    case BACK_PREVIOUS -> this.model.replay();
+                    case BACK_PREVIOUS -> {
+                        this.game.allowReplay(false);
+                        this.model.replay();
+                    }
                     case NEXT_FORWARD -> {
                         try {
                             this.moreWordsQuestion();
@@ -230,7 +268,7 @@ public class App extends VBox implements WSView {
                 .append("\n\ttotal of words:\t")
                 .append(res.words().size())
                 .append("\n\tpercentage of words found:\t")
-                .append(String.format("%.2f%%\n", 100.0 * res.words_found().size() / res.words().size()))
+                .append(String.format("%.2f%%\n", PERCENT * res.words_found().size() / res.words().size()))
                 .append("\n")
                 .append("words in game:\n");
 
@@ -246,22 +284,17 @@ public class App extends VBox implements WSView {
     }
 
     private void moreWordsQuestion() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(TITLE);
-        alert.setHeaderText("Add words");
-        alert.setContentText("Would you like to add more words to the game?");
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK){
+        ConfirmationAlert alert = new ConfirmationAlert("Add words", "Would you like to add more words to the game?", () -> {
             ManualWordsProvider provider = new ManualWordsProvider();
 
-            while (!provider.isClosed()) {
+            while (provider.isOpen()) {
                 ProvideWordDialog dialog = new ProvideWordDialog();
                 dialog.showAndWait().ifPresentOrElse(provider::provide, provider::close);
             }
 
             this.model.setWords(provider, true);
-        }
+        });
+        alert.showAlert();
     }
 
     public void saveGameLog() {
@@ -284,7 +317,7 @@ public class App extends VBox implements WSView {
     public void click(Position pos) {
         Platform.runLater(() -> {
             try {
-                String word = model.findWord(pos);
+                String word = this.model.findWord(pos);
                 if (word != null) {
                     if (word.isEmpty()) {
                         this.game.getBoard().getButton(pos).setStyle("-fx-background-color: yellow;");
@@ -292,8 +325,7 @@ public class App extends VBox implements WSView {
                 } else {
                     this.game.getBoard().unselectAll();
                 }
-            } catch (NotInGameException e) {
-                throw new RuntimeException(e);
+            } catch (NotInGameException ignored) {
             }
         });
     }

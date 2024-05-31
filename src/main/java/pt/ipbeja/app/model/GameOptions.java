@@ -36,7 +36,7 @@ public class GameOptions {
     }
 
     public int getLines() {
-        return lines;
+        return this.lines;
     }
 
     public void setLines(int lines) {
@@ -44,7 +44,7 @@ public class GameOptions {
     }
 
     public int getColumns() {
-        return columns;
+        return this.columns;
     }
 
     public void setColumns(int columns) {
@@ -52,7 +52,7 @@ public class GameOptions {
     }
 
     public WordsProvider getProvider() {
-        return provider;
+        return this.provider;
     }
 
     public void setProvider(WordsProvider provider) {
@@ -60,7 +60,7 @@ public class GameOptions {
     }
 
     public int getMaxWords() {
-        return maxWords;
+        return this.maxWords;
     }
 
     public void setMaxWords(int maxWords) {
@@ -68,7 +68,7 @@ public class GameOptions {
     }
 
     public int getMinWordSize() {
-        return minWordSize;
+        return this.minWordSize;
     }
 
     public void setMinWordSize(int minWordSize) {
@@ -84,7 +84,7 @@ public class GameOptions {
     }
 
     public int getNumberOfWilds() {
-        return numberOfWilds;
+        return this.numberOfWilds;
     }
 
     public void setNumberOfWilds(int numberOfWilds) {
@@ -92,7 +92,7 @@ public class GameOptions {
     }
 
     public boolean isKeepExistent() {
-        return keepExistent;
+        return this.keepExistent;
     }
 
     public void setKeepExistent(boolean keepExistent) {
@@ -100,6 +100,6 @@ public class GameOptions {
     }
 
     public Set<WordOrientations> getOrientationsAllowed() {
-        return orientationsAllowed;
+        return this.orientationsAllowed;
     }
 }

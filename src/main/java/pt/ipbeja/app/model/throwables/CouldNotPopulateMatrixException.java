@@ -14,14 +14,14 @@ public class CouldNotPopulateMatrixException extends Exception {
     }
 
     public Set<String> getWords() {
-        return words;
+        return this.words;
     }
 
     public int getLines() {
-        return lines;
+        return this.lines;
     }
 
     public int getCols() {
-        return cols;
+        return this.cols;
     }
 }

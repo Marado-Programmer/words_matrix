@@ -16,20 +16,24 @@ public class Game extends HBox {
     private final TextArea log;
     private final TextArea points;
 
+    private final Button end;
+    private final ConfirmationAlert endGameConfirmation;
+
     private StringBuilder gameLog;
 
     public Game(App app, WSModel model) {
         this.app = app;
-        Button end = new Button("End Game Now");
-        end.setOnAction(event -> model.giveHint());
+        this.end = new Button("End Game Now");
+        this.endGameConfirmation = new ConfirmationAlert("End Game", "Are you sure you want to end game?", model::endGame);
+        this.end.setOnAction(event -> this.endGameConfirmation.showAlert());
 
         this.board = new WSBoard(model, app);
         this.board.requestFocus();
 
         this.log = new TextArea("STATUS:\n");
-        this.log.setDisable(true);
+        this.log.setEditable(false);
 
-        VBox board = new VBox(this.board, end);
+        VBox board = new VBox(this.board, this.end);
         board.setAlignment(Pos.CENTER);
         Button saveLog = new Button("Save current game log");
         saveLog.setOnAction(event -> this.app.saveGameLog());
@@ -50,7 +54,7 @@ public class Game extends HBox {
     }
 
     public WSBoard getBoard() {
-        return board;
+        return this.board;
     }
 
     public void log(String msg) {
@@ -68,5 +72,9 @@ public class Game extends HBox {
 
     public void resetGameLog() {
         this.gameLog = new StringBuilder();
+    }
+
+    public void allowReplay(boolean allow) {
+        this.end.setVisible(allow);
     }
 }

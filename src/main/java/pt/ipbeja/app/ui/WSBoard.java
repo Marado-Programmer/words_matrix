@@ -114,6 +114,6 @@ public class WSBoard extends GridPane {
     }
 
     public WSView getView() {
-        return view;
+        return this.view;
     }
 }

@@ -12,14 +12,14 @@ public class WordCanNotFitMatrixException extends Exception {
     }
 
     public String getWord() {
-        return word;
+        return this.word;
     }
 
     public int getLines() {
-        return lines;
+        return this.lines;
     }
 
     public int getCols() {
-        return cols;
+        return this.cols;
     }
 }

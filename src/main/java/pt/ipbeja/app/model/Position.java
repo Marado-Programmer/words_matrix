@@ -10,16 +10,16 @@ public record Position(int line, int col) {
 
     @Override
     public String toString() {
-        return line + ", " + col;
+        return this.line + ", " + this.col;
     }
 
     @Override
     public int line() {
-        return line;
+        return this.line;
     }
 
     @Override
     public int col() {
-        return col;
+        return this.col;
     }
 }
