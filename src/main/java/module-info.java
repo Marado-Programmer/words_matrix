@@ -3,6 +3,7 @@
  */
 module pt.ipbeja {
     requires javafx.controls;
+    exports pt.ipbeja.app.ui;
     exports pt.ipbeja.app.model;
     exports pt.ipbeja.app.throwables;
     exports pt.ipbeja.app.model.wordsprovider;

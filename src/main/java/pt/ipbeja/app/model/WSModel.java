@@ -480,9 +480,7 @@ public class WSModel {
      * @throws CouldNotPopulateMatrixException In case for some reason could not fit ANY of the words (that you can see
      *                                         using {@link CouldNotPopulateMatrixException#getWords()}) in the matrix.
      * @see #getGameWords()
-     * @see #addWordVertically(String)
-     * @see #addWordHorizontally(String)
-     * @see #addWordDiagonally(String)
+     * @see #addWord(String, WordOrientations)
      * @see #setWords(WordsProvider)
      * @see #setWords(WordsProvider, boolean)
      */
@@ -514,11 +512,15 @@ public class WSModel {
         boolean added = false;
         for (WordOrientations orientation : orientations) {
             try {
-                switch (orientation) {
-                    case VERTICAL -> this.addWordVertically(w);
-                    case HORIZONTAL -> this.addWordHorizontally(w);
-                    case DIAGONAL -> this.addWordDiagonally(w);
+                if (!switch (orientation) {
+                    case VERTICAL -> this.wordFitsVertically(w);
+                    case HORIZONTAL -> this.wordFitsHorizontally(w);
+                    case DIAGONAL -> this.wordFitsHorizontally(w) && this.wordFitsVertically(w);
+                }) {
+                    continue;
                 }
+
+                this.addWord(w, orientation);
                 added = true;
                 break;
             } catch (WordCanNotFitMatrixException ignored) {
@@ -601,249 +603,118 @@ public class WSModel {
         return word.length() <= this.lines;
     }
 
-    /**
-     * Adds a word vertically on the matrix.
-     *
-     * @param word The word that will try to add
-     * @throws WordCanNotFitMatrixException In case the `word` couldn't be put in any way into the matrix like this.
-     */
-    private void addWordVertically(String word) throws WordCanNotFitMatrixException {
-        // Saves 'the x-y-direction' "tuple" of invalid combination for the word to be put on.
+    private void addWord(String w, WordOrientations orientation) throws WordCanNotFitMatrixException {
+        // Saves 'the x-y-directionWalk-inclineWalk' "tuple" of invalid combination for the word to be put on.
         Set<String> invalids = new TreeSet<>();
 
         // The number of places for the word to be able to be put on the matrix is:
-        int placesToTryToFit = this.cols * (this.lines - word.length() + 1) * 2;  // the last multiplication it's
-        // because the word can be
-        // written in both directions.
-
-        Set<Integer> sameDisplayPos = new TreeSet<>();
-        Set<Integer> sameActualPos = new TreeSet<>();
-        while (invalids.size() < placesToTryToFit) {
-            // FIXME: this combinations can be repeated
-            boolean direction = this.random.nextBoolean();
-            int walk = direction ? 1 : -1;
-            int start = this.random.nextInt(0, this.lines - word.length() + 1);
-            if (!direction) {
-                start += word.length() - 1;
-            }
-            int x = this.random.nextInt(0, this.cols);
-
-            if (invalids.contains(x + ";" + start + ";" + direction)) {
-                continue;
-            }
-
-            Position startPos = new Position(start, x);
-            sameDisplayPos.clear();
-            sameActualPos.clear();
-            boolean validPos = true;
-            int overlapCounter = 0;
-            for (int i = 0; i < word.length(); i++, start += walk) {
-                char c = word.charAt(i);
-
-                // The cell isn't empty and doesn't share the display with `c`. We need to abort the word insertion.
-                if (null != this.lettersGrid[start][x] && !this.lettersGrid[start][x].hasSameDisplayAs(c)) {
-                    while (0 < i--) {
-                        start -= walk;
-                        if (!sameDisplayPos.contains(start)) {
-                            this.lettersGrid[start][x] = null;
-                        } else if (!sameActualPos.contains(start)) {
-                            this.lettersGrid[start][x].removeReal(c);
-                        }
-                    }
-                    validPos = false;
-                    break;
-                }
-
-                if (null == this.lettersGrid[start][x] || !this.lettersGrid[start][x].hasSameDisplayAs(c)) {
-                    this.lettersGrid[start][x] = new Cell(c);
-                } else {
-                    ++overlapCounter;
-                    sameDisplayPos.add(start);
-                    if (!this.lettersGrid[start][x].addReal(c)) {
-                        sameActualPos.add(start);
-                    }
-                }
-            }
-
-            // We do not want words on top of others.
-            // TODO: This does not stop bigger words of being inserted on top of smaller ones.
-            if (validPos && (overlapCounter < word.length())) {
-                this.wordsLettersPositions.add(startPos);
-                this.wordsLettersPositions.add(new Position(start - walk, x));
-                return;
-            }
-
-            invalids.add(x + ";" + start + ";" + direction);
-        }
-
-        throw new WordCanNotFitMatrixException(word, this.lines, this.cols);
-    }
-
-    /**
-     * Adds a word horizontally on the matrix.
-     *
-     * @param word The word that will try to add
-     * @throws WordCanNotFitMatrixException In case the `word` couldn't be put in any way into the matrix like this.
-     */
-    private void addWordHorizontally(String word) throws WordCanNotFitMatrixException {
-        // Saves 'the x-y-direction' "tuple" of invalid combination for the word to be put on.
-        Set<String> invalids = new TreeSet<>();
-
-        // The number of places for the word to be able to be put on the matrix is:
-        int placesToTryToFit = this.lines * (this.cols - word.length() + 1) * 2;  // the last multiplication it's
-        // because the word can be
-        // written in both directions.
-
-        Set<Integer> sameDisplayPos = new TreeSet<>();
-        Set<Integer> sameActualPos = new TreeSet<>();
-
-        while (invalids.size() < placesToTryToFit) {
-            // FIXME: this combinations can be repeated
-            boolean direction = this.random.nextBoolean();
-            int walk = direction ? 1 : -1;
-            int start = this.random.nextInt(0, this.cols - word.length() + 1);
-            if (!direction) {
-                start += word.length() - 1;
-            }
-            int y = this.random.nextInt(0, this.lines);
-
-            if (invalids.contains(start + ";" + y + ";" + direction)) {
-                continue;
-            }
-
-            Position startPos = new Position(y, start);
-            sameDisplayPos.clear();
-            sameActualPos.clear();
-            boolean validPos = true;
-            int overlapCounter = 0;
-            for (int i = 0; i < word.length(); i++, start += walk) {
-                char c = word.charAt(i);
-
-                // The cell isn't empty and doesn't share the display with `c`. We need to abort the word insertion.
-                if (null != this.lettersGrid[y][start] && !this.lettersGrid[y][start].hasSameDisplayAs(c)) {
-                    while (0 < i--) {
-                        start -= walk;
-                        if (!sameDisplayPos.contains(start)) {
-                            this.lettersGrid[y][start] = null;
-                        } else if (!sameActualPos.contains(start)) {
-                            this.lettersGrid[y][start].removeReal(c);
-                        }
-                    }
-                    validPos = false;
-                    break;
-                }
-
-                if (null == this.lettersGrid[y][start] || !this.lettersGrid[y][start].hasSameDisplayAs(c)) {
-                    this.lettersGrid[y][start] = new Cell(c);
-                } else {
-                    ++overlapCounter;
-                    sameDisplayPos.add(start);
-                    if (!this.lettersGrid[y][start].addReal(c)) {
-                        sameActualPos.add(start);
-                    }
-                }
-            }
-
-            // We do not want words on top of others.
-            // TODO: This does not stop bigger words of being inserted on top of smaller ones.
-            if (validPos && (overlapCounter < word.length())) {
-                this.wordsLettersPositions.add(startPos);
-                this.wordsLettersPositions.add(new Position(y, start - walk));
-                return;
-            }
-
-            invalids.add(start + ";" + y + ";" + direction);
-        }
-
-        throw new WordCanNotFitMatrixException(word, this.lines, this.cols);
-    }
-
-    /**
-     * Adds a word diagonally on the matrix.
-     *
-     * @param word The word that will try to add
-     * @throws WordCanNotFitMatrixException In case the `word` couldn't be put in any way into the matrix like this.
-     */
-    private void addWordDiagonally(String word) throws WordCanNotFitMatrixException {
-        // Saves 'the x-y-directionX-directionY' "tuple" of invalid combination for the word to be put on.
-        Set<String> invalids = new TreeSet<>();
-
-        // The number of places for the word to be able to be put on the matrix is:
-        int availableCols = this.cols - word.length() + 1;
-        int availableLines = this.lines - word.length() + 1;
-        int placesToTryToFit = availableCols * availableLines * 4;
+        int availableCols = orientation.equals(WordOrientations.HORIZONTAL) ? this.cols - w.length() + 1 : this.cols;
+        int availableLines = orientation.equals(WordOrientations.VERTICAL) ? this.lines - w.length() + 1 : this.lines;
+        int placesToTryToFit = availableCols * availableLines * (orientation.equals(WordOrientations.DIAGONAL) ? 4 : 2);
         // the last multiplication it's because the word can be written in many directions.
 
-        Set<Integer> sameDisplayPos = new TreeSet<>();
-        Set<Integer> sameActualPos = new TreeSet<>();
+        // WORKAROUND: Because combinations are not controlled and random, can lead to a "infinite loop"
+        int tries = MAX_SIDE_LEN;
 
-        while (invalids.size() < placesToTryToFit) {
+        while (invalids.size() < placesToTryToFit && tries > 0) {
+            tries--;
             // FIXME: this combinations can be repeated
-            boolean directionX = this.random.nextBoolean();
-            int startX = this.random.nextInt(0, this.cols - word.length() + 1);
-            if (!directionX) {
-                startX += word.length() - 1;
-            }
-            boolean directionY = this.random.nextBoolean();
-            int startY = this.random.nextInt(0, this.lines - word.length() + 1);
-            if (!directionY) {
-                startY += word.length() - 1;
+            int directionWalk = 0;
+            int startX = this.random.nextInt(0, this.cols);
+            if (!orientation.equals(WordOrientations.VERTICAL)) {
+                startX = this.random.nextInt(0, this.cols - w.length() + 1);
+                boolean directionX = this.random.nextBoolean();
+                if (!directionX) {
+                    startX += w.length() - 1;
+                }
+                directionWalk = directionX ? 1 : -1;
             }
 
-            if (invalids.contains(startX + ";" + startY + ";" + directionX + ";" + directionY)) {
+            int inclineWalk = 0;
+            int startY = this.random.nextInt(0, this.lines);
+            if (!orientation.equals(WordOrientations.HORIZONTAL)) {
+                startY = this.random.nextInt(0, this.lines - w.length() + 1);
+                boolean directionY = this.random.nextBoolean();
+                if (!directionY) {
+                    startY += w.length() - 1;
+                }
+                inclineWalk = directionY ? 1 : -1;
+            }
+
+            if (invalids.contains(getAddWordHash(startX, startY, directionWalk, inclineWalk))) {
                 continue;
             }
 
             Position startPos = new Position(startY, startX);
 
-            int directionWalk = directionX ? 1 : -1;
-            int inclineWalk = directionY ? 1 : -1;
-
-            sameDisplayPos.clear();
-            sameActualPos.clear();
-            boolean validPos = true;
-            int overlapCounter = 0;
-            for (int i = 0; i < word.length(); i++, startX += directionWalk, startY += inclineWalk) {
-                char c = word.charAt(i);
-
-                // The cell isn't empty and doesn't share the display with `c`. We need to abort the word insertion.
-                if (null != this.lettersGrid[startY][startX] && !this.lettersGrid[startY][startX].hasSameDisplayAs(c)) {
-                    while (0 < i--) {
-                        startX -= directionWalk;
-                        startY -= inclineWalk;
-                        if (!sameDisplayPos.contains(startY)) {
-                            this.lettersGrid[startY][startX] = null;
-                        } else if (!sameActualPos.contains(startY)) {
-                            this.lettersGrid[startY][startX].removeReal(c);
-                        }
-                    }
-                    validPos = false;
-                    break;
-                }
-
-                if (null == this.lettersGrid[startY][startX] || !this.lettersGrid[startY][startX].hasSameDisplayAs(c)) {
-                    this.lettersGrid[startY][startX] = new Cell(c);
-                } else {
-                    ++overlapCounter;
-                    sameDisplayPos.add(startY);
-                    if (!this.lettersGrid[startY][startX].addReal(c)) {
-                        sameActualPos.add(startY);
-                    }
-                }
-            }
+            WordAdditionResult result = this.tryAddWord(w, startX, startY, directionWalk, inclineWalk);
 
             // We do not want words on top of others.
             // TODO: This does not stop bigger words of being inserted on top of smaller ones.
-            if (validPos && (overlapCounter < word.length())) {
+            if (result.valid && (result.overlaps < w.length())) {
                 this.wordsLettersPositions.add(startPos);
-                this.wordsLettersPositions.add(new Position(startY - inclineWalk, startX - directionWalk));
+                this.wordsLettersPositions.add(result.finalPos);
                 return;
             }
 
-            invalids.add(startX + ";" + startY + ";" + directionX + ";" + directionY);
+            invalids.add(getAddWordHash(startX, startY, directionWalk, inclineWalk));
         }
 
-        throw new WordCanNotFitMatrixException(word, this.lines, this.cols);
+        throw new WordCanNotFitMatrixException(w, this.lines, this.cols);
+    }
+
+    private static String getAddWordHash(int startX, int startY, int directionWalk, int inclineWalk) {
+        return startX + ";" + startY + ";" + directionWalk + ";" + inclineWalk;
+    }
+
+    private WordAdditionResult tryAddWord(
+            String word,
+            int startX,
+            int startY,
+            int directionWalk,
+            int inclineWalk
+    ) {
+        Set<Integer> sameDisplayPos = new TreeSet<>();
+        Set<Integer> sameActualPos = new TreeSet<>();
+        boolean validPos = true;
+        int overlapCounter = 0;
+        for (int i = 0; i < word.length(); i++, startX += directionWalk, startY += inclineWalk) {
+            char c = word.charAt(i);
+
+            // The cell isn't empty and doesn't share the display with `c`. We need to abort the word insertion.
+            if (null != this.lettersGrid[startY][startX] && !this.lettersGrid[startY][startX].hasSameDisplayAs(c)) {
+                while (0 < i--) {
+                    startX -= directionWalk;
+                    startY -= inclineWalk;
+                    if (!sameDisplayPos.contains(startY)) {
+                        this.lettersGrid[startY][startX] = null;
+                    } else if (!sameActualPos.contains(startY)) {
+                        this.lettersGrid[startY][startX].removeReal(c);
+                    }
+                }
+                validPos = false;
+                break;
+            }
+
+            if (null == this.lettersGrid[startY][startX] || !this.lettersGrid[startY][startX].hasSameDisplayAs(c)) {
+                this.lettersGrid[startY][startX] = new Cell(c);
+            } else {
+                ++overlapCounter;
+                sameDisplayPos.add(startY);
+                if (!this.lettersGrid[startY][startX].addReal(c)) {
+                    sameActualPos.add(startY);
+                }
+            }
+        }
+
+        return new WordAdditionResult(
+                validPos,
+                new Position(startY - inclineWalk, startX - directionWalk),
+                overlapCounter
+        );
+    }
+
+    private record WordAdditionResult(boolean valid, Position finalPos, int overlaps) {
     }
 
     /**
@@ -1178,7 +1049,7 @@ public class WSModel {
     }
 
     /**
-     * Gives hint about where is the start/end of an word by clicking on it.
+     * Gives hint about where is the start/end of a word by clicking on it.
      */
     public void giveHint() {
         if (null != this.startSelected) {
@@ -1218,6 +1089,7 @@ public class WSModel {
 
     /**
      * Creates a String representation of the actual matrix.
+     *
      * @return The String created
      */
     public String matrixToString() {

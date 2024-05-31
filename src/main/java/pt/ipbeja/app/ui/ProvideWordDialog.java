@@ -38,7 +38,10 @@ public class ProvideWordDialog extends Dialog<String> {
 
         this.setResultConverter(buttonType -> {
             if (buttonType == provide) {
-                return word.getText();
+                String w = word.getText();
+                word.setText("");
+                Platform.runLater(word::requestFocus);
+                return w;
             }
 
             return null;

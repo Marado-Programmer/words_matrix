@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -134,7 +133,10 @@ public class App extends VBox implements WSView {
             } catch (RuntimeException e) {
                 alert.setContentText(e.toString());
                 alert.showAndWait();
-                System.err.println(Arrays.toString(e.getStackTrace()));
+                System.err.println(e.getMessage());
+                for (StackTraceElement stackTraceElement : e.getStackTrace()) {
+                    System.err.println(stackTraceElement);
+                }
                 return;
             } catch (InvalidInGameChangeException e) {
                 throw new RuntimeException(e);
