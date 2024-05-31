@@ -28,7 +28,11 @@ public class MenuBar extends javafx.scene.control.MenuBar {
         );
 
         this.hint = new MenuItem("Give word hint");
-        this.hint.setOnAction(event -> model.giveHint());
+        this.hint.setOnAction(event -> {
+            if (!model.isOnReplay()) {
+                model.giveHint();
+            }
+        });
         this.hint.setVisible(false);
 
         // https://gist.github.com/Warlander/815f5c435b2b11527ce65ff165dde023
